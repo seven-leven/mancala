@@ -1,4 +1,4 @@
-import { P1, P2, P1_PITS, P2_PITS, M1, M2 } from "./state.js";
+import { M1, M2, P1, P1_PITS, P2, P2_PITS } from "./state.js";
 
 // --- Game Logic Helpers & Constants ---
 
@@ -90,8 +90,7 @@ export function playTurn(initialState, startIndex) {
   // 3. --- Check for a Free Turn ---
   if (landingPit === storeOf(player)) {
     freeTurn = true;
-  }
-  // 4. --- Check for a Capture ---
+  } // 4. --- Check for a Capture ---
   else if (
     isOwnSmallPit(player, landingPit) &&
     state.pits[landingPit] === 1

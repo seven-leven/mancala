@@ -40,7 +40,7 @@ export class DFS_AI {
       const scoreFromThisTurn = this.findBestTurnOutcome(
         simState,
         startMove,
-        0
+        0,
       );
 
       if (scoreFromThisTurn > maxScore) {

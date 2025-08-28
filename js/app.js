@@ -1,13 +1,13 @@
-import { MancalaState, P1, P2, M1, M2, P1_PITS, P2_PITS } from "./state.js";
+import { M1, M2, MancalaState, P1, P1_PITS, P2, P2_PITS } from "./state.js";
 import {
-  wait,
-  isSmallPit,
-  isOwnSmallPit,
-  oppositeOf,
-  storeOf,
-  oppStoreOf,
   getValidMoves,
+  isOwnSmallPit,
+  isSmallPit,
+  oppositeOf,
+  oppStoreOf,
   playTurn,
+  storeOf,
+  wait,
 } from "./logic.js";
 import { DFS_AI, RandomAI } from "./bots.js";
 import { UI } from "./ui.js";
@@ -114,14 +114,22 @@ class App {
     }
 
     // Check for capture
-    if (isOwnSmallPit(this.state.current, lastPit) && this.state.pits[lastPit] === 1) {
+    if (
+      isOwnSmallPit(this.state.current, lastPit) &&
+      this.state.pits[lastPit] === 1
+    ) {
       const opp = oppositeOf(lastPit);
       const captured = this.state.pits[opp];
       if (captured > 0) {
         this.state.pits[opp] = 0;
         this.state.pits[storeOf(this.state.current)] += captured + 1;
         this.state.pits[lastPit] = 0;
-        this.ui.capture(lastPit, opp, captured + 1, storeOf(this.state.current));
+        this.ui.capture(
+          lastPit,
+          opp,
+          captured + 1,
+          storeOf(this.state.current),
+        );
       }
     }
 
@@ -133,7 +141,11 @@ class App {
 
     if (this.state.gameOver) {
       const p1 = this.state.pits[M1], p2 = this.state.pits[M2];
-      const winner = p1 === p2 ? "Draw" : p1 > p2 ? "Player 1 wins!" : "Player 2 wins!";
+      const winner = p1 === p2
+        ? "Draw"
+        : p1 > p2
+        ? "Player 1 wins!"
+        : "Player 2 wins!";
       this.ui.message(winner);
       this.locked = true; // Game ends, no more moves
       return;
@@ -151,7 +163,7 @@ class App {
       await this.maybeAITurn(); // Check if the new player is an AI
     }
   }
-  
+
   checkGameOver() {
     if (this.state.gameOver) return;
     const p1Empty = P1_PITS.every((i) => this.state.pits[i] === 0);
@@ -170,7 +182,10 @@ class App {
   }
 
   async maybeAITurn() {
-    if (!this.ai || this.state.current !== P2 || this.state.gameOver || this.locked) {
+    if (
+      !this.ai || this.state.current !== P2 || this.state.gameOver ||
+      this.locked
+    ) {
       return;
     }
 
@@ -180,7 +195,7 @@ class App {
 
     // AI uses the state to choose a move
     const move = this.ai.choose(this.state);
-    
+
     if (move !== null) {
       // The AI move is also played with animations for the user to see
       await this.playTurnAnimated(move);
