@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mancala</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div class="app">
+      <!-- Main header with controls and turn indicator -->
+      <div class="topbar">
+        <div class="group">
+          <h1>Mancala</h1>
+          <button id="newGame" class="primary">New Game</button>
+          <select id="mode">
+            <option value="pvp">Player vs Player</option>
+            <option value="pvc">Player vs Random Bot</option>
+            <option value="pvc-dfs">Player vs DFS Bot</option>
+          </select>
+        </div>
+        <div class="indicator">
+          <div id="turnDot" class="dot"></div>
+          <span id="turnText"></span>
+        </div>
+      </div>
+
+      <!-- The game board itself -->
+      <div class="board-wrap">
+        <div id="board" class="board">
+          <div class="mancala" id="m2">
+            <div class="label">P2</div>
+            <div class="count" id="c_m2">0</div>
+          </div>
+          <div class="rows">
+            <div class="row" id="rowTop"></div>
+            <div class="row" id="rowBottom"></div>
+          </div>
+          <div class="mancala" id="m1">
+            <div class="label">P1</div>
+            <div class="count" id="c_m1">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status bar for scores and stones in hand -->
+      <div class="statusbar">
+        <div class="badge" id="scoreP1">P1: 0</div>
+        <div class="hand">
+          Stones in Hand: <span id="inHand" class="num">0</span>
+        </div>
+        <div class="badge" id="scoreP2">P2: 0</div>
+      </div>
+
+      <!-- Toast for messages -->
+      <div id="toast" class="toast">Welcome!</div>
+    </div>
+
+    <!-- MODIFIED: Script now points to the new app.js file -->
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
