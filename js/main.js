@@ -3,7 +3,7 @@
 import { MancalaState } from "./state.js";
 import { UI } from "./ui.js";
 import { GameController } from "./game-controller.js";
-import { AnimationHandler } from "./animation.js"; // Assuming you have this file
+import { AnimationHandler } from "./animation-handler.js"; // Assuming you have this file
 
 class Main {
   constructor() {
