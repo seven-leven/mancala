@@ -1,4 +1,4 @@
-import { M1, M2, P1, P1_PITS, P2_PITS } from "./engine.js";
+import { M1, M2, P1, P1_PITS, P2_PITS } from "./state.js";
 
 export class UI {
   constructor(engine, app) {
