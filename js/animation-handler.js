@@ -1,98 +1,50 @@
-import {
-  isOwnSmallPit,
-  isSmallPit,
-  oppositeOf,
-  oppStoreOf,
-  storeOf,
-  wait,
-} from "./logic.js";
-import { M1, M2, P1_PITS, P2_PITS } from "./state.js";
+import { wait } from "./logic.js";
 
-// Helper for board traversal
-const ORDER = [0, 1, 2, 3, 4, 5, 6, 14, 13, 12, 11, 10, 9, 8, 7, 15];
-const NEXT = new Map(ORDER.map((v, i) => [v, ORDER[(i + 1) % ORDER.length]]));
+// Delays (ms) that pace the animation.
+const DROP_DELAY = 220; // Between each sown stone.
+const CAPTURE_PAUSE = 200; // Beat before a capture resolves.
 
+/**
+ * Replays the event log produced by playTurn() as a visual animation.
+ *
+ * It holds no game rules of its own — it walks the events in order and asks the
+ * UI to reflect each one. This keeps the on-screen board in step with the pure
+ * simulation, so the two can never drift apart.
+ *
+ * Setting `skip = true` (via the Skip button) drops the per-stone delays so the
+ * rest of the move — and any follow-on moves that reuse the flag — resolve
+ * instantly. Each event is still applied, so the board ends in the right place.
+ */
 export class AnimationHandler {
-  constructor(state, ui) {
-    this.state = state;
+  constructor(ui) {
     this.ui = ui;
+    this.skip = false;
   }
 
-  async playTurnAnimated(startIndex) {
-    // 1. SOWING PHASE
-    let inHand = this.state.pits[startIndex];
-    this.state.pits[startIndex] = 0;
-    this.ui.pickup(startIndex, inHand);
+  /**
+   * @param {object[]} events The event log from playTurn().
+   */
+  async animate(events) {
+    for (const ev of events) {
+      switch (ev.type) {
+        case "pickup":
+          this.ui.pickup(ev.pit, ev.count);
+          break;
 
-    let pos = NEXT.get(startIndex);
-    while (inHand > 0) {
-      if (pos === oppStoreOf(this.state.current)) {
-        pos = NEXT.get(pos);
-        continue;
-      }
-      this.state.pits[pos]++;
-      inHand--;
-      this.ui.drop(pos, this.state.pits[pos], inHand);
-      await wait(220);
-      if (inHand > 0) pos = NEXT.get(pos);
-    }
-    let lastPit = pos;
+        case "drop":
+          this.ui.drop(ev.pit, ev.count, ev.inHand);
+          if (!this.skip) await wait(DROP_DELAY);
+          break;
 
-    // Handle chained moves (landing in a pit with stones)
-    while (isSmallPit(lastPit) && this.state.pits[lastPit] > 1) {
-      lastPit = await this.playTurnAnimated(lastPit);
-    }
+        case "capture":
+          if (!this.skip) await wait(CAPTURE_PAUSE);
+          this.ui.capture(ev);
+          break;
 
-    // 2. OUTCOME CHECKING PHASE
-    let freeTurn = false;
-    if (lastPit === storeOf(this.state.current)) {
-      freeTurn = true;
-    }
-
-    // Capture Check
-    if (
-      isOwnSmallPit(this.state.current, lastPit) &&
-      this.state.pits[lastPit] === 1
-    ) {
-      const opp = oppositeOf(lastPit);
-      const captured = this.state.pits[opp];
-      if (captured > 0) {
-        this.state.pits[opp] = 0;
-        this.state.pits[storeOf(this.state.current)] += captured + 1;
-        this.state.pits[lastPit] = 0;
-        this.ui.capture(
-          lastPit,
-          opp,
-          captured + 1,
-          storeOf(this.state.current),
-        );
+        case "sweep":
+          this.ui.sweep(ev);
+          break;
       }
     }
-
-    // Game Over Check
-    const gameOver = this.checkGameOver();
-
-    // 3. RETURN RESULT
-    // Return a summary of what happened for the controller to process.
-    return { freeTurn, gameOver };
-  }
-
-  checkGameOver() {
-    if (this.state.gameOver) return true;
-    const p1Empty = P1_PITS.every((i) => this.state.pits[i] === 0);
-    const p2Empty = P2_PITS.every((i) => this.state.pits[i] === 0);
-
-    if (p1Empty || p2Empty) {
-      const p1Remain = P1_PITS.reduce((a, i) => a + this.state.pits[i], 0);
-      const p2Remain = P2_PITS.reduce((a, i) => a + this.state.pits[i], 0);
-      for (const i of P1_PITS) this.state.pits[i] = 0;
-      for (const i of P2_PITS) this.state.pits[i] = 0;
-      this.state.pits[M1] += p1Remain;
-      this.state.pits[M2] += p2Remain;
-      this.ui.sweep(p1Remain, p2Remain);
-      this.state.gameOver = true;
-      return true;
-    }
-    return false;
   }
 }

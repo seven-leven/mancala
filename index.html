@@ -8,55 +8,86 @@
   </head>
   <body>
     <div class="app">
-      <!-- Main header with controls and turn indicator -->
+      <!-- Main header with controls -->
       <div class="topbar">
         <div class="group">
           <h1>Mancala</h1>
           <button id="newGame" class="primary">New Game</button>
-          <select id="mode">
-            <option value="pvp">Player vs Player</option>
-            <option value="pvc">Player vs Random Bot</option>
-            <option value="pvc-dfs">Player vs DFS Bot</option>
-          </select>
+          <!-- Opponent options are filled from the bot registry at runtime -->
+          <select id="mode"></select>
+          <button id="skipBtn" disabled>Skip ⏭</button>
+          <button id="rulesBtn">How to play</button>
         </div>
-        <div class="indicator">
-          <div id="turnDot" class="dot"></div>
-          <span id="turnText"></span>
-        </div>
+      </div>
+
+      <!-- Big, color-coded banner telling you whose turn it is -->
+      <div class="turnbanner" id="turnBanner">
+        <div id="turnDot" class="dot"></div>
+        <span id="turnText">—</span>
       </div>
 
       <!-- The game board itself -->
       <div class="board-wrap">
         <div id="board" class="board">
-          <div class="mancala" id="m2">
-            <div class="label">P2</div>
+          <!-- Player 2's store (left), collects stones sown along the top -->
+          <div class="mancala p2" id="m2">
+            <div class="label">Player 2</div>
             <div class="count" id="c_m2">0</div>
+            <div class="store-hint">store</div>
           </div>
           <div class="rows">
             <div class="row" id="rowTop"></div>
             <div class="row" id="rowBottom"></div>
           </div>
-          <div class="mancala" id="m1">
-            <div class="label">P1</div>
+          <!-- Player 1's store (right), collects stones sown along the bottom -->
+          <div class="mancala p1" id="m1">
+            <div class="label">Player 1</div>
             <div class="count" id="c_m1">0</div>
+            <div class="store-hint">store</div>
           </div>
         </div>
       </div>
 
       <!-- Status bar for scores and stones in hand -->
       <div class="statusbar">
-        <div class="badge" id="scoreP1">P1: 0</div>
+        <div class="badge p1" id="scoreP1">Player 1: 0</div>
         <div class="hand">
-          Stones in Hand: <span id="inHand" class="num">0</span>
+          In hand: <span id="inHand" class="num">0</span>
         </div>
-        <div class="badge" id="scoreP2">P2: 0</div>
+        <div class="badge p2" id="scoreP2">Player 2: 0</div>
       </div>
 
       <!-- Toast for messages -->
       <div id="toast" class="toast">Welcome!</div>
     </div>
 
-    <!-- MODIFIED: Script now points to the new app.js file -->
+    <!-- Rules popup, shown briefly on load and reopenable via "How to play" -->
+    <div id="rulesOverlay" class="overlay">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
+        <h2 id="rulesTitle">How to play Mancala</h2>
+        <p class="modal-lead">
+          Race to collect the most stones in <strong>your store</strong> — the
+          big pit on your side.
+          <span class="chip p1">Player 1</span> owns the bottom row and the
+          right store. <span class="chip p2">Player 2</span> owns the top row
+          and the left store.
+        </p>
+        <ul>
+          <li>On your turn, click one of <strong>your</strong> pits to pick up
+            its stones.</li>
+          <li>Stones drop one by one into the following pits, travelling
+            <strong>around the board</strong> (skipping your opponent's store).</li>
+          <li><strong>Free turn</strong> — if the last stone lands in your own
+            store, you go again.</li>
+          <li><strong>Capture</strong> — if the last stone lands in one of your
+            own empty pits, you grab it plus everything in the pit opposite.</li>
+          <li>When one side is empty the game ends and each player banks their
+            remaining stones. Most stones wins.</li>
+        </ul>
+        <button id="closeRules" class="primary">Got it — let's play</button>
+      </div>
+    </div>
+
     <script src="js/main.js" type="module"></script>
   </body>
 </html>
