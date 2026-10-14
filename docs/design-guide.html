@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mancala design guide</title>
+    <!-- The design guide as one sheet, built from the game's real stylesheet. Rendered to
+         design-guide.png by `deno task design-sheet`. The words live in ../DESIGN.md. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap">
+    <link rel="stylesheet" href="../public/style.css">
+    <style>
+      body {
+        width: 1440px;
+      }
+      .sheet {
+        padding: 72px 72px 56px;
+      }
+      .sheet-head {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 48px;
+        align-items: end;
+        padding-bottom: 40px;
+        border-bottom: 1px solid var(--rule);
+      }
+      .sheet-head h1 {
+        margin: 0;
+        font-family: var(--font-serif);
+        font-weight: 400;
+        font-size: 5.2rem;
+        line-height: 0.92;
+      }
+      .sheet-head p {
+        margin: 0;
+        color: var(--text-2);
+        font-size: var(--fs-lead);
+      }
+      .grid {
+        display: grid;
+        gap: 28px;
+        margin-top: 28px;
+      }
+      .g2 {
+        grid-template-columns: 1fr 1fr;
+      }
+      .g3 {
+        grid-template-columns: 1fr 1.25fr 1fr;
+      }
+      .card {
+        padding: 28px 30px 30px;
+        border: 1px solid var(--rule);
+        border-radius: var(--radius);
+        background: var(--surface);
+      }
+      .theme-dark.card {
+        background: var(--bg);
+        color: var(--text);
+      }
+      .card h2 {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        margin: 0 0 20px;
+        color: var(--text-muted);
+      }
+      .card h2 b {
+        color: var(--accent);
+        font-weight: 600;
+      }
+      .swatches {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+      }
+      .sw i {
+        display: block;
+        height: 64px;
+        margin-bottom: 8px;
+        border: 1px solid var(--rule);
+        border-radius: var(--radius-sm);
+      }
+      .sw b {
+        display: block;
+        font-size: var(--fs-small);
+        font-weight: 600;
+      }
+      .sw span {
+        color: var(--text-muted);
+        font: 0.78rem var(--font-data);
+      }
+      .board-demo .board {
+        margin-top: 4px;
+      }
+      .states {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 18px;
+        margin-top: 24px;
+      }
+      .state {
+        display: grid;
+        justify-items: center;
+        gap: 10px;
+        padding: 16px 8px 12px;
+        border-radius: var(--radius);
+        background: var(--wood);
+      }
+      .state .pit {
+        width: 74px;
+      }
+      .state p {
+        margin: 0;
+        color: var(--text);
+        font-size: var(--fs-caption);
+        font-weight: 600;
+      }
+      .state small {
+        display: block;
+        margin-top: -6px;
+        color: var(--text-2);
+        font-size: 0.74rem;
+        text-align: center;
+      }
+      .type-row {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 20px;
+        align-items: baseline;
+        padding: 14px 0;
+        border-top: 1px solid var(--rule);
+      }
+      .type-row:first-of-type {
+        border-top: 0;
+        padding-top: 0;
+      }
+      .type-row > span:first-child {
+        color: var(--text-muted);
+        font: 0.76rem var(--font-data);
+      }
+      .comp {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 0;
+        border-top: 1px solid var(--rule);
+      }
+      .comp:first-of-type {
+        border-top: 0;
+        padding-top: 0;
+      }
+      .comp > .label {
+        width: 100%;
+        color: var(--text-muted);
+      }
+      .scale {
+        display: flex;
+        align-items: flex-end;
+        gap: 14px;
+      }
+      .scale div {
+        display: grid;
+        justify-items: center;
+        gap: 6px;
+        color: var(--text-muted);
+        font: 0.74rem var(--font-data);
+      }
+      .scale i {
+        display: block;
+        background: var(--accent-fill);
+        border-radius: 2px;
+      }
+      .corners {
+        display: flex;
+        gap: 14px;
+        margin-top: 22px;
+      }
+      .corners div {
+        display: grid;
+        justify-items: center;
+        gap: 6px;
+        color: var(--text-muted);
+        font: 0.74rem var(--font-data);
+      }
+      .corners i {
+        display: block;
+        width: 64px;
+        height: 44px;
+        border: 1.5px solid var(--text);
+      }
+      .timing {
+        margin: 22px 0 0;
+        padding: 0;
+        list-style: none;
+        font: 0.84rem/1.9 var(--font-data);
+        color: var(--text-2);
+      }
+      .timing b {
+        color: var(--text);
+        font-weight: 500;
+      }
+      .voice {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: var(--fs-small);
+      }
+      .voice th {
+        padding: 0 0 10px;
+        color: var(--text-muted);
+        text-align: left;
+      }
+      .voice td {
+        padding: 9px 12px 9px 0;
+        border-top: 1px solid var(--rule);
+        vertical-align: top;
+      }
+      .voice td:last-child {
+        color: var(--text-muted);
+        text-decoration: line-through;
+        text-decoration-color: var(--capture);
+      }
+      .rules-list {
+        margin: 0;
+        padding-left: 1.1rem;
+        color: var(--text-2);
+        font-size: var(--fs-small);
+        line-height: 1.75;
+      }
+      .sheet-foot {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 40px;
+        padding-top: 18px;
+        border-top: 1px solid var(--rule);
+        color: var(--text-muted);
+        font-size: var(--fs-caption);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="sheet">
+      <header class="sheet-head">
+        <div>
+          <p class="label eyebrow">Mancala · Ohvalhugondi, the Maldivian mancala</p>
+          <h1>Design guide</h1>
+        </div>
+        <p>
+          The game borrows the folio's design language, so the two read as one body of work: the same paper and ink,
+          type, pills and plain voice. Its dark theme is the folio's Coding band, where Mancala's story is told.
+        </p>
+      </header>
+
+      <!-- Palettes -->
+      <section class="grid g2">
+        <div class="card">
+          <h2 class="label">Palette · light <b>The folio's paper</b></h2>
+          <div class="swatches">
+            <div class="sw"><i style="background:#f6f4ef"></i><b>bg</b><span>#f6f4ef</span></div>
+            <div class="sw"><i style="background:#fffdf9"></i><b>surface</b><span>#fffdf9</span></div>
+            <div class="sw"><i style="background:#161514"></i><b>text</b><span>#161514</span></div>
+            <div class="sw"><i style="background:#6b6760"></i><b>text-muted</b><span>#6b6760</span></div>
+            <div class="sw"><i style="background:#dfdad0"></i><b>rule</b><span>#dfdad0</span></div>
+            <div class="sw"><i style="background:#cbc4b6"></i><b>rule-strong</b><span>#cbc4b6</span></div>
+            <div class="sw"><i style="background:#a8483f"></i><b>accent</b><span>#a8483f</span></div>
+            <div class="sw"><i style="background:#b85450"></i><b>accent-fill</b><span>#b85450</span></div>
+          </div>
+        </div>
+        <div class="card theme-dark">
+          <h2 class="label">Palette · dark <b>The folio's Coding band</b></h2>
+          <div class="swatches">
+            <div class="sw"><i style="background:#161514"></i><b>bg</b><span>#161514</span></div>
+            <div class="sw"><i style="background:rgba(246,244,239,.04)"></i><b>surface</b><span>paper 4%</span></div>
+            <div class="sw"><i style="background:#f6f4ef"></i><b>text</b><span>#f6f4ef</span></div>
+            <div class="sw"><i style="background:rgba(246,244,239,.62)"></i><b>text-muted</b><span>paper 62%</span></div>
+            <div class="sw"><i style="background:rgba(246,244,239,.14)"></i><b>rule</b><span>paper 14%</span></div>
+            <div class="sw"><i style="background:rgba(246,244,239,.3)"></i><b>rule-strong</b><span>paper 30%</span></div>
+            <div class="sw"><i style="background:#e39a86"></i><b>accent</b><span>#e39a86</span></div>
+            <div class="sw"><i style="background:#f6f4ef"></i><b>button</b><span>paper on ink</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid g2">
+        <div class="card">
+          <h2 class="label">Players <b>Terracotta below, blue above</b></h2>
+          <div class="swatches">
+            <div class="sw"><i style="background:#a8483f"></i><b>Player 1 · text</b><span>#a8483f · 5.2:1</span></div>
+            <div class="sw"><i style="background:#e39a86"></i><b>Player 1 · dark</b><span>#e39a86 · 8.0:1</span></div>
+            <div class="sw"><i style="background:#1f5fa8"></i><b>Player 2 · text</b><span>#1f5fa8 · 5.9:1</span></div>
+            <div class="sw"><i style="background:#8fbde6"></i><b>Player 2 · dark</b><span>#8fbde6 · 9.2:1</span></div>
+            <div class="sw"><i style="background:#b85450"></i><b>Player 1 · fill</b><span>#b85450</span></div>
+            <div class="sw"><i style="background:#5b9bd5"></i><b>Player 2 · fill</b><span>#5b9bd5</span></div>
+            <div class="sw"><i style="background:#d9695f"></i><b>capture</b><span>#d9695f · fills only</span></div>
+            <div class="sw"><i style="background:linear-gradient(90deg,#a8483f 50%,#1f5fa8 50%)"></i><b>Only theirs</b><span>store, edge, score</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2 class="label">The board <b>Wood, cups and sand seeds</b></h2>
+          <div class="swatches">
+            <div class="sw"><i style="background:#e6d8c0"></i><b>wood</b><span>#e6d8c0</span></div>
+            <div class="sw"><i style="background:#cfbb98"></i><b>wood-edge</b><span>#cfbb98</span></div>
+            <div class="sw"><i style="background:#fbf7f0"></i><b>cup</b><span>#fbf7f0</span></div>
+            <div class="sw"><i style="background:radial-gradient(circle at 35% 30%,#f2e2c2,#d8bd8c 55%,#b39567)"></i><b>seed</b><span>#d8bd8c</span></div>
+            <div class="sw"><i style="background:#3a2a1d"></i><b>wood · dark</b><span>#3a2a1d</span></div>
+            <div class="sw"><i style="background:#4d3826"></i><b>edge · dark</b><span>#4d3826</span></div>
+            <div class="sw"><i style="background:#241a12"></i><b>cup · dark</b><span>#241a12</span></div>
+            <div class="sw"><i style="background:radial-gradient(circle at 35% 30%,#f2e2c2,#d8bd8c 55%,#a88a5e)"></i><b>seed · dark</b><span>shade #a88a5e</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- The board, both themes -->
+      <section class="grid g2">
+        <div class="card board-demo">
+          <h2 class="label">Light <b>Player 1 to move</b></h2>
+          <div class="board" data-turn="1" data-demo="1"></div>
+        </div>
+        <div class="card board-demo theme-dark">
+          <h2 class="label">Dark <b>Player 2 to move</b></h2>
+          <div class="board" data-turn="2" data-demo="2"></div>
+        </div>
+      </section>
+
+      <section class="card" style="margin-top:28px">
+        <h2 class="label">Pit states <b>One ring, one meaning</b></h2>
+        <div class="states">
+          <div class="state" data-player="1"><button class="pit" data-seeds="7"></button><p>Resting</p><small>a hollow in the wood</small></div>
+          <div class="state" data-player="1"><button class="pit is-selectable" data-seeds="5"></button><p>Selectable</p><small>2px ring, player colour</small></div>
+          <div class="state" data-player="1"><button class="pit is-sowing" data-seeds="0"></button><p>Sowing from</p><small>inset ring</small></div>
+          <div class="state" data-player="1"><button class="pit is-hint is-selectable" data-seeds="3"></button><p>Hint</p><small>dashed accent</small></div>
+          <div class="state" data-player="1"><button class="pit is-capture" data-seeds="9"></button><p>Capture</p><small>capture red, 38%</small></div>
+          <div class="state" data-player="2"><button class="pit" data-seeds="4" style="opacity:.45"></button><p>Off turn</p><small>45% opacity</small></div>
+        </div>
+      </section>
+
+      <!-- Type and components -->
+      <section class="grid g2">
+        <div class="card">
+          <h2 class="label">Type <b>The folio's families</b></h2>
+          <div class="type-row"><span>Instrument Serif<br>display</span><span class="serif" style="font-size:3.6rem;line-height:1">Mancala 52–46</span></div>
+          <div class="type-row"><span>Inter 400–600<br>interface</span><span style="font-size:1.08rem">Your turn. Pick one of your pits to sow its seeds.</span></div>
+          <div class="type-row"><span>IBM Plex Mono<br>data</span><span class="mono" style="font-size:1.05rem">in hand 07 · P2 pit 5 → capture 9</span></div>
+          <div class="type-row"><span>Label<br>0.76rem · 0.14em</span><span class="label" style="color:var(--accent)">Player 2 · Minimax</span></div>
+        </div>
+        <div class="card">
+          <h2 class="label">Components <b>Pills, as on the folio</b></h2>
+          <div class="comp">
+            <span class="label">Buttons</span>
+            <button class="btn btn--primary">New game</button>
+            <button class="btn btn--ghost">Undo</button>
+            <button class="btn btn--ghost">Hint</button>
+            <button class="btn btn--ghost" disabled>Skip</button>
+            <span class="select"><select><option>Minimax</option></select></span>
+          </div>
+          <div class="comp">
+            <span class="label">Settings</span>
+            <div class="segmented"><label><input type="radio" name="sp"><span>Slow</span></label><label><input type="radio" name="sp" checked><span>Normal</span></label><label><input type="radio" name="sp"><span>Fast</span></label></div>
+            <label class="check"><input type="checkbox" checked> End early on a clinched majority</label>
+          </div>
+          <div class="comp" data-player="1">
+            <span class="label">Turn line</span>
+            <span class="turn" style="margin:0"><span class="turn__dot"></span><span class="turn__text">Your turn</span><span class="turn__note">pick one of your pits</span></span>
+          </div>
+          <div class="comp">
+            <span class="label">Keys, chips and links</span>
+            <kbd>1</kbd><kbd>7</kbd><kbd>N</kbd><kbd>U</kbd><kbd>H</kbd><kbd>?</kbd>
+            <span class="chip" data-player="1">Player 1</span><span class="chip" data-player="2">Player 2</span>
+            <a class="link-arrow" href="#">Source on GitHub <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid g3">
+        <div class="card">
+          <h2 class="label">Space, corners, motion</h2>
+          <div class="scale">
+            <div><i style="width:4px;height:4px"></i>0.25</div>
+            <div><i style="width:8px;height:8px"></i>0.5</div>
+            <div><i style="width:12px;height:12px"></i>0.75</div>
+            <div><i style="width:16px;height:16px"></i>1</div>
+            <div><i style="width:24px;height:24px"></i>1.5</div>
+            <div><i style="width:36px;height:36px"></i>2.25</div>
+          </div>
+          <div class="corners">
+            <div><i style="border-radius:4px"></i>4 marks</div>
+            <div><i style="border-radius:8px"></i>8 tiles</div>
+            <div><i style="border-radius:14px"></i>14 cards</div>
+            <div><i style="border-radius:999px"></i>pill</div>
+          </div>
+          <ul class="timing">
+            <li><b>220ms</b> one seed drop (slow ×1.6, fast ×0.45)</li>
+            <li><b>300ms</b> landing pulse · <b>200ms</b> before a capture</li>
+            <li><b>ease</b> cubic-bezier(0.2, 0.7, 0.2, 1)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h2 class="label">Voice</h2>
+          <table class="voice">
+            <tr><th class="label">Say</th><th class="label">Not</th></tr>
+            <tr><td>Your turn</td><td>It's Player 1's turn to move!</td></tr>
+            <tr><td>Free turn: play again</td><td>FREE TURN!!!</td></tr>
+            <tr><td>Capture! 9 seeds</td><td>Captured 9 stones</td></tr>
+            <tr><td>Minimax is thinking</td><td>Computer is thinking…</td></tr>
+            <tr><td>Player 1 wins, 52–46</td><td>Congratulations!!</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h2 class="label">Principles</h2>
+          <ol class="rules-list">
+            <li>A calm board and a loud turn.</li>
+            <li>The screen never lies about the rules: it replays the engine's events.</li>
+            <li>Seeds you can see, numbers you can trust.</li>
+            <li>The folio's voice: plain, short, sentence case. Seeds, not stones.</li>
+            <li>Every player can play: keys, screen readers, reduced motion.</li>
+            <li>Don't: neon, glows, emoji, a third colour, shadows off dialogs.</li>
+          </ol>
+        </div>
+      </section>
+
+      <footer class="sheet-foot">
+        <span>Mancala · design guide · tokens from seven-leven.github.io/folio</span>
+        <span>Full text: DESIGN.md</span>
+      </footer>
+    </main>
+
+    <script>
+      // Seeds laid out like the game does (src/ui/seeds.ts): a sunflower spiral in the cup.
+      function seedsHtml(n, max) {
+        const shown = Math.min(n, max);
+        const size = Math.min(30, 62 / Math.sqrt(shown + 1));
+        let out = "";
+        const spread = 0.42 * Math.min(1, Math.sqrt(shown / 7));
+        for (let k = 0; k < shown; k++) {
+          const r = Math.sqrt((k + 0.5) / shown) * spread;
+          const a = k * 2.39996;
+          out += `<i class="seed" style="left:${50 + r * Math.cos(a) * 100}%;top:${50 + r * Math.sin(a) * 100}%"></i>`;
+        }
+        return `<span class="seeds" style="--seed-size:${size}%">${out}</span>`;
+      }
+      const pitHtml = (n, cls, player) =>
+        `<button class="pit ${cls}" data-player="${player}" tabindex="-1">${seedsHtml(n, 24)}<span class="pit__count${
+          n ? "" : " is-empty"
+        }">${n}</span></button>`;
+      const storeHtml = (n, player) =>
+        `<div class="store store--${player}" data-player="${player}"><span class="store__label label">P${player}</span>${
+          seedsHtml(n, 60)
+        }<span class="store__count">${n}</span></div>`;
+
+      const demos = {
+        1: { top: [8, 0, 9, 9, 1, 8, 8], bottom: [0, 8, 8, 2, 8, 0, 9], m1: 15, m2: 9, turn: 1, hint: 3 },
+        2: { top: [3, 0, 7, 12, 2, 9, 1], bottom: [5, 6, 0, 4, 7, 11, 3], m1: 21, m2: 17, turn: 2, sowing: 10 },
+      };
+      for (const el of document.querySelectorAll("[data-demo]")) {
+        const d = demos[el.dataset.demo];
+        const row = (pits, start, player) =>
+          `<div class="row">${
+            pits.map((n, j) => {
+              const i = start + j;
+              let cls = "";
+              if (player === d.turn && n > 0) cls += " is-selectable";
+              if (i === d.hint) cls += " is-hint";
+              if (i === d.sowing) cls = " is-sowing";
+              return pitHtml(n, cls, player);
+            }).join("")
+          }</div>`;
+        el.innerHTML = storeHtml(d.m2, 2) + `<div class="rows">${row(d.top, 7, 2)}${row(d.bottom, 0, 1)}</div>` +
+          storeHtml(d.m1, 1);
+      }
+      for (const el of document.querySelectorAll(".state .pit")) {
+        const n = Number(el.dataset.seeds);
+        el.innerHTML = seedsHtml(n, 24) + `<span class="pit__count${n ? "" : " is-empty"}">${n}</span>`;
+      }
+    </script>
+  </body>
+</html>

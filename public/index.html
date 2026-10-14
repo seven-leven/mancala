@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mancala · ohvalhugondi</title>
+    <meta name="description"
+      content="Ohvalhugondi, the Maldivian mancala: seven pits, seven seeds, relay sowing. Play a friend or one of four bots, from Random to an alpha-beta Minimax.">
+    <meta property="og:title" content="Mancala · ohvalhugondi">
+    <meta property="og:description" content="The Maldivian mancala in the browser: play a friend or one of four bots.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://seven-leven.github.io/mancala/">
+    <meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#161514" media="(prefers-color-scheme: dark)">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <script>
+    // Apply a saved theme before the first paint
+    try {
+      const t = JSON.parse(localStorage.getItem("mancala.settings.v2") || "{}").theme;
+      if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+    } catch { /* storage unavailable */ }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap">
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <main class="app">
+      <header class="masthead">
+        <div>
+          <p class="label eyebrow">Ohvalhugondi · the Maldivian mancala</p>
+          <h1 class="serif">Mancala</h1>
+        </div>
+        <div class="controls">
+          <button class="btn btn--primary" id="newGame" type="button">New game</button>
+          <label class="select">
+            <span class="visually-hidden">Opponent</span>
+            <select id="opponent"></select>
+          </label>
+          <button class="btn btn--ghost" id="undo" type="button" aria-keyshortcuts="U">Undo</button>
+          <button class="btn btn--ghost" id="hint" type="button" aria-keyshortcuts="H">Hint</button>
+          <button class="btn btn--ghost" id="skip" type="button" aria-keyshortcuts="S">Skip</button>
+          <button class="btn btn--ghost btn--icon" id="openSettings" type="button" aria-label="Settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
+              <circle cx="16" cy="7" r="2" />
+              <circle cx="10" cy="17" r="2" />
+            </svg>
+          </button>
+          <button class="btn btn--ghost btn--icon" id="openRules" type="button" aria-label="How to play"
+            aria-keyshortcuts="?">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M9.6 9.2a2.5 2.5 0 0 1 4.8.8c0 1.7-2.4 2.2-2.4 3.7M12 17h.01" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <p class="turn" id="turn" aria-live="polite">
+        <span class="turn__dot"></span><span class="turn__text" id="turnText">Setting up</span><span class="turn__note" id="turnNote"></span>
+      </p>
+
+      <div class="board" id="board" role="group" aria-label="The board"></div>
+
+      <div class="status">
+        <p class="score"
+          data-player="1"><span class="score__num" id="score1">0</span><span class="score__who label" id="name1">Player 1</span></p>
+        <p class="hand">In hand <b id="hand">0</b></p>
+        <p class="score"
+          data-player="2"><span class="score__who label" id="name2">Player 2</span><span class="score__num" id="score2">0</span></p>
+      </div>
+      <p class="toast" id="toast" role="status" aria-live="polite"></p>
+
+      <details class="log">
+        <summary class="label">Moves <span id="moveCount"></span></summary>
+        <ol id="log" reversed></ol>
+      </details>
+
+      <footer class="footer">
+        <span id="rulesSummary"></span>
+        <span><span id="version"></span> · keys <kbd>1</kbd>–<kbd>7</kbd> <kbd>N</kbd> <kbd>U</kbd> <kbd>H</kbd> <kbd>?</kbd></span>
+        <a class="link-arrow"
+          href="https://github.com/seven-leven/mancala">Source on GitHub <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </footer>
+    </main>
+
+    <dialog id="rules" aria-labelledby="rulesTitle">
+      <p class="label eyebrow">How to play</p>
+      <h2 id="rulesTitle">Bank the most seeds</h2>
+      <p>
+        <span class="chip" data-player="1">Player 1</span> owns the bottom row and the store on the right.
+        <span class="chip" data-player="2">Player 2</span> owns the top row and the store on the left.
+      </p>
+      <ul>
+        <li>On your turn, pick one of your pits. Its seeds are sown one by one around the board, counter-clockwise, past
+          your store but never into your opponent's.</li>
+        <li><strong>Relay:</strong> if the last seed lands in a pit that already had seeds, pick them all up and keep
+          sowing.</li>
+        <li><strong>Free turn:</strong> if the last seed lands in your own store, play again.</li>
+        <li id="captureRule"><strong>Capture:</strong> if the last seed lands in an empty pit on your side, bank it and
+          everything in the pit opposite.</li>
+        <li
+          id="endRule">The game ends when a side runs out of seeds. Each player banks what's left on their side, and the
+          fuller store wins.</li>
+      </ul>
+      <p class="turn__note">Keys: <kbd>1</kbd>–<kbd>7</kbd> play your pits, counted from your own left. <kbd>N</kbd> new
+        game, <kbd>U</kbd> undo, <kbd>H</kbd> hint, <kbd>S</kbd> skip, <kbd>?</kbd> this help.</p>
+      <form method="dialog" class="dialog__actions">
+        <button class="btn btn--primary">Let's play</button>
+      </form>
+    </dialog>
+
+    <dialog id="settings" aria-labelledby="settingsTitle">
+      <p class="label eyebrow">Settings</p>
+      <h2 id="settingsTitle">Who's playing</h2>
+      <form method="dialog" id="settingsForm">
+        <div class="field-row">
+          <label
+            class="field"><span class="label">Player 1 · bottom</span><span class="select"><select name="p1"></select></span></label>
+          <label
+            class="field"><span class="label">Player 2 · top</span><span class="select"><select name="p2"></select></span></label>
+        </div>
+        <fieldset class="field">
+          <legend class="label">Who goes first</legend>
+          <div class="segmented">
+            <label><input type="radio" name="first" value="random"><span>Random</span></label>
+            <label><input type="radio" name="first" value="1"><span>Player 1</span></label>
+            <label><input type="radio" name="first" value="2"><span>Player 2</span></label>
+          </div>
+        </fieldset>
+        <fieldset class="field">
+          <legend class="label">Animation</legend>
+          <div class="segmented">
+            <label><input type="radio" name="speed" value="slow"><span>Slow</span></label>
+            <label><input type="radio" name="speed" value="normal"><span>Normal</span></label>
+            <label><input type="radio" name="speed" value="fast"><span>Fast</span></label>
+          </div>
+        </fieldset>
+        <fieldset class="field">
+          <legend class="label">Theme</legend>
+          <div class="segmented">
+            <label><input type="radio" name="theme" value="system"><span>System</span></label>
+            <label><input type="radio" name="theme" value="light"><span>Paper</span></label>
+            <label><input type="radio" name="theme" value="dark"><span>Ink</span></label>
+          </div>
+        </fieldset>
+
+        <h2 style="margin-top: var(--space-5)">House rules</h2>
+        <p class="turn__note">Changing these starts a new game.</p>
+        <fieldset class="field">
+          <legend class="label">Seeds per pit</legend>
+          <div class="segmented" id="seedOptions"></div>
+        </fieldset>
+        <fieldset class="field">
+          <legend class="label">Capture</legend>
+          <div class="segmented">
+            <label><input type="radio" name="capture" value="own"><span>Empty pit on your side</span></label>
+            <label><input type="radio" name="capture" value="any"><span>Any empty pit</span></label>
+          </div>
+        </fieldset>
+        <label
+          class="check"><input type="checkbox" name="clinch"> End early once a store holds more than half the seeds</label>
+        <div class="dialog__actions">
+          <button class="btn btn--primary" value="done">Done</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
