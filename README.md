@@ -9,7 +9,7 @@ a friend on the same screen, or one of eight bots from Hopeless to Expert, and k
 
 I started this in December 2022 to build a bot that could beat my grandmother at ohvalhugondi. The command-line game
 came first; the bot (the DFS one below) came in August 2024; the web version in 2025; and this TypeScript rewrite in
-October 2026. The [folio](https://seven-leven.github.io/folio/) tells the longer story.
+October 2026. [The full story](https://seven-leven.github.io/folio/code-mancala.html) is on my folio.
 
 ## How to play
 
@@ -103,3 +103,7 @@ To add a bot, write a class with `choose(state)` in `src/bots/bots.ts`, add it t
 ## Changes
 
 See [CHANGELOG.md](CHANGELOG.md).
+
+## Licence
+
+All rights reserved: see [LICENSE](LICENSE). You're welcome to read the code and play the game.

@@ -4,10 +4,6 @@ What's left, and what was decided. Done items stay ticked for a release or two, 
 
 ## Still to do
 
-- [ ] **Add a LICENSE.** There's none yet, which means all rights reserved; pick one (MIT is the usual choice for a
-      project like this).
-- [ ] **The folio's story page for this project** (in the folio repo): the 2022 command-line game, the 2024 bot, the web
-      versions, and the numbers (the first-move win, the bot ladder).
 - [ ] Ideas: a perfect-play endgame table (the one place WebAssembly would earn its keep); more bots between Average and
       Tricky, which would also firm up the ratings in that gap.
 
@@ -21,6 +17,12 @@ What's left, and what was decided. Done items stay ticked for a release or two, 
   the speed-up WASM would have (see `deno task bench`).
 - **Elo, read with care.** 100% pairings don't say how much stronger a bot is, so the tournament reports 90% ranges and
   the README says to read the ratings as a ladder.
+
+## Done in v2.1.1
+
+- [x] A LICENSE: all rights reserved, like the folio.
+- [x] The folio's story page for this project: seven-leven.github.io/folio/code-mancala.html (a Coding entry page, with
+      the bots' Elo ladder and the first-move result).
 
 ## Done in v2.1.0
 

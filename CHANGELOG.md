@@ -3,6 +3,11 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `deno.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
+## v2.1.1 · 2026-10-15
+
+- A LICENSE (all rights reserved, like the folio), and the README links the
+  [full story](https://seven-leven.github.io/folio/code-mancala.html) on the folio.
+
 ## v2.1.0 · 2026-10-15
 
 - **Eight bots on an Elo ladder.** New, weakest first: Pushover (searches ahead to lose by as much as it can), Generous
