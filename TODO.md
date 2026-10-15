@@ -145,6 +145,24 @@ ratings 18% of that short run (a fixed ~2 s). Ordered by what each should save. 
       time, so it's the least of these.
 - [ ] **WebAssembly**, still parked (see Parked): every item above is cheaper and comes first.
 
+## Test harness
+
+Alongside the releases: work these before v2.3's new bots and v2.5's adaptive allocation, which both lean on them. The
+strength checks are [#7](https://github.com/seven-leven/mancala/issues/7), under v2.2.
+
+- [ ] **Random-game invariants for the engine.** Play a few thousand random games from random seeds and openings, and
+      check after every turn: no seed created or lost, the game always ends, the event log replays to the final
+      position, `playTurn` never changes its input. Today these are checked on a handful of hand-made positions.
+- [ ] **Repeatability of the rating harness.** A tiny run (Random, Greedy, First, 4 games) prints the same table with 1
+      worker as with 4, and matches a saved snapshot. Turns "same results" from a check by hand into a test, for
+      adaptive allocation and every speed-up after it.
+- [ ] **A docs link check.** Every relative link and `#anchor` in the `.md` files resolves, so RATING.md, BOTS.md and
+      the README can't drift apart when a heading changes.
+- [ ] **Coverage.** `deno task coverage` (`deno test --coverage`, then `deno coverage`) to see what nothing exercises.
+      Likely gaps: `src/app/game.ts` (undo, hint, which games are rated) and `src/ui/stats.ts`.
+- [ ] **A short testing guide**, like RATING.md but smaller: what each test file covers, the 20 s budget, slow tests in
+      their own file so `--parallel` helps, and that strength claims belong to the rating harness.
+
 ## Research
 
 None of these ship in the game; each ends as a note in the README or on the folio.
