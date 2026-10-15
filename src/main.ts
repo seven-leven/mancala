@@ -1,5 +1,6 @@
 /** Starts the game and wires the page: menus, settings, the rules dialog and the keyboard. */
 import { type BotId, BOTS, isBotId, type Seat } from "./bots/bots.ts";
+import { RATINGS } from "./bots/ratings.ts";
 import { Game } from "./app/game.ts";
 import { applyTheme, loadSettings, saveSettings, type Settings } from "./app/settings.ts";
 import { BoardView } from "./ui/board.ts";
@@ -33,20 +34,26 @@ const game = new Game(new BoardView($("board")), {
 // --- Menus -----------------------------------------------------------------------------
 
 const bots = Object.entries(BOTS) as [BotId, (typeof BOTS)[BotId]][];
+/** "Minimax · Expert · 1908": the bot, its level, and its Elo from the tournament. */
+const botLabel = (id: BotId) => {
+  const b = BOTS[id];
+  const elo = RATINGS[id]?.elo;
+  return `${b.label} · ${b.level}${elo ? ` · ${elo}` : ""}`;
+};
 const option = (value: string, label: string) =>
   Object.assign(document.createElement("option"), { value, textContent: label });
 
 /** The quick opponent menu sets Player 2. */
 const opponent = $<HTMLSelectElement>("opponent");
 opponent.append(
-  ...bots.map(([id, b]) => option(id, `${b.label} · ${b.level}`)),
+  ...bots.map(([id]) => option(id, botLabel(id))),
   option("human", "A friend, same screen"),
 );
 
 const form = $<HTMLFormElement>("settingsForm");
 for (const name of ["p1", "p2"]) {
   const select = form.elements.namedItem(name) as HTMLSelectElement;
-  select.append(option("human", "A person"), ...bots.map(([id, b]) => option(id, `${b.label} · ${b.level}`)));
+  select.append(option("human", "A person"), ...bots.map(([id]) => option(id, botLabel(id))));
 }
 $("seedOptions").innerHTML = [3, 4, 5, 6, 7]
   .map((n) => `<label><input type="radio" name="seeds" value="${n}"><span>${n}</span></label>`)
