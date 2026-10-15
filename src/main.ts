@@ -8,8 +8,6 @@ import { setSound } from "./ui/sound.ts";
 import { renderStats } from "./ui/stats.ts";
 import { clearGames, exportGames, importGames, loadGames, playerStats } from "./app/history.ts";
 
-declare const __VERSION__: string;
-
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
   if (!el) throw new Error(`#${id} is missing from index.html`);
@@ -232,7 +230,6 @@ for (const type of ["pointerdown", "keydown"]) {
   document.addEventListener(type, () => setSound(settings.sound), { once: true });
 }
 
-$("version").textContent = `v${__VERSION__}`;
 showSettings(settings);
 game.start();
 

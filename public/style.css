@@ -575,6 +575,23 @@ kbd {
   font-size: var(--fs-caption);
 }
 
+.footer__end {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+/* The version, as on the folio's footer: small mono, a link to the changelog */
+.footer__version {
+  color: var(--text-muted);
+  font-family: var(--font-data);
+  text-decoration: none;
+}
+.footer__version:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
 /* 7. Dialogs =============================================================== */
 dialog {
   width: min(34rem, 100% - 2rem);

@@ -3,6 +3,12 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `deno.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
+## v2.1.3 · 2026-10-15
+
+- The version has its own place in the footer, beside "Source on GitHub", and links to this changelog. The build writes
+  it into the page, so it shows even before the script loads (and you can tell at a glance which version your browser
+  has).
+
 ## v2.1.2 · 2026-10-15
 
 - **Games against a newly picked opponent are rated again.** Choosing an opponent before the first move just switches

@@ -90,9 +90,14 @@
 
       <footer class="footer">
         <span id="rulesSummary"></span>
-        <span><span id="version"></span> · keys <kbd>1</kbd>–<kbd>7</kbd> <kbd>N</kbd> <kbd>U</kbd> <kbd>H</kbd> <kbd>?</kbd></span>
-        <a class="link-arrow"
-          href="https://github.com/seven-leven/mancala">Source on GitHub <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <span>Keys <kbd>1</kbd>–<kbd>7</kbd> <kbd>N</kbd> <kbd>U</kbd> <kbd>H</kbd> <kbd>?</kbd></span>
+        <span class="footer__end">
+          <a class="link-arrow"
+            href="https://github.com/seven-leven/mancala">Source on GitHub <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <!-- The build writes the version from deno.json here -->
+          <a class="footer__version" href="https://github.com/seven-leven/mancala/blob/main/CHANGELOG.md"
+            title="What changed in each version">v{{ version }}</a>
+        </span>
       </footer>
     </main>
 

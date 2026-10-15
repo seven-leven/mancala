@@ -65,6 +65,9 @@ export async function build(): Promise<void> {
   const started = performance.now();
   await Deno.remove(DIST, { recursive: true }).catch(() => {});
   await copyDir(join(ROOT, "public"), DIST);
+  // The version from deno.json goes into the page itself, so the footer shows it before any script runs.
+  const page = join(DIST, "index.html");
+  await Deno.writeTextFile(page, (await Deno.readTextFile(page)).replace(/\{\{\s*version\s*\}\}/g, version));
   const result = await esbuild.build({
     plugins: [sources],
     entryPoints: { app: "src/main.ts", worker: "src/bots/worker.ts" },
