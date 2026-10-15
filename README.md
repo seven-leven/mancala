@@ -1,7 +1,7 @@
 # Mancala
 
 **Ohvalhugondi, the Maldivian mancala, in the browser.** Seven pits a side, seven seeds in each, and relay sowing. Play
-a friend on the same screen, or one of seventeen bots from Hopeless to Expert, and keep an Elo rating of your own.
+a friend on the same screen, or one of eighteen bots from Hopeless to Expert, and keep an Elo rating of your own.
 
 **Play: [seven-leven.github.io/mancala](https://seven-leven.github.io/mancala/)**
 
@@ -40,30 +40,33 @@ why Settings lets you choose who goes first.
 
 | Level      | Bot                |  Elo | 90% range | How it plays                                                               |
 | ---------- | ------------------ | ---: | :-------: | -------------------------------------------------------------------------- |
-| Expert     | Minimax            | 2043 | 2020–2070 | Alpha-beta search with a transposition table; follows free-turn chains     |
-| Hard       | DFS                | 1980 | 1955–2008 | Chains its own free turns as far as they go (the original 2024 bot)        |
-| Sharp      | Shrewd             | 1908 | 1885–1935 | Lookahead's method, three moves deep instead of two                        |
-| Tricky     | Lookahead          | 1739 | 1720–1768 | Two moves deep, and picks one of its better moves, not always the best     |
-| Thoughtful | Planner            | 1685 | 1667–1712 | Two moves deep, weighing free turns set up, captures threatened, open pits |
-| Keen       | Chainer            | 1477 | 1459–1502 | Usually takes a free turn or two before banking; otherwise like Greedy     |
-| Crafty     | Spoiler            | 1466 | 1448–1488 | Often plays to leave your best reply weakest; otherwise like Greedy        |
-| Average    | Greedy             | 1320 | 1303–1340 | Takes whatever banks the most seeds this turn                              |
-| Careful    | Turtle             | 1307 | 1290–1329 | Banks what it can, but won't leave a loaded pit open to capture            |
-| Relaxed    | Sometimes greedy   | 1183 | 1165–1204 | Greedy's move half the time, any legal pit the rest                        |
-| Bold       | Striker            | 1152 | 1134–1172 | Banks what it can, but would rather line up a capture for next turn        |
+| Expert     | Minimax            | 2048 | 2028–2070 | Alpha-beta search with a transposition table; follows free-turn chains     |
+| Hard       | DFS                | 1970 | 1948–1994 | Chains its own free turns as far as they go (the original 2024 bot)        |
+| Sharp      | Shrewd             | 1911 | 1890–1933 | Lookahead's method, three moves deep instead of two                        |
+| Tricky     | Lookahead          | 1725 | 1706–1744 | Two moves deep, and picks one of its better moves, not always the best     |
+| Thoughtful | Planner            | 1696 | 1679–1716 | Two moves deep, weighing free turns set up, captures threatened, open pits |
+| Clever     | Sometimes planner  | 1566 | 1548–1587 | Planner's move most of the time; otherwise like Greedy                     |
+| Keen       | Chainer            | 1482 | 1465–1501 | Usually takes a free turn or two before banking; otherwise like Greedy     |
+| Crafty     | Spoiler            | 1460 | 1442–1480 | Often plays to leave your best reply weakest; otherwise like Greedy        |
+| Average    | Greedy             | 1311 | 1296–1331 | Takes whatever banks the most seeds this turn                              |
+| Careful    | Turtle             | 1298 | 1282–1315 | Banks what it can, but won't leave a loaded pit open to capture            |
+| Relaxed    | Sometimes greedy   | 1197 | 1179–1214 | Greedy's move half the time, any legal pit the rest                        |
+| Bold       | Striker            | 1139 | 1123–1157 | Banks what it can, but would rather line up a capture for next turn        |
 | Easy       | Random             | 1000 |  anchor   | Any legal pit                                                              |
-| Thrifty    | Hoarder            |  943 |  922–967  | Keeps its seeds on its own side, banking only a little                     |
-| Gentle     | Sometimes generous |  757 |  738–778  | Generous's move most of the time, any legal pit the rest                   |
-| Very easy  | Generous           |  585 |  561–610  | Greedy's opposite: banks as little as it can                               |
-| Hopeless   | Pushover           |  516 |  491–543  | Searches ahead like Minimax, but to lose by as much as it can              |
+| Thrifty    | Hoarder            |  926 |  907–946  | Keeps its seeds on its own side, banking only a little                     |
+| Mild       | Fickle             |  831 |  812–849  | Sometimes keeps its seeds at home like Hoarder; more often gives them away |
+| Gentle     | Sometimes generous |  742 |  722–761  | Generous's move most of the time, any legal pit the rest                   |
+| Very easy  | Generous           |  570 |  548–594  | Greedy's opposite: banks as little as it can                               |
+| Hopeless   | Pushover           |  502 |  481–522  | Searches ahead like Minimax, but to lose by as much as it can              |
 
 Every bot played every other 240 times, in matched pairs, with Random pinned at 1000. Read the ratings as a ladder: the
-bars are 90% ranges, and neighbours drawn in red are too close to call. [RATING.md](docs/RATING.md) explains how they're
-made and how to read them; [BOTS.md](docs/BOTS.md) has the standard every bot follows.
+bars are 90% ranges, and red marks neighbours whose order is less than 90% sure (today none: every bot is above the next
+one down in at least 91% of resampled fits). [RATING.md](docs/RATING.md) explains how they're made and how to read them;
+[BOTS.md](docs/BOTS.md) has the standard every bot follows.
 
 **Your rating.** Your own Elo is worked out in your browser from your finished games against the bots (everyone starts
 at 1000, level with Random); see [RATING.md](docs/RATING.md#your-rating) for which games count. "Your games" shows the
-rating, its trend, your record against each bot, and a backup button.
+rating, its trend, your record against each bot, a backup, and your games as text (MGN).
 
 ## How it's built
 

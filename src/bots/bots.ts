@@ -57,6 +57,15 @@ export const BOTS = {
     // q places it between Generous and Random; see docs/BOTS.md, "Tunable on purpose".
     create: ({ rng }) => new MixedBot(new GenerousBot(rng), 0.75, rng),
   },
+  fickle: {
+    label: "Fickle",
+    level: "Mild",
+    blurb: "Sometimes keeps its seeds at home like Hoarder; more often gives them away like Generous.",
+    family: "mixed",
+    // Hoarder's move with probability q, else Generous's: q places it between Generous and Hoarder
+    // (0.5 rates about 880; 0.4 aims for 850, between Gentle and Thrifty).
+    create: ({ rng }) => new MixedBot(new HoarderBot(0.3, rng), 0.4, rng, new GenerousBot(rng)),
+  },
   hoarder: {
     label: "Hoarder",
     level: "Thrifty",
@@ -120,6 +129,15 @@ export const BOTS = {
     // Two moves in a row (DFS follows 8) with probability q, else Greedy's move: q places it
     // between Greedy and a full two-move chainer, which rates level with Lookahead.
     create: ({ rng }) => new MixedBot(new DfsBot(2), 0.5, rng, new GreedyBot()),
+  },
+  sometimesPlanner: {
+    label: "Sometimes planner",
+    level: "Clever",
+    blurb: "Plans like Planner most of the time; otherwise plays like Greedy.",
+    family: "mixed",
+    // Planner's move with probability q, else Greedy's: 0.7 rates about 1560, 1 is Planner (1685);
+    // 0.75 aims for 1580, between Keen and Thoughtful.
+    create: ({ rng }) => new MixedBot(new TwoMoveBot(planned()), 0.75, rng, new GreedyBot()),
   },
   planner: {
     label: "Planner",

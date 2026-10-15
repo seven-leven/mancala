@@ -1,6 +1,9 @@
 import { assert, assertEquals } from "@std/assert";
-import { humanSide, playerStats, type SavedGame, seatName, START_RATING } from "../src/app/history.ts";
-import { DEFAULT_RULES } from "../src/game/types.ts";
+import { gamesToMgn, humanSide, playerStats, type SavedGame, seatName, START_RATING } from "../src/app/history.ts";
+import { DEFAULT_RULES, P1, P2 } from "../src/game/types.ts";
+import { newGame, playTurn } from "../src/game/engine.ts";
+import { parseGames } from "../src/game/notation.ts";
+import { GreedyBot } from "../src/bots/bots.ts";
 
 /** A finished game: you (Player 1) against `bot` rated `elo`. */
 function game(bot: SavedGame["seats"][2], elo: number, result: "win" | "loss" | "draw", rated = true): SavedGame {
@@ -65,4 +68,36 @@ Deno.test("only one person against a bot has a human side", () => {
   assertEquals(humanSide({ 1: "dfs", 2: "human" }), 2);
   assertEquals(humanSide({ 1: "human", 2: "human" }), null);
   assertEquals(humanSide({ 1: "dfs", 2: "minimax" }), null);
+});
+
+Deno.test("saved games export as MGN that parses back to the same moves", () => {
+  // Two real games, played by bots, saved the way the app saves them.
+  const games = [P1, P2].map((first, k) => {
+    let g = newGame(DEFAULT_RULES, first);
+    const moves: number[] = [];
+    const bot = new GreedyBot();
+    while (!g.gameOver) {
+      const m = bot.choose(g)!;
+      moves.push(m);
+      g = playTurn(g, m, { record: false }).state;
+    }
+    return {
+      at: `2026-10-1${k}T12:00:00.000Z`,
+      seats: { 1: "human", 2: "greedy" },
+      botElo: { 2: 1320 },
+      ratingsVersion: "2026-10-15",
+      rules: { ...DEFAULT_RULES },
+      first,
+      score: [g.pits[14], g.pits[15]],
+      winner: null,
+      moves,
+      rated: k === 0,
+      unratedBecause: k === 0 ? undefined : "Undo used",
+    } as SavedGame;
+  });
+  const text = gamesToMgn(games);
+  const back = parseGames(text);
+  assertEquals(back.map((g) => g.moves), games.map((g) => g.moves));
+  assertEquals(back[0].tags.Date, "2026.10.10");
+  assertEquals(back[1].tags.Rated, "no (Undo used)");
 });

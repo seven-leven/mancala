@@ -8,10 +8,14 @@ export const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
 /** Elo ratings from a table of results: Bradley–Terry by minorisation–maximisation. */
 export function fit(res: number[][][]): number[] {
   const n = res.length;
-  // Each pairing's score and game count, once: they don't change between steps. One virtual
-  // draw per pairing keeps 100% pairings finite.
-  const won = res.map((row) => row.map((games) => sum(games) + 0.5));
-  const played = res.map((row) => row.map((games) => games.length + 1));
+  // Each pairing's score and game count, once: they don't change between steps. A virtual draw
+  // per pairing keeps 100% pairings finite. It's weighted by the pairing's share of the most games
+  // any pairing played: 1 when every pairing played the same (a plain run), less for a pairing
+  // that played fewer (--adaptive), which a whole draw would pull toward 50/50.
+  const most = Math.max(1, ...res.flatMap((row) => row.map((games) => games.length)));
+  const draw = (games: number[]) => games.length / most;
+  const won = res.map((row) => row.map((games) => sum(games) + draw(games) / 2));
+  const played = res.map((row) => row.map((games) => games.length + draw(games)));
   const gamma = new Array<number>(n).fill(1);
   for (let it = 0; it < 1000; it++) {
     for (let i = 0; i < n; i++) {

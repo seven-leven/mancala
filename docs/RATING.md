@@ -71,6 +71,17 @@ Rules it keeps:
 - **One queue, no rounds.** Every planned pair goes on one queue, the costliest pairings first; a checkpoint every 50
   pairs, so `--resume` and `--time` work as before. Results are put back in plan order, so a run repeats exactly.
 - **Counts in the tables:** "Won" shows the games each bot played, and each head-to-head cell its game count.
+- **The virtual draw scales with the games.** The fit's virtual draw per pairing (which keeps a 100% pairing finite) is
+  weighted by the pairing's share of the most games any pairing played. A whole draw on a 10-game pairing pulled the
+  ends of the ladder about 50 Elo toward the middle; scaled, the ends sit where a plain run puts them. A plain run,
+  where every pairing plays the same, fits exactly as before.
+
+**How it compares** (18 bots, 16 cores, October 2026): the plain 240-game run took 220 s for 36,720 games. Adaptive from
+240 took 28 s (12,516 games), ranges up to ±38 at the ends; adaptive from 480 took 49 s (24,610 games), ranges up to
+±27. Both put 16 of 18 bots inside the plain run's ranges; DFS and Lookahead came out 5–30 Elo higher, consistent with
+the one pairing the plain run's model check flags (Striker scores 5% against DFS where the ratings say 1%), which
+adaptive plays only 10 times. So: `--adaptive` for a quick re-rate after a change (about a minute), a plain run for the
+ratings in the menus.
 
 ## How a run works
 

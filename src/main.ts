@@ -7,7 +7,7 @@ import { BoardView } from "./ui/board.ts";
 import { setSound } from "./ui/sound.ts";
 import { renderStats } from "./ui/stats.ts";
 import { Picker, type PickerGroup } from "./ui/picker.ts";
-import { clearGames, exportGames, importGames, loadGames, playerStats } from "./app/history.ts";
+import { clearGames, exportGames, gamesToMgn, importGames, loadGames, playerStats } from "./app/history.ts";
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
@@ -202,15 +202,18 @@ const showStats = () => {
   if (!statsDialog.open) statsDialog.showModal();
 };
 $("openStats").addEventListener("click", showStats);
-$("exportHistory").addEventListener("click", () => {
-  const url = URL.createObjectURL(new Blob([exportGames()], { type: "application/json" }));
+/** Hands the player a file to save. */
+function download(text: string, type: string, extension: string): void {
+  const url = URL.createObjectURL(new Blob([text], { type }));
   const a = Object.assign(document.createElement("a"), {
     href: url,
-    download: `mancala-games-${new Date().toISOString().slice(0, 10)}.json`,
+    download: `mancala-games-${new Date().toISOString().slice(0, 10)}.${extension}`,
   });
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
-});
+}
+$("exportHistory").addEventListener("click", () => download(exportGames(), "application/json", "json"));
+$("exportMgn").addEventListener("click", () => download(gamesToMgn(loadGames()), "text/plain", "mgn"));
 $("loadCopy").addEventListener("click", () => $("importHistory").click());
 $<HTMLInputElement>("importHistory").addEventListener("change", async (e) => {
   const input = e.target as HTMLInputElement;

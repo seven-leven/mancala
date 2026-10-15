@@ -77,15 +77,18 @@ in `src/bots/players/`.
       gap with a quick rating script before the full run. Grandmaster rated level with Minimax for five times the time,
       so it's dormant (see v2.5).
 - [x] **A new How to play popup**: steps, three rule cards, a strategy tip, and the house rules kept live.
-- [ ] **Two more bots for the two widest gaps that matter** (see RATING.md, "The ladder's shape"; place each with a
+- [x] **Two more bots for the two widest gaps that matter** Done: Clever (Sometimes planner, 1566) and Mild (Fickle,
+      831), placed with a quick rating, then the full run. Was: (see RATING.md, "The ladder's shape"; place each with a
       quick rating against its neighbours, then the full run):
-  - [ ] one between Thoughtful (Planner, 1685) and Keen (Chainer, 1477), about 1580: the middle of the ladder, where
+  - [x] one between Thoughtful (Planner, 1685) and Keen (Chainer, 1477), about 1580: the middle of the ladder, where
         players climb. Say Planner mixed with Greedy, or Lookahead with a lower pick of its better moves;
-  - [ ] one between Gentle (Sometimes generous, 757) and Thrifty (Hoarder, 943), about 850: say Hoarder mixed with
+  - [x] one between Gentle (Sometimes generous, 757) and Thrifty (Hoarder, 943), about 850: say Hoarder mixed with
         Random, or Sometimes generous with a lower q.
   - Dropped: the two planned between Casual (First) and Bold (Striker). After the 240-game run that gap is 148 Elo, fine
     as it is.
-- [ ] Let players export their saved games as MGN from Your games (today the backup is JSON).
+- [x] Let players export their saved games as MGN. Done: Your games has "Save as MGN" (`gamesToMgn` in
+      `src/app/history.ts`, with a test). Was: Let players export their saved games as MGN from Your games (today the
+      backup is JSON).
 
 ## [v2.4 · A stronger Expert](https://github.com/seven-leven/mancala/milestone/3)
 
@@ -133,14 +136,16 @@ ratings 18% of that short run (a fixed ~2 s). Ordered by what each should save. 
 - [x] **A truthful ETA.** It counts rounds, not games: the median of the last five round times, plus what's left of this
       round weighted by each pairing's last time. Pairings also run slowest first, so a round no longer ends with one
       long Minimax pairing while the other cores wait. Same results.
-- [ ] **Adaptive allocation** (`--adaptive`). Lopsided pairings carry almost no information (a game is worth p(1−p),
-      close to 0 at 98–100%), and the slow searchers at the top make them the costliest games. Give each pairing
-      `max(10, round(G × 4p(1−p)))` games, p from the current ratings. Rules: fix the allocation before the run (from
-      `ratings.ts` or a short pilot), never from results as they come in, which would bias the fit and the ranges; keep
-      the floor of 10 so a non-transitive bot still shows; keep every bot well linked to Random. Play it as one queue,
-      slowest pairing first, with no round boundaries, and checkpoint every so many finished pairs. Show games played in
-      the Won and head-to-head tables, and add it to RATING.md. Keep it only if it gives today's ±25 ranges in clearly
-      less time than a plain 240-game run, with ratings inside those ranges.
+- [x] **Adaptive allocation** (`--adaptive`). Done, with the virtual draw scaled to each pairing's games: from 480, ±27
+      in 49 s against a plain 240-game run's ±22 in 220 s, 16 of 18 bots inside its ranges (docs/RATING.md, "Adaptive
+      allocation"). Kept for quick re-rates; plain runs still write the menu ratings. Was: Lopsided pairings carry
+      almost no information (a game is worth p(1−p), close to 0 at 98–100%), and the slow searchers at the top make them
+      the costliest games. Give each pairing `max(10, round(G × 4p(1−p)))` games, p from the current ratings. Rules: fix
+      the allocation before the run (from `ratings.ts` or a short pilot), never from results as they come in, which
+      would bias the fit and the ranges; keep the floor of 10 so a non-transitive bot still shows; keep every bot well
+      linked to Random. Play it as one queue, slowest pairing first, with no round boundaries, and checkpoint every so
+      many finished pairs. Show games played in the Won and head-to-head tables, and add it to RATING.md. Keep it only
+      if it gives today's ±25 ranges in clearly less time than a plain 240-game run, with ratings inside those ranges.
 - [x] **Pushover: prune or cap.** Done: depth 3, 5.5× faster (1.0 ms a move against 5.6), and just as hopeless (0.5 of
       80 games against Random, 36 against Generous; depth 4: 1 and 38). Was: It's 7% of the time because a search that
       wants to lose can't prune. A smaller depth or a time cap would do; it's the weakest bot either way.
@@ -193,8 +198,10 @@ Small additions to the rating harness's output, each an hour or so. Document eac
       `index.html`. Then add an Icons section to DESIGN.md: the grid and stroke, sizes (16 px in buttons, larger in
       cards), colour, the `aria-label` rule for icon-only buttons, and a sheet of every icon with its name and use, also
       shown on the design guide page.
-- [ ] **Site icons beyond the SVG favicon.** A PNG fallback and an Apple touch icon (180 px), in the same mark, so the
-      site looks right as a bookmark and on a phone's home screen. Add them to DESIGN.md's Icons section.
+- [x] **Site icons beyond the SVG favicon.** Done: `public/png/favicon-32.png` and `apple-touch-icon.png`, rendered by
+      `deno task icon-sheet`, in DESIGN.md's Icons section. Was: A PNG fallback and an Apple touch icon (180 px), in the
+      same mark, so the site looks right as a bookmark and on a phone's home screen. Add them to DESIGN.md's Icons
+      section.
 
 ## The folio page
 

@@ -5,15 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mancala · ohvalhugondi</title>
     <meta name="description"
-      content="Ohvalhugondi, the Maldivian mancala: seven pits, seven seeds, relay sowing. Play a friend or one of seventeen bots, from Pushover to an alpha-beta Minimax.">
+      content="Ohvalhugondi, the Maldivian mancala: seven pits, seven seeds, relay sowing. Play a friend or one of eighteen bots, from Pushover to an alpha-beta Minimax.">
     <meta property="og:title" content="Mancala · ohvalhugondi">
     <meta property="og:description"
-      content="The Maldivian mancala in the browser: play a friend or one of seventeen bots.">
+      content="The Maldivian mancala in the browser: play a friend or one of eighteen bots.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://seven-leven.github.io/mancala/">
     <meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#161514" media="(prefers-color-scheme: dark)">
     <link rel="icon" href="svg/favicon.svg?v={{ build }}" type="image/svg+xml">
+    <link rel="icon" href="png/favicon-32.png?v={{ build }}" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="png/apple-touch-icon.png?v={{ build }}">
     <script>
     // Apply a saved theme before the first paint
     try {
@@ -177,6 +179,8 @@
       <form method="dialog" class="dialog__actions">
         <button class="btn btn--ghost" type="button" id="exportHistory">Save a copy</button>
         <button class="btn btn--ghost" type="button" id="loadCopy">Load a copy</button>
+        <button class="btn btn--ghost" type="button" id="exportMgn"
+          title="Your games in MGN, a text notation (like chess's PGN)">Save as MGN</button>
         <input type="file" id="importHistory" accept="application/json,.json" hidden>
         <button class="btn btn--ghost" type="button" id="clearHistory">Clear history</button>
         <button class="btn btn--primary">Done</button>

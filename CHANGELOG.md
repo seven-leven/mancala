@@ -5,6 +5,13 @@ release has a section here; work since the last one sits under _Unreleased_.
 
 ## Unreleased
 
+- **Re-rated with eighteen bots** over 240 games a pairing: every bot is above the next one down in at least 91% of
+  resampled fits. Elo against time per move is in `data/elo-time.json` after a run.
+- The Elo fit's virtual draw scales with each pairing's games, so adaptive runs don't squeeze the ends of the ladder;
+  plain runs fit exactly as before.
+- **Two more bots** in the ladder's widest gaps: Mild (Fickle: Hoarder or Generous) and Clever (Sometimes planner).
+- **Save as MGN** in Your games: your games as text, in the notation the tournament uses.
+- **Site icons**: a PNG favicon and an Apple touch icon, so the site looks right as a bookmark and on a home screen.
 - **Adaptive allocation** (`deno task rate 240 --adaptive`): close pairings get many games, lopsided ones as few as 10,
   planned from the current ratings, played from one queue. See docs/RATING.md.
 - The rating run times every bot's moves: a "ms a move" column, and `data/elo-time.json` for a chart.

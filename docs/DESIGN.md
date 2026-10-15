@@ -174,6 +174,10 @@ like the scripts), and scripts call `icon("name")` from `src/ui/icons.ts`.
 | `capture`      | The Capture rule card                                  |
 | `tip`          | A word of strategy                                     |
 
+**Site icons.** The site's mark is `public/svg/favicon.svg`. `deno task icon-sheet` also renders it to `public/png/`: a
+32px PNG favicon for browsers that don't take SVG, and a 180px Apple touch icon on paper (iOS shows transparency as
+black). The page links all three.
+
 The favicon sits beside the sprite, in `public/svg/`: the site's SVGs all live there. Diagrams for the README and
 RATING.md stay in `docs/`, since they aren't part of the site.
 

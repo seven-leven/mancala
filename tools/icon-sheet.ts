@@ -1,6 +1,8 @@
 /**
  * Renders the icon set (public/svg/icons.svg) to docs/icons.png with headless Chrome: every icon,
  * named, at its sizes, in the light and the dark theme. docs/DESIGN.md and the design guide show it.
+ * Also renders the site mark (public/svg/favicon.svg) to public/png/: a 32px favicon and the
+ * 180px Apple touch icon.
  * Run after adding or changing an icon:  deno task icon-sheet
  *
  * The page is built here with the sprite inlined, so it needs no files and no server.
@@ -84,6 +86,30 @@ try {
   await tab.setContent(html, { waitUntil: "load" });
   await tab.screenshot({ path: decodeURIComponent(out.pathname.replace(/^\/([A-Z]:)/, "$1")), fullPage: true });
   console.log(`Wrote docs/icons.png: ${names.length} icons, light and dark`);
+
+  // The site's mark as the PNGs browsers and phones want: a 32px favicon, and a 180px Apple touch
+  // icon on paper (iOS shows transparency as black).
+  const mark = await Deno.readTextFile(new URL("../public/svg/favicon.svg", import.meta.url));
+  await Deno.mkdir(new URL("../public/png/", import.meta.url), { recursive: true });
+  for (
+    const [name, size, background, inset] of [
+      ["favicon-32.png", 32, "transparent", 0],
+      ["apple-touch-icon.png", 180, "#f6f4ef", 18],
+    ] as const
+  ) {
+    await tab.setViewport({ width: size, height: size, deviceScaleFactor: 1 });
+    await tab.setContent(
+      `<!doctype html><body style="margin:0;background:${background}">` +
+        `<div style="width:${size}px;height:${size}px;padding:${inset}px;box-sizing:border-box">` +
+        mark.replace("<svg ", '<svg width="100%" height="100%" ') + "</div></body>",
+    );
+    const png = new URL(`../public/png/${name}`, import.meta.url);
+    await tab.screenshot({
+      path: decodeURIComponent(png.pathname.replace(/^\/([A-Z]:)/, "$1")),
+      omitBackground: background === "transparent",
+    });
+    console.log(`Wrote public/png/${name}`);
+  }
 } finally {
   await browser.close();
 }

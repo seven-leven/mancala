@@ -11,6 +11,7 @@
 import { type BotId, BOTS, DORMANT, type DormantId, isBotId, isDormantId, type Seat } from "../bots/bots.ts";
 import { RATINGS, RATINGS_VERSION } from "../bots/ratings.ts";
 import { DEFAULT_RULES, type Player, type Rules } from "../game/types.ts";
+import { formatGame } from "../game/notation.ts";
 
 const KEY = "mancala.history.v1";
 const MAX_GAMES = 500;
@@ -51,6 +52,32 @@ function saveGames(games: SavedGame[]): void {
 }
 
 /** The saved games as a file's contents, for a backup. */
+/**
+ * Saved games as MGN (docs/NOTATION.md), one after another: readable, and ready for
+ * `deno task positions`. A game that won't replay (from an older version's rules) is left out.
+ */
+export function gamesToMgn(games: SavedGame[]): string {
+  const out: string[] = [];
+  for (const g of games) {
+    try {
+      out.push(formatGame({
+        tags: {
+          Event: "Mancala",
+          Site: "seven-leven.github.io/mancala",
+          Date: g.at.slice(0, 10).replaceAll("-", "."),
+          P1: String(g.seats[1]),
+          P2: String(g.seats[2]),
+          Rated: g.rated ? "yes" : `no (${g.unratedBecause ?? "unrated"})`,
+        },
+        rules: g.rules,
+        first: g.first,
+        moves: g.moves,
+      }));
+    } catch { /* doesn't replay under today's rules: skip it */ }
+  }
+  return out.join("\n");
+}
+
 export const exportGames = (): string => JSON.stringify({ app: "mancala", version: 1, games: loadGames() }, null, 1);
 
 const looksLikeGame = (g: unknown): g is SavedGame => {
