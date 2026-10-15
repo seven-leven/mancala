@@ -39,11 +39,12 @@ opening counted for whoever had it. It now plays matched pairs.
       (git-ignored) saved after every round of pairs, so a long run can stop and resume without losing games. `--resume`
       replays exactly what a straight run would.
 - [x] [#6](https://github.com/seven-leven/mancala/issues/6) A live progress line: elapsed, games, games a second, ETA.
-- [ ] [#7](https://github.com/seven-leven/mancala/issues/7) A ladder check in `tests/bots_test.ts`, kept under 20 s:
-      Lookahead beats Random, Greedy beats Pushover, Minimax beats Pushover. (Minimax beats Random and Greedy is already
-      there.)
-- [x] [#8](https://github.com/seven-leven/mancala/issues/8) Re-run `deno task tournament --write`, and update the README
-      table and its "how the ratings are made" paragraph. Rated with all twelve bots (see v2.3).
+- [ ] [#7](https://github.com/seven-leven/mancala/issues/7) Strength checks in the test harness, in their own file
+      (`tests/strength_test.ts`, so `--parallel` runs them beside the rest), kept under 20 s: Lookahead beats Random,
+      Greedy beats Pushover, Minimax beats Pushover. (Minimax beats Random and Greedy is already there, in
+      `tests/bots_test.ts`; move it over.)
+- [x] [#8](https://github.com/seven-leven/mancala/issues/8) Re-run `deno task rate --write`, and update the README table
+      and its "how the ratings are made" paragraph. Rated with all twelve bots (see v2.3).
 
 Later, if runs get long: pair bots mainly with their neighbours on the ladder (games near 50% tell the most) instead of
 everyone with everyone.
@@ -72,7 +73,7 @@ Every bot follows [BOTS.md](BOTS.md): the contract in `src/bots/contracts.ts`, o
       and every rating's 90% range is 25–35% narrower.
 - [x] [#12](https://github.com/seven-leven/mancala/issues/12) README table, CHANGELOG.
 - [x] **Game notation (MGN).** [NOTATION.md](NOTATION.md): games as text, checked against the engine both ways.
-      `deno task tournament --record` saves every game, and `deno task positions` turns them into training data for #15.
+      `deno task rate --record` saves every game, and `deno task positions` turns them into training data for #15.
 - [x] **Six more bots** (eighteen in all): Hoarder, Striker, Spoiler, Planner, Shrewd and Grandmaster, each placed in a
       gap with a quick rating script before the full run. Grandmaster rated level with Minimax for five times the time,
       so it's dormant (see v2.5).
@@ -123,11 +124,11 @@ ratings 18% of that short run (a fixed ~2 s). Ordered by what each should save. 
 - [x] **Order moves without sorting objects.** `children()` builds an object per move, plays each move to score it, then
       sorts: keep the played positions, and use a small insertion sort on parallel arrays instead.
 - **Status, 2026-10-15 (paused):** the five above are done. Same results throughout, except that parallel pairings give
-  each pairing its own seed, so every result changes once. `deno task tournament 4`: 37 s → 10 s (16 cores); bench 1220k
-  → 1769k positions/s; rating fit 55 s → 0.7 s. Still to do: re-rate with `deno task tournament 60
-  --write` (the
-  ratings in the menus predate the per-pairing seeds), then `deno task ladder`, the README table and the CHANGELOG; then
-  Pushover below.
+  each pairing its own seed, so every result changes once. `deno task rate 4`: 37 s → 10 s (16 cores); bench 1220k →
+  1769k positions/s; rating fit 55 s → 0.7 s. Still to do: re-rate with `deno task rate 60
+  --write` (the ratings in
+  the menus predate the per-pairing seeds), then `deno task ladder`, the README table and the CHANGELOG; then Pushover
+  below.
 - [ ] **A truthful ETA.** The progress line divides games left by the average speed so far, but pairings differ hugely
       in cost (two quick bots finish in milliseconds; anything with Minimax takes seconds), and each round plays the
       quick ones and the slow ones in a fixed order, so the ETA swings and reads far too short early on. Every round
@@ -191,7 +192,7 @@ None of these ship in the game; each ends as a note in the README or on the foli
 - [x] Weaker levels so Expert isn't the only search bot: Lookahead (Tricky), plus Generous, Pushover and First.
 - [x] The first-move edge, in the rules dialog and the README.
 - [x] A stronger Minimax: a transposition table (21 → 25 of 30 benchmark positions solved in 300 ms).
-- [x] Elo for the bots (`deno task tournament`, with ranges), and for you, from games saved in the browser.
+- [x] Elo for the bots (`deno task rate`, with ranges), and for you, from games saved in the browser.
 - [x] The bots' thinking in the move log; Replay; sound (off by default).
 - [x] Everyday level names for the bots (Hopeless … Expert).
 - [x] Saved games survive: the browser is asked to keep its storage, and Your games can save and load a backup.

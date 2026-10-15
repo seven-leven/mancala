@@ -10,9 +10,9 @@
   "tasks": {
     "dev": "deno run -A tools/build.ts --watch --serve",
     "build": "deno run -A tools/build.ts",
-    "test": "deno test",
+    "test": "deno test --parallel",
     "check": "deno check src tools tests",
-    "tournament": "deno run --allow-read=src,tools,data --allow-write=src/bots/ratings.ts,tools/tournament,data tools/tournament/main.ts",
+    "rate": "deno run --allow-read=src,tools,data --allow-write=src/bots/ratings.ts,tools/tournament,data tools/tournament/main.ts",
     "positions": "deno run --allow-read tools/positions.ts",
     "ladder": "deno run --allow-write=docs/ladder.svg tools/ladder.ts",
     "profile": "deno run --allow-read=src,tools,data --allow-write=tools/tournament,data --cpu-prof-dir=data/profile --cpu-prof-md --cpu-prof-flamegraph tools/tournament/main.ts 2",

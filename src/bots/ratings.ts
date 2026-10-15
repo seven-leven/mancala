@@ -1,5 +1,5 @@
 /**
- * Elo ratings from `deno task tournament 60 --openings random-moves --write` (60 games per pairing,
+ * Elo ratings from `deno task rate 60 --openings random-moves --write` (60 games per pairing,
  * in matched pairs). Generated: don't edit. Random is pinned at 1000; low and high bound the 90% range.
  */
 export const RATINGS_VERSION = "2026-10-15";

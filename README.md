@@ -58,7 +58,7 @@ why Settings lets you choose who goes first.
 | Very easy  | Generous           |  638 |  600–678  | Greedy's opposite: banks as little as it can                               |
 | Hopeless   | Pushover           |  566 |  520–599  | Searches ahead like Minimax, but to lose by as much as it can              |
 
-The ratings come from `deno task tournament`: every bot plays every other 60 times, in matched pairs. Each pair of games
+The ratings come from `deno task rate`: every bot plays every other 60 times, in matched pairs. Each pair of games
 starts from the same opening (the standard board after two random moves), once with each bot in each seat, so an opening
 that favours one side comes out even. Elo is fitted to all the results at once, and Random is pinned at 1000.
 
@@ -109,14 +109,18 @@ one body of work. Here it is on one sheet ([docs/design-guide.png](docs/design-g
 
 ```sh
 deno task dev          # build, watch, and serve at http://localhost:8010/
-deno task test         # the rules, bots and ratings
+deno task test         # the test harness: rules, bots and ratings, files in parallel
 deno task check        # type check
-deno task tournament   # rate the bots (add --write to update the menus)
+deno task rate         # the rating harness: rate the bots (add --write to update the menus)
 deno task bench        # how deep and fast Minimax searches
 deno task ladder       # redraw docs/ladder.svg from the ratings
 deno task profile      # where a tournament round spends its time (data/profile/)
 deno task release      # from dev: check everything, then ship to main
 ```
+
+Two words kept apart: the **test harness** (`deno task test`, `tests/`) checks the code is correct and runs on every
+push; the **rating harness** (`deno task rate`, `tools/tournament/`) plays the bots against each other to set their Elo,
+and runs by hand before a release. A test run, a rating run.
 
 Every push runs the same checks on GitHub. A push to `main` builds the site and publishes `dist/` to the `gh-pages`
 branch, which GitHub Pages serves. Work happens on `dev`. `main` is protected: it only takes a pull request whose checks
@@ -124,7 +128,7 @@ passed, never a direct push or a force-push. `deno task release` opens that pull
 one), waits for its checks, merges it, and waits for the deploy.
 
 To add a bot, follow [BOTS.md](BOTS.md): write it in its family's file in `src/bots/players/`, add it to `BOTS` in
-`src/bots/bots.ts`, and run `deno task tournament --write`. The tournament rates everything in `BOTS`.
+`src/bots/bots.ts`, and run `deno task rate --write`. The tournament rates everything in `BOTS`.
 
 ## Changes
 

@@ -3,7 +3,7 @@
  * neighbours are marked when one's rating falls inside the other's range: too close to call yet.
  * (Ranges that merely touch are common and say little.)
  *
- *   deno task ladder        after `deno task tournament --write`
+ *   deno task ladder        after `deno task rate --write`
  *
  * The colours are the design guide's (DESIGN.md), light and dark.
  */
@@ -76,7 +76,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" wid
 ${body}
 <text class="note" x="24" y="${
   H - 10
-}">Random is pinned at 1000. Ratings from deno task tournament, ${RATINGS_VERSION}.</text>
+}">Random is pinned at 1000. Ratings from deno task rate, ${RATINGS_VERSION}.</text>
 </svg>
 `;
 await Deno.writeTextFile(new URL("../docs/ladder.svg", import.meta.url), svg);

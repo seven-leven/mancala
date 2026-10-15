@@ -70,9 +70,9 @@ A new idea is a new function there, not a copy inside a bot.
 
 ## Rating
 
-`deno task tournament` rates every bot in `BOTS` against every other, in matched pairs (each opening played once from
-each seat), with Random pinned at 1000. `--write` saves the ratings to `src/bots/ratings.ts`, which the menus show. Read
-the ratings as a ladder: see the README.
+`deno task rate` rates every bot in `BOTS` against every other, in matched pairs (each opening played once from each
+seat), with Random pinned at 1000. `--write` saves the ratings to `src/bots/ratings.ts`, which the menus show. Read the
+ratings as a ladder: see the README.
 
 **Where a new bot should land.** A game tells you most about two ratings when it's close to 50/50, and much less as the
 gap grows: a game across a 200 Elo gap carries 73% of the information of an even one, across 400 only 33%, across 700
@@ -89,8 +89,7 @@ a depth, a weight), so it can be placed where the ladder needs it. Note the knob
 2. Add it to `BOTS` with a label, a provisional level and a blurb. The order of `BOTS` is the menus' order: weakest
    first.
 3. Give it a test of its character: a position where it must make (or refuse) its typical move.
-4. `deno task tournament 40` and check where it lands. Tune its knob until it fills the gap it was meant for, then
-   `--write`.
+4. `deno task rate 40` and check where it lands. Tune its knob until it fills the gap it was meant for, then `--write`.
 5. Re-check the levels against the new ratings, then update the README's bot table and the CHANGELOG.
 
 A bot that lands on top of another adds nothing to the menu. Keep it out of `BOTS`, or retire it.
@@ -99,7 +98,7 @@ A bot that lands on top of another adds nothing to the menu. Keep it out of `BOT
 
 A bot that works but doesn't earn its place yet (it rates on top of another, or costs far more than it adds) can go
 dormant: it moves from `BOTS` to `DORMANT` in `src/bots/bots.ts`. It's out of the menus and the default tournament, its
-id stays reserved, and `deno task tournament --bots random,minimax,grandmaster` still rates it, so it can come back when
+id stays reserved, and `deno task rate --bots random,minimax,grandmaster` still rates it, so it can come back when
 something changes. Say why next to it.
 
 Dormant now: Grandmaster (Minimax searching to depth 10; level with Minimax for five times the time).

@@ -49,7 +49,7 @@ match what it actually did, is refused, so a file that parses is a real game.
 ## Training data
 
 ```sh
-deno task tournament 40 --record data/games.mgn
+deno task rate 40 --record data/games.mgn
 deno task positions data/games.mgn > data/positions.jsonl
 ```
 

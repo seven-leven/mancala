@@ -3,6 +3,11 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `deno.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
+## Unreleased
+
+- `deno task tournament` is now `deno task rate`, so "test" means only the test harness (`deno task test`) and rating
+  the bots has its own name. The test harness runs its files in parallel (`--parallel`).
+
 ## v2.2.1 · 2026-10-15
 
 - **No more broken page after a release.** A browser that visited before could load the new page with its old cached

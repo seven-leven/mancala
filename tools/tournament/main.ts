@@ -1,7 +1,7 @@
 /**
  * Every bot plays every other bot; prints Elo ratings and a win-rate table (as in the README).
  *
- *   deno task tournament [games per pairing, default 40] [--openings random-moves|symmetric|standard]
+ *   deno task rate [games per pairing, default 40] [--openings random-moves|symmetric|standard]
  *                        [--bots random,greedy,...] [--time 10m] [--resume] [--record games.mgn] [--write]
  *                        [--workers N, default one per CPU core]
  *
@@ -240,7 +240,7 @@ if (Deno.args.includes("--write")) {
   await Deno.writeTextFile(
     file,
     `/**
- * Elo ratings from \`deno task tournament ${played} --openings ${OPENING} --write\` (${played} games per pairing,
+ * Elo ratings from \`deno task rate ${played} --openings ${OPENING} --write\` (${played} games per pairing,
  * in matched pairs). Generated: don't edit. Random is pinned at 1000; low and high bound the 90% range.
  */
 export const RATINGS_VERSION = "${new Date().toISOString().slice(0, 10)}";
