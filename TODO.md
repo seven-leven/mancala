@@ -9,7 +9,7 @@ Done items stay ticked for a release or two, then go.
 | Milestone                                                                          | Goal                                                | Done when                                                      |
 | ---------------------------------------------------------------------------------- | --------------------------------------------------- | -------------------------------------------------------------- |
 | **[v2.2 · Fairer ratings](https://github.com/seven-leven/mancala/milestone/1)**    | Ratings that measure play, not the first-move edge  | The tournament plays matched pairs and can pause and resume    |
-| **[v2.3 · Bots in the gap](https://github.com/seven-leven/mancala/milestone/2)**   | Fill the two widest gaps that matter with real bots | A bot near 1600 and one near 830; no gap over 170 Elo          |
+| **[v2.3 · Bots in the gap](https://github.com/seven-leven/mancala/milestone/2)**   | Fill the two widest gaps that matter with real bots | A bot near 1580 and one near 850; no gap over 175 Elo          |
 | **[v2.4 · A stronger Expert](https://github.com/seven-leven/mancala/milestone/3)** | A better evaluation and search at the top           | New Minimax beats v2.3's Minimax in an SPRT over matched pairs |
 | **v2.5 · Faster**                                                                  | Tournaments and searches that cost less time        | A 60-game rating run of every bot in BOTS runs under 3 minutes |
 | **Research** (no release)                                                          | Questions about the game itself                     | Each answer is written up in the README or on the folio        |
@@ -79,9 +79,9 @@ Every bot follows [BOTS.md](BOTS.md): the contract in `src/bots/contracts.ts`, o
 - [x] **A new How to play popup**: steps, three rule cards, a strategy tip, and the house rules kept live.
 - [ ] **Two more bots for the two widest gaps that matter** (see RATING.md, "The ladder's shape"; place each with a
       quick rating against its neighbours, then the full run):
-  - [ ] one between Thoughtful (Planner, 1698) and Keen (Chainer, 1494), about 1600: the middle of the ladder, where
+  - [ ] one between Thoughtful (Planner, 1685) and Keen (Chainer, 1477), about 1580: the middle of the ladder, where
         players climb. Say Planner mixed with Greedy, or Lookahead with a lower pick of its better moves;
-  - [ ] one between Gentle (Sometimes generous, 730) and Thrifty (Hoarder, 920), about 830: say Hoarder mixed with
+  - [ ] one between Gentle (Sometimes generous, 757) and Thrifty (Hoarder, 943), about 850: say Hoarder mixed with
         Random, or Sometimes generous with a lower q.
   - Dropped: the two planned between Casual (First) and Bold (Striker). After the 240-game run that gap is 148 Elo, fine
     as it is.
@@ -178,6 +178,21 @@ Small additions to the rating harness's output, each an hour or so. Document eac
 - [ ] **A check that the model fits.** Compare each pairing's win rate with what the ratings predict, and flag pairings
       that miss by more than chance: a bot that isn't transitive (beats strong bots, loses to weak ones) shows up here.
       A safeguard for adaptive allocation, which plays fewer lopsided games.
+
+## The folio page
+
+[seven-leven.github.io/folio/code-mancala.html](https://seven-leven.github.io/folio/code-mancala.html), in the folio
+repo. It still describes v2.1: eight bots, 40 games a pairing, the first Elo ladder.
+
+- [ ] **Bring it up to date.** Status and version; the number of bots, Hopeless to Expert; "every bot played every other
+      240 times, in matched pairs" and today's ladder with its ranges (from `src/bots/ratings.ts`, or the
+      [ladder chart](docs/ladder.svg)). Expert and Hard no longer overlap (Minimax won 57% of 240). Fix "a bot that
+      always plays its leftmost pit beats one that plays at random three times in four": with matched pairs First and
+      Random came out level (999 against 1000), and First is now dormant. Mention the new opponent picker and the faster
+      rating harness, in a sentence each.
+- [ ] **A short section on the bots.** One line each, in the folio's voice, grouped as the picker groups them (Strong,
+      Club, Learner, Starter): what each one does and roughly how strong it is, from the `blurb` in `src/bots/bots.ts`.
+      End with the dormant ones (Grandmaster, First) and why they're resting.
 
 ## Research
 
