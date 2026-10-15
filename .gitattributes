@@ -1,0 +1,4 @@
+# deno fmt writes LF; keep Git from converting to CRLF on Windows checkouts.
+* text=auto eol=lf
+*.png binary
+*.webp binary
