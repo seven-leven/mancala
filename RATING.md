@@ -140,14 +140,17 @@ anyone's history.
 
 ## The ladder over time
 
-Each rating so far, from `src/bots/ratings.ts` in git history. "Typical" is the middle bot's half-range.
+Each rating so far, from `src/bots/ratings.ts` in git history. "Typical" is the middle bot's half-range. Before the
+first rating (v2.0, 14 October 2026) there were four named levels with no numbers behind them: Easy (Random), Medium
+(Greedy), Hard (DFS) and Expert (Minimax).
 
-| Ratings                      | Bots | Games a pairing | Openings          | Typical 90% range | Widest |
-| ---------------------------- | ---: | --------------: | ----------------- | ----------------: | -----: |
-| First Elo ladder (v2.1)      |    8 |              40 | Each game its own |               ±75 |   ±105 |
-| Bot standard (v2.2.0)        |   12 |              40 | Matched pairs     |               ±50 |    ±63 |
-| Seventeen bots (v2.2.0)      |   17 |              60 | Matched pairs     |               ±36 |    ±41 |
-| After the speed-ups (v2.2.2) |   17 |             240 | Matched pairs     |               ±20 |    ±25 |
+| Ratings                       | Bots | Games a pairing | Openings          | Typical 90% range | Widest |
+| ----------------------------- | ---: | --------------: | ----------------- | ----------------: | -----: |
+| Difficulty levels only (v2.0) |    4 |               – | –                 |         not rated |      – |
+| First Elo ladder (v2.1)       |    8 |              40 | Each game its own |               ±75 |   ±105 |
+| Bot standard (v2.2.0)         |   12 |              40 | Matched pairs     |               ±50 |    ±63 |
+| Seventeen bots (v2.2.0)       |   17 |              60 | Matched pairs     |               ±36 |    ±41 |
+| After the speed-ups (v2.2.2)  |   17 |             240 | Matched pairs     |               ±20 |    ±25 |
 
 What it taught:
 
