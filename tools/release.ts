@@ -4,7 +4,8 @@
  *
  * 1. You must be on dev with nothing uncommitted, with the GitHub CLI (gh) installed.
  * 2. Runs the same checks as CI (formatting, lint, types, tests, build); stops if one fails.
- * 3. Pushes dev, and opens a pull request from dev to main (or uses the one already open).
+ * 3. Merges main into dev (each release leaves a merge commit there), pushes dev, and opens a
+ *    pull request from dev to main (or uses the one already open).
  * 4. Waits for its checks, then merges it.
  * 5. GitHub Actions builds main and publishes dist/ to the gh-pages branch, which GitHub Pages
  *    serves. This waits for that run and reports.
@@ -41,6 +42,13 @@ if (await capture("gh", "--version") === null) fail("Install the GitHub CLI (gh)
 const branch = await capture("git", "rev-parse", "--abbrev-ref", "HEAD");
 if (branch !== "dev") fail(`Release from dev (you're on ${branch ?? "?"}).`);
 if (await capture("git", "status", "--porcelain")) fail("Commit or stash your changes first.");
+
+// main is protected with "branch must be up to date", and each release leaves a merge commit on
+// main that dev doesn't have: bring it into dev first, or the pull request can't merge.
+console.log("→ Bringing main's merge commits into dev…");
+if (!await run("git", ["fetch", "origin", "main"]) || !await run("git", ["merge", "--no-edit", "origin/main"])) {
+  fail("Couldn't merge origin/main into dev. Resolve it, then release again.");
+}
 
 const checks: [string, string[]][] = [
   ["Formatting", ["fmt", "--check"]],

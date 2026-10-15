@@ -3,6 +3,13 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `deno.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
+## v2.2.1 · 2026-10-15
+
+- **No more broken page after a release.** A browser that visited before could load the new page with its old cached
+  script (GitHub Pages lets browsers keep files for 10 minutes) and stop at "Setting up". The build now stamps the
+  page's script, stylesheet and bot worker with a hash of the sources (`app.js?v=…`), so a page only ever loads the
+  files built with it.
+
 ## v2.2.0 · 2026-10-15
 
 - A roadmap: TODO.md now lists the next three releases, each a
