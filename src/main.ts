@@ -57,9 +57,9 @@ for (const name of ["p1", "p2"]) {
   const select = form.elements.namedItem(name) as HTMLSelectElement;
   select.append(option("human", "A person"), ...bots.map(([id]) => option(id, botLabel(id))));
 }
-$("seedOptions").innerHTML = [3, 4, 5, 6, 7]
-  .map((n) => `<label><input type="radio" name="seeds" value="${n}"><span>${n}</span></label>`)
-  .join("");
+const seedRange = form.elements.namedItem("seeds") as HTMLInputElement;
+const showSeeds = () => ($("seedValue").textContent = seedRange.value);
+seedRange.addEventListener("input", showSeeds);
 
 function showSettings(s: Settings): void {
   opponent.value = s.seats[2];
@@ -69,7 +69,8 @@ function showSettings(s: Settings): void {
   (field("speed") as RadioNodeList).value = s.speed;
   (field("theme") as RadioNodeList).value = s.theme;
   (field("first") as RadioNodeList).value = s.first;
-  (field("seeds") as RadioNodeList).value = String(s.rules.seeds);
+  seedRange.value = String(s.rules.seeds);
+  showSeeds();
   (field("capture") as RadioNodeList).value = s.rules.capture;
   (form.elements.namedItem("clinch") as HTMLInputElement).checked = s.rules.clinch;
   (form.elements.namedItem("sound") as HTMLInputElement).checked = s.sound;
@@ -82,14 +83,14 @@ function describeRules(s: Settings): void {
   $("rulesSummary").textContent = `${seeds} seeds a pit · capture from ${
     capture === "own" ? "your own side" : "either side"
   } · ${clinch ? "ends on a clinched majority" : "played to the last seed"}`;
-  $("captureRule").innerHTML = `<strong>Capture:</strong> if the last seed lands in an empty pit ${
+  $("captureRule").textContent = `Last seed lands in an empty pit ${
     capture === "own" ? "on your side" : "on either side"
-  }, bank everything in the pit opposite. The seed that landed stays put.`;
+  }? Bank the seeds in the pit opposite. Your last seed stays where it landed.`;
   // Minimax proves this for the standard rules (either capture side): see the README.
   const standard = seeds === 7 && clinch;
-  $("firstRule").innerHTML = `<strong>Going first matters.</strong> ${
+  $("firstRule").textContent = `Going first matters. ${
     standard
-      ? "With these rules, opening with pit 1 starts a chain of free turns that wins before the other side ever moves."
+      ? "Opening with pit 1 starts a chain of free turns that wins before the other side ever moves."
       : "The first player has a real edge."
   } Choose who goes first in Settings.`;
   $("endRule").textContent = `The game ends when a side runs out of seeds${

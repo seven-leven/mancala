@@ -1,15 +1,22 @@
 import { assert, assertEquals } from "@std/assert";
 import {
+  BOTS,
+  createBot,
   DfsBot,
   FirstBot,
   GenerousBot,
   GreedyBot,
+  isBotId,
   LookaheadBot,
   MinimaxBot,
+  MixedBot,
   PushoverBot,
   RandomBot,
+  TurtleBot,
+  TwoMoveBot,
 } from "../src/bots/bots.ts";
-import { search } from "../src/bots/minimax.ts";
+import { exposed, freeTurnsReady, lead, mobility, threats } from "../src/bots/search/evaluate.ts";
+import { search } from "../src/bots/search/minimax.ts";
 import { newGame, playTurn, validMoves } from "../src/game/engine.ts";
 import { DEFAULT_RULES, type GameState, P1, P2 } from "../src/game/types.ts";
 import { playMatch, seeded } from "../tools/match.ts";
@@ -111,4 +118,67 @@ Deno.test("first plays the leftmost pit from its own side", () => {
   const s = position([0, 0, 4, 1, 0, 0, 0, 2, 0, 3, 0, 0, 5, 0, 0, 0]);
   assertEquals(new FirstBot().choose(s), 2); // Player 1: lowest index
   assertEquals(new FirstBot().choose({ ...s, current: P2 }), 12); // Player 2: their left is pit 13
+});
+
+Deno.test("every bot in BOTS plays legal pits, in both modes, from either side", () => {
+  for (const id of Object.keys(BOTS)) {
+    if (!isBotId(id)) continue;
+    for (const mode of ["play", "rate"] as const) {
+      const bot = createBot(id, { rng: seeded(9), mode, timeMs: 20 });
+      let g = newGame(DEFAULT_RULES, P2);
+      for (let turn = 0; turn < 30 && !g.gameOver; turn++) {
+        const move = bot.choose(g);
+        assert(move !== null && validMoves(g).includes(move), `${id} (${mode}), turn ${turn}: ${move}`);
+        g = playTurn(g, move, { record: false }).state;
+      }
+      assertEquals(bot.choose({ ...g, gameOver: true }), null, `${id} with no moves`);
+    }
+  }
+});
+
+Deno.test("exposed counts seeds in pits facing an empty pit", () => {
+  //                  0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1 M2
+  const s = position([4, 2, 0, 5, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0]);
+  assertEquals(exposed(s, P1), 4); // pit 0 faces empty pit 7; pit 3 faces pit 10, which has a seed
+  assertEquals(exposed(s, P2), 3); // pits 9, 11 and 12 (a seed each) face empty pits 2, 4 and 5
+});
+
+Deno.test("turtle gives up a seed to keep a loaded pit safe; greedy takes it", () => {
+  //                  0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1  M2
+  const s = position([1, 6, 7, 0, 7, 1, 0, 13, 0, 3, 1, 0, 0, 2, 30, 27]);
+  assertEquals(new GreedyBot().choose(s), 5); // banks 2, but leaves 14 seeds open to capture
+  assertEquals(new TurtleBot(0.5, seeded(1)).choose(s), 4); // banks 1 and leaves nothing open
+});
+
+Deno.test("mixed: q = 1 is its main bot; q = 0 is random", () => {
+  const g = newGame(DEFAULT_RULES, P1);
+  assertEquals(new MixedBot(new FirstBot(), 1, seeded(1)).choose(g), 0);
+  const picks = new Set<number | null>();
+  const mixed = new MixedBot(new FirstBot(), 0, seeded(2));
+  for (let k = 0; k < 50; k++) picks.add(mixed.choose(g));
+  assert(picks.size > 3, `random picks: ${[...picks]}`);
+});
+
+Deno.test("scoring pieces: free turns set up, threats, mobility", () => {
+  //                  0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1 M2
+  const s = position([7, 0, 0, 0, 0, 0, 1, 1, 4, 0, 0, 0, 0, 2, 0, 0]);
+  assertEquals(freeTurnsReady(s, P1), 2); // pit 0 (7 seeds, 7 from the store) and pit 6 (1 seed, 1 away)
+  assertEquals(freeTurnsReady(s, P2), 1); // pit 7: 1 seed, 1 away; pit 13 needs 7
+  assertEquals(threats(s, P1), 4); // of the empty pits 1–5, only pit 1 faces seeds (pit 8, 4)
+  assertEquals(mobility(s, P1), 2);
+  assertEquals(mobility(s, P2), 3);
+});
+
+Deno.test("the two-move bot sees replies, so it sometimes plays differently from Greedy", () => {
+  let found = false;
+  const rng = seeded(4);
+  for (let game = 0; game < 40 && !found; game++) {
+    let g = newGame(DEFAULT_RULES, P1);
+    for (let k = 0; k < 30 && !g.gameOver; k++) {
+      const a = new GreedyBot().choose(g), b = new TwoMoveBot(lead).choose(g);
+      if (a !== b) found = true;
+      g = playTurn(g, new RandomBot(rng).choose(g)!, { record: false }).state;
+    }
+  }
+  assert(found, "the two-move bot should sometimes disagree with Greedy");
 });

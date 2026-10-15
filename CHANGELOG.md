@@ -3,6 +3,36 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `deno.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
+## v2.2.0 · 2026-10-15
+
+- A roadmap: TODO.md now lists the next three releases, each a
+  [GitHub milestone](https://github.com/seven-leven/mancala/milestones) with an issue per item.
+- The bots and the tournament are split into folders (`src/bots/players/`, `src/bots/search/`, `tools/tournament/`).
+  Nothing plays differently: the tournament prints exactly what it did before.
+- **Seventeen bots.** Nine new ones, each placed in a gap in the ladder, since games between bots close in strength tell
+  you the most: Gentle (Sometimes generous), Thrifty (Hoarder), Bold (Striker), Relaxed (Sometimes greedy), Careful
+  (Turtle), Crafty (Spoiler), Keen (Chainer), Thoughtful (Planner) and Sharp (Shrewd). Rated over 60 games a pairing,
+  every 90% range is within ±40. A Grandmaster is built but dormant: it rated level with Minimax for five times the
+  time.
+- **New scoring pieces** for the bots: free turns set up, capture threats, exposed seeds, mobility. Together, in a
+  two-move search, they're worth about 75 Elo over the store lead alone (Planner).
+- **A new How to play popup**: the turn in three steps, the three rules as cards, a word of strategy and how to win,
+  with the house rules kept live.
+- **The ladder as a chart**: `deno task ladder` draws [docs/ladder.svg](docs/ladder.svg) from the ratings, marking
+  neighbours too close to call; the README shows it.
+- `deno task profile` shows where a tournament round spends its time; TODO.md's v2.5 lists what to speed up.
+- **Fairer ratings.** The tournament plays matched pairs (each opening once from each seat), can deal symmetric random
+  boards (`--openings symmetric`), stops on a time budget (`--time 10m`), saves after every round and resumes
+  (`--resume`), and shows its progress on one line that fits the terminal. All the ratings changed; see the README.
+- **A bot standard.** [BOTS.md](BOTS.md) and TypeScript contracts every bot follows; the existing bots were rewritten
+  against them and play exactly as before.
+- **Game notation.** [NOTATION.md](NOTATION.md): a game as text, like chess's PGN. The tournament can record every game
+  (`--record`), and `deno task positions` turns them into training data for the evaluation.
+- `main` is protected: only pull requests whose checks pass. `deno task release` now ships `dev` through a pull request
+  instead of pushing to `main`.
+- Seeds per pit (a house rule) is now a slider from 3 to 15; 7 is still the standard.
+- The player menus in Settings no longer stick out of the dialog with long bot names.
+
 ## v2.1.3 · 2026-10-15
 
 - The version has its own place in the footer, beside "Source on GitHub", and links to this changelog. The build writes

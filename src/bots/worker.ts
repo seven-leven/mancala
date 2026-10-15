@@ -13,7 +13,7 @@ declare const self: {
 
 self.onmessage = ({ data }) => {
   if (!isBotId(data.bot)) return self.postMessage({ id: data.id, move: null, note: null });
-  const bot = createBot(data.bot, data.timeMs);
+  const bot = createBot(data.bot, { timeMs: data.timeMs });
   const move = bot.choose(data.state);
   self.postMessage({ id: data.id, move, note: bot.note?.() ?? null });
 };

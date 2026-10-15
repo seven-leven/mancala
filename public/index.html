@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mancala · ohvalhugondi</title>
     <meta name="description"
-      content="Ohvalhugondi, the Maldivian mancala: seven pits, seven seeds, relay sowing. Play a friend or one of four bots, from Random to an alpha-beta Minimax.">
+      content="Ohvalhugondi, the Maldivian mancala: seven pits, seven seeds, relay sowing. Play a friend or one of seventeen bots, from Pushover to an alpha-beta Minimax.">
     <meta property="og:title" content="Mancala · ohvalhugondi">
-    <meta property="og:description" content="The Maldivian mancala in the browser: play a friend or one of four bots.">
+    <meta property="og:description"
+      content="The Maldivian mancala in the browser: play a friend or one of seventeen bots.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://seven-leven.github.io/mancala/">
     <meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
@@ -101,32 +102,68 @@
       </footer>
     </main>
 
-    <dialog id="rules" aria-labelledby="rulesTitle">
+    <dialog id="rules" class="intro" aria-labelledby="rulesTitle">
+      <form method="dialog" class="intro__close"><button class="icon-btn" aria-label="Close">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M5.636 5.636a1 1 0 0 1 1.414 0l4.95 4.95 4.95-4.95a1 1 0 0 1 1.414 1.414L13.414 12l4.95 4.95a1 1 0 0 1-1.414 1.414L12 13.414l-4.95 4.95a1 1 0 0 1-1.414-1.414l4.95-4.95-4.95-4.95a1 1 0 0 1 0-1.414Z"/></svg>
+        </button></form>
       <p class="label eyebrow">How to play</p>
-      <h2 id="rulesTitle">Bank the most seeds</h2>
-      <p>
-        <span class="chip" data-player="1">Player 1</span> owns the bottom row and the store on the right.
-        <span class="chip" data-player="2">Player 2</span> owns the top row and the store on the left.
-      </p>
-      <ul>
-        <li>On your turn, pick one of your pits. Its seeds are sown one by one around the board, counter-clockwise, past
-          your store but never into your opponent's.</li>
-        <li><strong>Relay:</strong> if the last seed lands in a pit that already had seeds, pick them all up and keep
-          sowing.</li>
-        <li><strong>Free turn:</strong> if the last seed lands in your own store, play again.</li>
-        <li
-          id="captureRule"><strong>Capture:</strong> if the last seed lands in an empty pit on your side, bank everything
-          in the pit opposite. The seed that landed stays put.</li>
-        <li id="firstRule"></li>
-        <li
-          id="endRule">The game ends when a side runs out of seeds. Each player banks what's left on their side, and the
-          fuller store wins.</li>
-      </ul>
-      <p class="turn__note">Keys: <kbd>1</kbd>–<kbd>7</kbd> play your pits, counted from your own left. <kbd>N</kbd> new
-        game, <kbd>U</kbd> undo, <kbd>H</kbd> hint, <kbd>S</kbd> skip, <kbd>?</kbd> this help.</p>
-      <form method="dialog" class="dialog__actions">
-        <button class="btn btn--primary">Let's play</button>
-      </form>
+      <h2 id="rulesTitle">Think ahead.<br><span class="intro__accent">Bank more.</span></h2>
+      <p
+        class="intro__lead">Move seeds around the board, chain extra turns, and capture your opponent's seeds. Finish with
+        the fullest store.</p>
+
+      <div class="intro__players">
+        <p><span class="dot" data-player="1"></span><strong>Player 1</strong><span>Bottom row · right store</span></p>
+        <p><span class="dot" data-player="2"></span><strong>Player 2</strong><span>Top row · left store</span></p>
+      </div>
+
+      <h3>Your turn, in 3 steps</h3>
+      <ol class="intro__steps">
+        <li><strong>Pick a pit</strong><span>Choose any pit on your side and pick up all its seeds.</span></li>
+        <li><strong>Sow counter-clockwise</strong><span>Drop one seed into each pit after it, and into your store. Skip
+            your opponent's store.</span></li>
+        <li><strong>Follow your last seed</strong><span>Where it lands decides whether you relay, play again, or
+            capture.</span></li>
+      </ol>
+
+      <hr>
+      <h3>Three rules to remember</h3>
+      <div class="intro__rules">
+        <div class="intro__card">
+          <p
+            class="intro__card-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3.07 10.88C3.62 6.44 7.41 3 12 3c2.28 0 4.4.85 6.01 2.25V4a1 1 0 1 1 2 0v4a1 1 0 0 1-1 1H15a1 1 0 1 1 0-2h1.96A7 7 0 0 0 5.05 11.12a1 1 0 0 1-1.98-.24Zm16.99 1.13a1 1 0 0 1 .87 1.11C20.38 17.56 16.59 21 12 21c-2.28 0-4.39-.85-6-2.24V20a1 1 0 1 1-2 0v-4a1 1 0 0 1 1-1h4a1 1 0 1 1 0 2H7.04A7 7 0 0 0 18.95 12.88a1 1 0 0 1 1.11-.87Z"/></svg>Relay</p>
+          <p>Last seed lands in a pit that already had seeds? Pick them all up and keep sowing.</p>
+        </div>
+        <div class="intro__card">
+          <p
+            class="intro__card-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M2.56 12a9.5 9.5 0 0 1 16-6.93V3.5a1 1 0 1 1 2 0v4.5a1 1 0 0 1-1 1h-4.5a1 1 0 1 1 0-2h2.59a7.5 7.5 0 1 0 1.86 5.88 1 1 0 1 1 1.98.23A9.5 9.5 0 0 1 2.56 12Z"/></svg>Free turn</p>
+          <p>Last seed lands in your own store? Play again.</p>
+        </div>
+        <div class="intro__card">
+          <p
+            class="intro__card-title"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/></svg>Capture</p>
+          <p
+            id="captureRule">Last seed lands in an empty pit on your side? Bank the seeds in the pit opposite. Your last
+            seed stays where it landed.</p>
+        </div>
+      </div>
+
+      <div class="intro__tip">
+        <p
+          class="intro__card-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3c3.59 0 6.5 2.92 6.5 6.54A6.54 6.54 0 0 1 15.58 15H8.43A6.54 6.54 0 0 1 5.5 9.54C5.5 5.92 8.42 3 12 3Zm2.87 14v1H9.14v-1h5.73Zm-1.14 3a2 2 0 0 1-3.46 0h3.46Zm-5.6 0a4 4 0 0 0 7.74 0 1 1 0 0 0 1-1v-2.46a8.54 8.54 0 0 0 3.63-7C20.5 4.83 16.7 1 12 1S3.5 4.83 3.5 9.54a8.54 8.54 0 0 0 3.64 7V19a1 1 0 0 0 .99 1Z"/></svg>A word of strategy</p>
+        <p
+          id="firstRule">Going first matters. Opening with pit 1 starts a chain of free turns that wins before the other
+          side ever moves. Choose who goes first in Settings.</p>
+      </div>
+
+      <h3>How to win</h3>
+      <p id="endRule">The game ends when a side runs out of seeds, or as soon as a store holds more than half of all 98.
+        Each player banks what's left on their side, and the fuller store wins.</p>
+
+      <form method="dialog" class="intro__go"><button class="btn btn--primary">Let's play →</button></form>
+      <p class="intro__keys"><span><kbd>1</kbd>–<kbd>7</kbd> pits</span> · <span><kbd>N</kbd> new game</span> ·
+        <span><kbd>U</kbd> undo</span> · <span><kbd>H</kbd> hint</span> · <span><kbd>S</kbd> skip</span> ·
+        <span><kbd>?</kbd> help</span></p>
     </dialog>
 
     <dialog id="stats" aria-labelledby="statsTitle">
@@ -190,7 +227,11 @@
         <p class="turn__note">Changing these starts a new game.</p>
         <fieldset class="field">
           <legend class="label">Seeds per pit</legend>
-          <div class="segmented" id="seedOptions"></div>
+          <div class="range">
+            <input type="range" name="seeds" min="3" max="15" step="1" value="7" aria-label="Seeds per pit">
+            <output id="seedValue" class="range__value">7</output>
+          </div>
+          <div class="range__ends" aria-hidden="true"><span>3</span><span>15</span></div>
         </fieldset>
         <fieldset class="field">
           <legend class="label">Capture</legend>

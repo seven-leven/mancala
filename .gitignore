@@ -1,3 +1,5 @@
 dist/
 .cache/
 .vscode/
+tools/tournament/checkpoint.json*
+data/

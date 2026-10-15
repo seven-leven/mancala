@@ -1,220 +1,204 @@
 /**
- * The bots. Each one is stateless and plays for whoever's turn it is (`state.current`), so any
- * bot can sit on either side. To add one, write a `choose` and register it in BOTS below: the
- * menus fill themselves from that list.
+ * The bots: the one list the game, the Web Worker, saved games and the tournament all read. Each
+ * entry is a BotSpec (contracts.ts); BOTS.md has the rules every bot follows and how to add one.
  */
-import { playTurn, score, validMoves } from "../game/engine.ts";
-import type { GameState } from "../game/types.ts";
-import { search, type SearchResult } from "./minimax.ts";
+import type { Bot, BotContext, BotSpec } from "./contracts.ts";
+import { FirstBot, RandomBot } from "./players/basic.ts";
+import { DfsBot } from "./players/chain.ts";
+import { MixedBot } from "./players/mixed.ts";
+import { GenerousBot, GreedyBot, HoarderBot, OneMoveBot, StrikerBot, TurtleBot } from "./players/one-move.ts";
+import { LookaheadBot, MinimaxBot, PushoverBot, TwoMoveBot } from "./players/search.ts";
+import { lead, planned } from "./search/evaluate.ts";
 
-export interface Bot {
-  /** The pit to play, or null if there's no legal move. */
-  choose(state: GameState): number | null;
-  /** What the last choice was based on, for the move log ("saw 9 moves ahead, +12"), if it searched. */
-  note?(): string | null;
-}
-
-/** How a search bot describes what it saw. */
-function describe(r: SearchResult): string | null {
-  if (r.depth === 0) return null;
-  if (r.score >= 10_000) return `sees a forced win`;
-  if (r.score <= -10_000) return `sees a forced loss`;
-  const lead = Math.round(r.score);
-  return `saw ${r.depth} ${r.depth === 1 ? "move" : "moves"} ahead, ${lead > 0 ? "+" : ""}${lead}`;
-}
-
-type Rng = () => number;
-
-/** Plays any legal pit. */
-export class RandomBot implements Bot {
-  constructor(private rng: Rng = Math.random) {}
-  choose(state: GameState): number | null {
-    const moves = validMoves(state);
-    return moves.length ? moves[Math.floor(this.rng() * moves.length)] : null;
-  }
-}
-
-/**
- * The worst possible player: it searches ahead like Minimax but plays to lose by as much as it can,
- * assuming you play to win. Even a careless opponent ends up winning.
- */
-export class PushoverBot implements Bot {
-  constructor(private depth = 4) {}
-  choose(state: GameState): number | null {
-    // Nothing prunes a search where both sides want the same result, so it follows only short
-    // free-turn chains (3), which keeps a move under ~0.1 s.
-    return search(state, { depth: this.depth, aim: "lose", extensions: 3 }).move;
-  }
-}
-
-/**
- * Greedy's opposite: the pit that banks the fewest seeds this turn, so it turns down free turns
- * and captures. The gentlest opponent, for learning the rules.
- */
-export class GenerousBot implements Bot {
-  constructor(private rng: Rng = Math.random) {}
-  choose(state: GameState): number | null {
-    const me = state.current;
-    let worst: number[] = [];
-    let worstScore = Infinity;
-    for (const move of validMoves(state)) {
-      const r = playTurn(state, move, { record: false });
-      if (r.invalid) continue;
-      const s = score(r.state, me);
-      if (s < worstScore) [worst, worstScore] = [[move], s];
-      else if (s === worstScore) worst.push(move);
-    }
-    // Several moves often bank nothing; pick among them so its games vary.
-    return worst.length ? worst[Math.floor(this.rng() * worst.length)] : null;
-  }
-}
-
-/**
- * Always plays its first pit that has seeds, counted from its own left: the leftmost pit on screen
- * for Player 1, the rightmost for Player 2 (who sits across the board). No thought at all, though
- * pit 1 happens to be the best opening move.
- */
-export class FirstBot implements Bot {
-  choose(state: GameState): number | null {
-    const moves = validMoves(state);
-    if (!moves.length) return null;
-    // Player 1's pits run 0..6 from their left; Player 2's run 13..7 from theirs.
-    return state.current === 1 ? Math.min(...moves) : Math.max(...moves);
-  }
-}
-
-/** One move deep: the pit that banks the most seeds right now, captures and free turns included. */
-export class GreedyBot implements Bot {
-  choose(state: GameState): number | null {
-    const me = state.current;
-    let best: number | null = null;
-    let bestScore = -Infinity;
-    for (const move of validMoves(state)) {
-      const r = playTurn(state, move, { record: false });
-      if (r.invalid) continue;
-      const s = score(r.state, me);
-      if (s > bestScore) [best, bestScore] = [move, s];
-    }
-    return best;
-  }
-}
-
-/**
- * The 2024 bot: depth-first search through its own free-turn chains, keeping the chain that ends
- * with the fullest store. It never looks at the opponent's replies, so it strings free turns
- * together brilliantly and walks into captures.
- */
-export class DfsBot implements Bot {
-  constructor(private maxDepth = 8) {}
-
-  choose(state: GameState): number | null {
-    const me = state.current;
-    let best: number | null = null;
-    let bestScore = -Infinity;
-    for (const move of validMoves(state)) {
-      const s = this.chain(state, move, 0, me);
-      if (s > bestScore) [best, bestScore] = [move, s];
-    }
-    return best;
-  }
-
-  private chain(state: GameState, move: number, depth: number, me: GameState["current"]): number {
-    const r = playTurn(state, move, { record: false });
-    if (r.invalid) return -Infinity;
-    if (!r.freeTurn || depth + 1 >= this.maxDepth) return score(r.state, me);
-    let best = score(r.state, me);
-    for (const next of validMoves(r.state)) best = Math.max(best, this.chain(r.state, next, depth + 1, me));
-    return best;
-  }
-}
-
-/** Alpha-beta search that plans for the opponent's replies too. See minimax.ts. */
-export class MinimaxBot implements Bot {
-  private last: SearchResult | null = null;
-  constructor(private opts: { timeMs?: number; depth?: number } = { timeMs: 700 }) {}
-  choose(state: GameState): number | null {
-    this.last = search(state, this.opts);
-    return this.last.move;
-  }
-  note(): string | null {
-    return this.last && describe(this.last);
-  }
-}
-
-/**
- * A gentler Minimax: it looks only a couple of moves ahead, doesn't follow free-turn chains past
- * them, and picks at random among the moves within `slack` seeds of its best. It plays sensibly
- * but misses the long chains, and its games vary.
- */
-export class LookaheadBot implements Bot {
-  private last: SearchResult | null = null;
-  constructor(private depth = 2, private slack = 3, private rng: Rng = Math.random) {}
-  note(): string | null {
-    return this.last && describe(this.last);
-  }
-  choose(state: GameState): number | null {
-    const r = this.last = search(state, { depth: this.depth, scoreAll: true, extensions: 0 });
-    if (!r.scores || r.scores.size === 0) return r.move;
-    const good = [...r.scores].filter(([, v]) => v >= r.score - this.slack).map(([m]) => m);
-    return good[Math.floor(this.rng() * good.length)];
-  }
-}
+export type { Bot, BotContext, BotSpec };
+export {
+  DfsBot,
+  FirstBot,
+  GenerousBot,
+  GreedyBot,
+  HoarderBot,
+  LookaheadBot,
+  MinimaxBot,
+  MixedBot,
+  OneMoveBot,
+  PushoverBot,
+  RandomBot,
+  StrikerBot,
+  TurtleBot,
+  TwoMoveBot,
+};
 
 /**
  * The bots, weakest first; the menus list them in this order. `level` is the everyday name players
  * see ("Hard bot"); `label` is the algorithm behind it. Levels follow the Elo ratings from
- * `deno task tournament` (see the README).
+ * `deno task tournament` (see the README). Keys are permanent: saved games refer to them.
  */
 export const BOTS = {
   pushover: {
     label: "Pushover",
     level: "Hopeless",
     blurb: "Searches ahead like Minimax, but to lose by as much as it can.",
+    family: "search",
     create: () => new PushoverBot(4),
   },
   generous: {
     label: "Generous",
     level: "Very easy",
     blurb: "Greedy's opposite: banks as little as it can, turning down free turns and captures.",
-    create: () => new GenerousBot(),
+    family: "one-move",
+    create: ({ rng }) => new GenerousBot(rng),
   },
-  random: { label: "Random", level: "Easy", blurb: "Plays any legal pit.", create: () => new RandomBot() },
+  sometimesGenerous: {
+    label: "Sometimes generous",
+    level: "Gentle",
+    blurb: "Plays Generous's move most of the time and any legal pit the rest.",
+    family: "mixed",
+    // q places it between Generous and Random; see BOTS.md, "Tunable on purpose".
+    create: ({ rng }) => new MixedBot(new GenerousBot(rng), 0.75, rng),
+  },
+  hoarder: {
+    label: "Hoarder",
+    level: "Thrifty",
+    blurb: "Keeps its seeds on its own side, banking only a little.",
+    family: "one-move",
+    // thrift: what a banked seed is worth against one kept at home.
+    create: ({ rng }) => new HoarderBot(0.3, rng),
+  },
+  random: {
+    label: "Random",
+    level: "Easy",
+    blurb: "Plays any legal pit.",
+    family: "basic",
+    create: ({ rng }) => new RandomBot(rng),
+  },
   first: {
     label: "First",
     level: "Casual",
     blurb: "Always plays its first pit with seeds, from its own left.",
+    family: "basic",
     create: () => new FirstBot(),
+  },
+  striker: {
+    label: "Striker",
+    level: "Bold",
+    blurb: "Banks what it can, but would rather line up a capture for next turn.",
+    family: "one-move",
+    // aggression: what a seed it threatens to capture is worth against one banked. The keener it
+    // is, the weaker it plays: 0.5 rates level with Greedy, 1.0 about 100 below.
+    create: ({ rng }) => new StrikerBot(1.0, rng),
+  },
+  sometimesGreedy: {
+    label: "Sometimes greedy",
+    level: "Relaxed",
+    blurb: "Plays Greedy's move half the time and any legal pit the rest.",
+    family: "mixed",
+    // q places it between Random and Greedy.
+    create: ({ rng }) => new MixedBot(new GreedyBot(), 0.5, rng),
+  },
+  turtle: {
+    label: "Turtle",
+    level: "Careful",
+    blurb: "Banks what it can, but won't leave a loaded pit open to capture for it.",
+    family: "one-move",
+    // caution: what each exposed seed costs it, against a seed banked.
+    create: ({ rng }) => new TurtleBot(0.5, rng),
   },
   greedy: {
     label: "Greedy",
     level: "Average",
     blurb: "Takes whatever banks the most seeds this turn.",
+    family: "one-move",
     create: () => new GreedyBot(),
+  },
+  spoiler: {
+    label: "Spoiler",
+    level: "Crafty",
+    blurb: "Often plays the move that leaves your best reply weakest; otherwise plays like Greedy.",
+    family: "search",
+    // The two-move search (alone it rates level with Lookahead) with probability q, else Greedy.
+    create: ({ rng }) => new MixedBot(new TwoMoveBot(lead), 0.5, rng, new GreedyBot()),
+  },
+  chainer: {
+    label: "Chainer",
+    level: "Keen",
+    blurb: "Usually takes a free turn or two before banking what it can; otherwise plays like Greedy.",
+    family: "chain",
+    // Two moves in a row (DFS follows 8) with probability q, else Greedy's move: q places it
+    // between Greedy and a full two-move chainer, which rates level with Lookahead.
+    create: ({ rng }) => new MixedBot(new DfsBot(2), 0.5, rng, new GreedyBot()),
+  },
+  planner: {
+    label: "Planner",
+    level: "Thoughtful",
+    blurb: "Looks at your best reply, and weighs everything: free turns set up, captures threatened, pits left open.",
+    family: "search",
+    create: () => new TwoMoveBot(planned()),
   },
   lookahead: {
     label: "Lookahead",
     level: "Tricky",
     blurb: "Looks two moves ahead and plays one of its better moves, not always the best.",
-    create: () => new LookaheadBot(2, 3),
+    family: "search",
+    create: ({ rng }) => new LookaheadBot(2, 3, rng),
+  },
+  shrewd: {
+    label: "Shrewd",
+    level: "Sharp",
+    blurb: "Lookahead's method, three moves deep instead of two.",
+    family: "search",
+    // depth and slack, as for Lookahead (2, 3).
+    create: ({ rng }) => new LookaheadBot(3, 2, rng),
   },
   dfs: {
     label: "DFS",
     level: "Hard",
     blurb: "Chains free turns as far as they go. The original 2024 bot.",
+    family: "chain",
     create: () => new DfsBot(8),
   },
   minimax: {
     label: "Minimax",
     level: "Expert",
     blurb: "Searches ahead with alpha-beta pruning, planning for your replies too.",
-    create: (timeMs?: number) => new MinimaxBot({ timeMs: timeMs ?? 700 }),
+    family: "search",
+    // Rated at a fixed depth; in the game it searches as deep as its time allows.
+    create: ({ mode, timeMs }) => new MinimaxBot(mode === "rate" ? { depth: 6 } : { timeMs }),
   },
-} as const;
+} as const satisfies Record<string, BotSpec>;
+
+/**
+ * Dormant bots: kept in the code, out of the menus and the default tournament. Their ids are
+ * reserved. The tournament still rates one when it's named: `deno task tournament --bots ...`.
+ * See BOTS.md, "Dormant bots".
+ */
+export const DORMANT = {
+  // Rated level with Minimax (1992 against 1985 over 60 games) for five times the search time:
+  // depth 10 adds almost nothing to depth 6 here. Waits for a better evaluation (v2.4) or a
+  // capture extension (#13) to make deeper search pay. See TODO.md, v2.5.
+  grandmaster: {
+    label: "Grandmaster",
+    level: "Master",
+    blurb: "Minimax with more time: it searches deeper before it moves.",
+    family: "search",
+    // Rated at depth 10 (Minimax: 6); in the game, twice Minimax's time.
+    create: ({ mode, timeMs }) => new MinimaxBot(mode === "rate" ? { depth: 10 } : { timeMs: 2 * timeMs }),
+  },
+} as const satisfies Record<string, BotSpec>;
+export type DormantId = keyof typeof DORMANT;
+export const isDormantId = (x: unknown): x is DormantId => typeof x === "string" && Object.hasOwn(DORMANT, x);
 
 export type BotId = keyof typeof BOTS;
 /** Who sits on a side: a person, or one of the bots. */
 export type Seat = "human" | BotId;
 
-export const isBotId = (x: unknown): x is BotId => typeof x === "string" && x in BOTS;
-export const createBot = (id: BotId, timeMs?: number): Bot =>
-  id === "minimax" ? BOTS.minimax.create(timeMs) : BOTS[id].create();
+export const isBotId = (x: unknown): x is BotId => typeof x === "string" && Object.hasOwn(BOTS, x);
+
+/** A bot ready to play. In the game: Math.random and a 700 ms budget unless told otherwise. */
+export function createBot(id: BotId | DormantId, ctx: Partial<BotContext> = {}): Bot {
+  const spec: BotSpec = isDormantId(id) ? DORMANT[id] : BOTS[id];
+  return spec.create({
+    rng: ctx.rng ?? Math.random,
+    mode: ctx.mode ?? "play",
+    timeMs: ctx.timeMs ?? 700,
+  });
+}
