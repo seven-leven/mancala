@@ -204,7 +204,6 @@ export class Game {
         case "capture":
           if (!this.skip) await wait(CAPTURE_PAUSE_MS);
           this.board.flashCapture([e.landing, e.opposite, e.store], 700);
-          this.board.setCount(e.landing, 0);
           this.board.setCount(e.opposite, 0);
           this.board.setCount(e.store, e.storeCount, true);
           break;

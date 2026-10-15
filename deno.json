@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "2.0.1",
   "imports": {
     "@std/assert": "jsr:@std/assert@^1",
     "@std/http": "jsr:@std/http@^1",
@@ -14,7 +14,8 @@
     "check": "deno check src tools tests",
     "tournament": "deno run tools/tournament.ts",
     "design-sheet": "deno run -A tools/design-sheet.ts",
-    "release": "deno run --allow-read --allow-run=git,gh,deno tools/release.ts"
+    "release": "deno run --allow-read --allow-run=git,gh,deno tools/release.ts",
+    "bench": "deno run tools/bench.ts"
   },
   "compilerOptions": {
     "lib": [

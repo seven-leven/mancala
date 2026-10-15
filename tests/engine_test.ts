@@ -75,13 +75,14 @@ Deno.test("last seed in a pit that had seeds: pick them up and keep sowing (rela
   assertEquals(r.state.pits.slice(0, 5), [0, 0, 1, 1, 1]);
 });
 
-Deno.test("last seed in your own empty pit captures the pit opposite", () => {
-  // Pit 0's seed lands in empty pit 1; pit 8 faces it with 5 seeds: bank 5 + 1.
+Deno.test("last seed in your own empty pit captures only the pit opposite", () => {
+  // Pit 0's seed lands in empty pit 1; pit 8 faces it with 5 seeds. The 5 are banked, and the
+  // seed that landed stays in pit 1.
   const s = position([1, 0, 0, 0, 0, 0, 3, 1, 5, 1, 1, 1, 1, 1, 0, 0]);
   const r = played(s, 0);
-  assertEquals(r.captured, 6);
-  assertEquals(r.state.pits[M1], 6);
-  assertEquals([r.state.pits[1], r.state.pits[8]], [0, 0]);
+  assertEquals(r.captured, 5);
+  assertEquals(r.state.pits[M1], 5);
+  assertEquals([r.state.pits[1], r.state.pits[8]], [1, 0]);
   assertEquals(r.state.current, P2);
 });
 
@@ -91,7 +92,8 @@ Deno.test("capture rule: own side by default, either side when the rules say so"
   const own = played(position(pits, P2), 8);
   assertEquals(own.captured, 0);
   const any = played(position(pits, P2, { capture: "any" }), 8);
-  assertEquals(any.captured, 11); // pit 7's 10 seeds, plus the one that landed
+  assertEquals(any.captured, 10); // pit 7's 10 seeds; the one that landed stays in pit 0
+  assertEquals(any.state.pits[0], 1);
 });
 
 Deno.test("an empty side ends the game and each side banks its own seeds", () => {
@@ -118,7 +120,7 @@ Deno.test("the event log replays to the final position", () => {
     for (const e of r.events) {
       if (e.type === "pickup") pits[e.pit] = 0;
       if (e.type === "drop") pits[e.pit] = e.count;
-      if (e.type === "capture") [pits[e.landing], pits[e.opposite], pits[e.store]] = [0, 0, e.storeCount];
+      if (e.type === "capture") [pits[e.opposite], pits[e.store]] = [0, e.storeCount];
       if (e.type === "sweep") {
         pits.fill(0, 0, 14);
         [pits[M1], pits[M2]] = [e.m1, e.m2];

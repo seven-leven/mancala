@@ -43,6 +43,7 @@ export interface GameState {
 export type TurnEvent =
   | { type: "pickup"; pit: number; count: number }
   | { type: "drop"; pit: number; count: number; inHand: number }
+  /** The last seed stays in `landing`; the pit opposite is emptied into the store. */
   | { type: "capture"; landing: number; opposite: number; captured: number; store: number; storeCount: number }
   | { type: "sweep"; p1Remain: number; p2Remain: number; m1: number; m2: number };
 

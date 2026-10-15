@@ -38,8 +38,8 @@ Deno.test("greedy takes the capture", () => {
 });
 
 Deno.test("DFS chains a free turn into a capture; greedy grabs the capture now", () => {
-  // Pit 0 captures pit 9 straight away (4 seeds). Pit 6 banks 1 and earns a free turn, after
-  // which pit 0 still captures: 5 in all. Greedy sees only this turn; DFS follows the chain.
+  // Pit 0 captures pit 9 straight away (3 seeds). Pit 6 banks 1 and earns a free turn, after
+  // which pit 0 still captures: 4 in all. Greedy sees only this turn; DFS follows the chain.
   //                  0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1 M2
   const s = position([2, 0, 0, 0, 0, 0, 1, 3, 3, 3, 3, 3, 3, 3, 0, 0]);
   assertEquals(new GreedyBot().choose(s), 0);

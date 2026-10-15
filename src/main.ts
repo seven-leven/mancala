@@ -74,7 +74,7 @@ function describeRules(s: Settings): void {
   } · ${clinch ? "ends on a clinched majority" : "played to the last seed"}`;
   $("captureRule").innerHTML = `<strong>Capture:</strong> if the last seed lands in an empty pit ${
     capture === "own" ? "on your side" : "on either side"
-  }, bank it and everything in the pit opposite.`;
+  }, bank everything in the pit opposite. The seed that landed stays put.`;
   $("endRule").textContent = `The game ends when a side runs out of seeds${
     clinch ? `, or as soon as a store holds more than half of all ${14 * seeds}` : ""
   }. Each player banks what's left on their side, and the fuller store wins.`;

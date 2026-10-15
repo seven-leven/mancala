@@ -101,16 +101,15 @@ export function playTurn(input: GameState, start: number, { record = true } = {}
   const freeTurn = landing === storeOf(player);
 
   // Capture: the last seed landed in an empty pit (on your own side, unless the rules say either
-  // side). You bank it and everything in the pit opposite.
+  // side). You bank everything in the pit opposite; the seed that landed stays where it is.
   let captured = 0;
   const canCapture = isPit(landing) && state.pits[landing] === 1 &&
     (state.rules.capture === "any" || ownerOf(landing) === player);
   if (!freeTurn && canCapture) {
     const opposite = oppositeOf(landing);
     if (state.pits[opposite] > 0) {
-      captured = state.pits[opposite] + 1;
+      captured = state.pits[opposite];
       state.pits[opposite] = 0;
-      state.pits[landing] = 0;
       state.pits[storeOf(player)] += captured;
       log({
         type: "capture",
