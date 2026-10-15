@@ -116,8 +116,8 @@ usable size. Pits must stay at least 40px across, the smallest comfortable tap t
 - **Buttons:** folio pills. Primary is ink on paper (paper on ink in the dark theme), and turns terracotta on hover.
   Ghost has a `--rule-strong` border. An icon is 16px, and a button with only an icon needs an `aria-label`.
 - **Selects** look like ghost pills.
-- **Turn line:** a dot in the player's colour, a label ("Your turn" / "Player 2 · Minimax is thinking"), and nothing
-  else. At game over it shows the result in serif, for example "Player 1 wins, 52–46".
+- **Turn line:** a dot in the player's colour, a label ("Your turn" / "Expert bot is thinking"), and nothing else. At
+  game over it shows the result in serif, for example "Player 1 wins, 52–46".
 - **Pit:** a `<button>`. It's a cup with its seeds drawn inside and the count in mono underneath. Its states:
   - _selectable:_ a 2px ring in the player's colour, and the pit lifts 1px on hover;
   - _sowing from:_ an inset ring in the player's colour;
@@ -129,20 +129,29 @@ usable size. Pits must stay at least 40px across, the smallest comfortable tap t
 - **Dialogs** (Settings, How to play): native `<dialog>` cards with 14px corners and the card shadow, over a scrim of
   ink at 55%.
 - **Toast:** one line of text, under the board, in an `aria-live="polite"` region. It never covers the board.
-- **Move log:** a mono list, newest first, with each player's moves marked in their colour.
+- **Move log:** a mono list, newest first, with each player's moves marked in their colour. A search bot's move says
+  what it saw ("saw 9 moves ahead, +12").
+- **Replay:** a ghost pill that appears only when a game is over, and replays it with the turn note "replay".
+- **Your games** (the stats dialog): the rating in serif, its trend as a single 1.5px line in `--accent`, then a table
+  against each bot and the recent games in mono. Rating changes are ink for a gain and muted for a loss, never in a
+  player's colour, which belongs to the players.
+- **Sound:** off by default. Short, quiet and wooden: a tock per seed, a two-note chime for a capture, a rising pair for
+  a free turn. Never the only signal of anything.
 - **Links:** the folio's arrow link ("Source on GitHub →"), underlined in `currentColor`.
 
 ## Voice
 
-| Say                   | Not                                 |
-| --------------------- | ----------------------------------- |
-| Your turn             | It's Player 1's turn to move!       |
-| Free turn: play again | FREE TURN!!!                        |
-| Capture! 9 seeds      | Captured 9 stones from the opponent |
-| Minimax is thinking   | Computer is thinking…               |
-| Player 1 wins, 52–46  | 🎉 Congratulations!                 |
+| Say                    | Not                                 |
+| ---------------------- | ----------------------------------- |
+| Your turn              | It's Player 1's turn to move!       |
+| Free turn: play again  | FREE TURN!!!                        |
+| Capture! 9 seeds       | Captured 9 stones from the opponent |
+| Expert bot is thinking | Computer is thinking…               |
+| Player 1 wins, 52–46   | 🎉 Congratulations!                 |
 
-When exactly one side is human, call them "You". Bots go by their names: Random, Greedy, DFS and Minimax.
+When exactly one side is human, call them "You". Bots go by an everyday level, so anyone can pick one: Hopeless, Very
+easy, Easy, Casual, Average, Tricky, Hard and Expert ("Hard bot"). The algorithm behind each (DFS, Minimax…) and its Elo
+follow in the menus, for the curious.
 
 ## Accessibility
 

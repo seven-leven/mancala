@@ -160,6 +160,8 @@ if (Deno.args.includes("--write")) {
  * Elo ratings from \`deno task tournament ${GAMES} --write\` (${GAMES} games per pairing). Generated: don't edit.
  * Random is pinned at 1000; low and high bound the 90% range.
  */
+export const RATINGS_VERSION = "${new Date().toISOString().slice(0, 10)}";
+
 export const RATINGS: Record<string, { elo: number; low: number; high: number }> = {
 ${entries.join("\n")}
 };

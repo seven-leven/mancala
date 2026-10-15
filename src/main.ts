@@ -4,6 +4,9 @@ import { RATINGS } from "./bots/ratings.ts";
 import { Game } from "./app/game.ts";
 import { applyTheme, loadSettings, saveSettings, type Settings } from "./app/settings.ts";
 import { BoardView } from "./ui/board.ts";
+import { setSound } from "./ui/sound.ts";
+import { renderStats } from "./ui/stats.ts";
+import { clearGames, loadGames, playerStats } from "./app/history.ts";
 
 declare const __VERSION__: string;
 
@@ -29,16 +32,17 @@ const game = new Game(new BoardView($("board")), {
   undo: $<HTMLButtonElement>("undo"),
   hint: $<HTMLButtonElement>("hint"),
   skip: $<HTMLButtonElement>("skip"),
+  replay: $<HTMLButtonElement>("replay"),
 }, settings);
 
 // --- Menus -----------------------------------------------------------------------------
 
 const bots = Object.entries(BOTS) as [BotId, (typeof BOTS)[BotId]][];
-/** "Minimax · Expert · 1908": the bot, its level, and its Elo from the tournament. */
+/** "Expert · Minimax · 1908": the everyday level, the algorithm, and its Elo from the tournament. */
 const botLabel = (id: BotId) => {
   const b = BOTS[id];
   const elo = RATINGS[id]?.elo;
-  return `${b.label} · ${b.level}${elo ? ` · ${elo}` : ""}`;
+  return `${b.level} · ${b.label}${elo ? ` · ${elo}` : ""}`;
 };
 const option = (value: string, label: string) =>
   Object.assign(document.createElement("option"), { value, textContent: label });
@@ -70,6 +74,7 @@ function showSettings(s: Settings): void {
   (field("seeds") as RadioNodeList).value = String(s.rules.seeds);
   (field("capture") as RadioNodeList).value = s.rules.capture;
   (form.elements.namedItem("clinch") as HTMLInputElement).checked = s.rules.clinch;
+  (form.elements.namedItem("sound") as HTMLInputElement).checked = s.sound;
   describeRules(s);
 }
 
@@ -82,6 +87,13 @@ function describeRules(s: Settings): void {
   $("captureRule").innerHTML = `<strong>Capture:</strong> if the last seed lands in an empty pit ${
     capture === "own" ? "on your side" : "on either side"
   }, bank everything in the pit opposite. The seed that landed stays put.`;
+  // Minimax proves this for the standard rules (either capture side): see the README.
+  const standard = seeds === 7 && clinch;
+  $("firstRule").innerHTML = `<strong>Going first matters.</strong> ${
+    standard
+      ? "With these rules, opening with pit 1 starts a chain of free turns that wins before the other side ever moves."
+      : "The first player has a real edge."
+  } Choose who goes first in Settings.`;
   $("endRule").textContent = `The game ends when a side runs out of seeds${
     clinch ? `, or as soon as a store holds more than half of all ${14 * seeds}` : ""
   }. Each player banks what's left on their side, and the fuller store wins.`;
@@ -114,6 +126,8 @@ settingsDialog.addEventListener("close", () => {
   settings.speed = (data.get("speed") as Settings["speed"]) ?? settings.speed;
   settings.theme = (data.get("theme") as Settings["theme"]) ?? settings.theme;
   settings.first = (data.get("first") as Settings["first"]) ?? settings.first;
+  settings.sound = data.get("sound") === "on";
+  setSound(settings.sound);
   settings.rules = {
     seeds: Number(data.get("seeds")) || settings.rules.seeds,
     capture: data.get("capture") === "any" ? "any" : "own",
@@ -135,6 +149,39 @@ $("newGame").addEventListener("click", () => game.start());
 $("undo").addEventListener("click", () => game.undo());
 $("hint").addEventListener("click", () => void game.hint());
 $("skip").addEventListener("click", () => game.skipAhead());
+$("replay").addEventListener("click", () => void game.replay());
+
+// --- Your games and rating -------------------------------------------------------------
+
+const statsDialog = $<HTMLDialogElement>("stats");
+const showStats = () => {
+  renderStats({
+    rating: $("statsRating"),
+    summary: $("statsSummary"),
+    trend: document.getElementById("statsTrend") as unknown as SVGSVGElement,
+    vs: $<HTMLTableElement>("statsVs"),
+    games: $<HTMLOListElement>("statsGames"),
+  }, loadGames());
+  if (!statsDialog.open) statsDialog.showModal();
+};
+$("openStats").addEventListener("click", showStats);
+$("clearHistory").addEventListener("click", () => {
+  if (confirm("Clear every saved game, and start your rating again at 1000?")) {
+    clearGames();
+    showStats();
+  }
+});
+// After a rated game, add the rating change to the result line.
+game.onGameSaved = (saved) => {
+  if (!saved.rated) return;
+  const games = loadGames();
+  const s = playerStats(games);
+  const delta = s.change.get(games.length - 1) ?? 0;
+  const toast = $("toast");
+  toast.textContent = `${toast.textContent} Your rating: ${s.rating} (${delta >= 0 ? "+" : "−"}${
+    Math.abs(Math.round(delta))
+  }).`;
+};
 
 document.addEventListener("keydown", (e) => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -150,6 +197,11 @@ document.addEventListener("keydown", (e) => {
   else return;
   e.preventDefault();
 });
+
+// Audio can only start after a click or key press, so wake it on the first one.
+for (const type of ["pointerdown", "keydown"]) {
+  document.addEventListener(type, () => setSound(settings.sound), { once: true });
+}
 
 $("version").textContent = `v${__VERSION__}`;
 showSettings(settings);

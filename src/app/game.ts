@@ -5,9 +5,11 @@
  */
 import { BOTS, type Seat } from "../bots/bots.ts";
 import { askBot } from "../bots/client.ts";
-import { newGame, playTurn, score, validMoves } from "../game/engine.ts";
+import { newGame, playTurn, score, validMoves, winnerOf } from "../game/engine.ts";
 import type { GameState, Player, TurnEvent, TurnResult } from "../game/types.ts";
 import { BoardView, pitNumber } from "../ui/board.ts";
+import { sound } from "../ui/sound.ts";
+import { recordGame, type SavedGame } from "./history.ts";
 import { DROP_MS, type Settings } from "./settings.ts";
 
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -34,6 +36,7 @@ export interface Chrome {
   undo: HTMLButtonElement;
   hint: HTMLButtonElement;
   skip: HTMLButtonElement;
+  replay: HTMLButtonElement;
 }
 
 interface LogEntry {
@@ -49,8 +52,17 @@ export class Game {
   private busy = false;
   private thinking = false;
   private skip = false;
-  private undoStack: { state: GameState; logLength: number }[] = [];
+  private undoStack: { state: GameState; logLength: number; moveCount: number }[] = [];
   private log: LogEntry[] = [];
+  /** The game so far, for Replay: where it started and every pit played since. */
+  private opening!: GameState;
+  private moves: number[] = [];
+  private replaying = false;
+  /** Who sat where when this game began, and anything that keeps it from being rated. */
+  private seatsAtStart: Settings["seats"] = { 1: "human", 2: "human" };
+  private unrated: string | null = null;
+  /** Called with each finished game once it's saved (to update the stats). */
+  onGameSaved: (game: SavedGame) => void = () => {};
 
   constructor(private board: BoardView, private ui: Chrome, public settings: Settings) {
     this.state = newGame(settings.rules);
@@ -66,7 +78,10 @@ export class Game {
   /** "You" when exactly one side is human; otherwise "Player 1", or the bot's name. */
   name(p: Player): string {
     const seat = this.seat(p);
-    if (seat !== "human") return BOTS[seat].label;
+    if (seat !== "human") {
+      const same = this.seat(p === 1 ? 2 : 1) === seat;
+      return `${BOTS[seat].level} bot${same ? ` ${p}` : ""}`;
+    }
     const humans = (["human", "human"] as const).filter((_, i) => this.seat((i + 1) as Player) === "human").length;
     return humans === 1 ? "You" : `Player ${p}`;
   }
@@ -79,9 +94,16 @@ export class Game {
 
   start(): void {
     this.gen++;
-    this.busy = this.thinking = this.skip = false;
+    this.busy =
+      this.thinking =
+      this.skip =
+      this.replaying =
+        false;
     const { first, rules } = this.settings;
-    this.state = first === "random" ? newGame(rules) : newGame(rules, Number(first) as Player);
+    this.state = this.opening = first === "random" ? newGame(rules) : newGame(rules, Number(first) as Player);
+    this.moves = [];
+    this.seatsAtStart = { ...this.settings.seats };
+    this.unrated = null;
     this.undoStack = [];
     this.log = [];
     this.board.hint(null);
@@ -94,8 +116,8 @@ export class Game {
 
   /** Plays pit `pit` for the human whose turn it is. */
   async humanMove(pit: number): Promise<void> {
-    if (this.busy || !this.isHumanTurn() || !validMoves(this.state).includes(pit)) return;
-    this.undoStack.push({ state: this.state, logLength: this.log.length });
+    if (this.busy || this.replaying || !this.isHumanTurn() || !validMoves(this.state).includes(pit)) return;
+    this.undoStack.push({ state: this.state, logLength: this.log.length, moveCount: this.moves.length });
     this.skip = false;
     const gen = this.gen;
     await this.play(pit, gen);
@@ -117,19 +139,44 @@ export class Game {
     this.busy = this.thinking = this.skip = false;
     this.state = snap.state;
     this.log.length = snap.logLength;
+    this.unrated = "Undo was used";
+    this.moves.length = snap.moveCount;
     this.board.hint(null);
     this.board.sowingFrom(null);
     this.render();
     this.say("Took that move back.");
   }
 
+  /** Plays the finished game again from the start (bots don't move; the recorded pits do). */
+  async replay(): Promise<void> {
+    if (this.busy || this.replaying || !this.state.gameOver || this.moves.length === 0) return;
+    const moves = [...this.moves];
+    const gen = ++this.gen;
+    this.replaying = true;
+    this.skip = false;
+    this.state = this.opening;
+    this.moves = [];
+    this.log = [];
+    this.undoStack = [];
+    this.board.hint(null);
+    this.render();
+    this.say("Replaying the game.");
+    for (const move of moves) {
+      await this.play(move, gen);
+      if (gen !== this.gen) return;
+    }
+    this.replaying = false;
+    this.render();
+  }
+
   async hint(): Promise<void> {
-    if (this.busy || !this.isHumanTurn()) return;
+    if (this.busy || this.replaying || !this.isHumanTurn()) return;
     const { gen, state } = this;
     this.ui.hint.disabled = true;
     this.say("Looking for a good move…");
-    const move = await askBot("minimax", state, 500);
+    const { move } = await askBot("minimax", state, 500);
     if (gen !== this.gen || state !== this.state || move === null) return;
+    this.unrated ??= "a Hint was used";
     this.board.hint(move);
     this.ui.hint.disabled = false;
     this.say(`Try pit ${pitNumber(move)}.`);
@@ -142,6 +189,10 @@ export class Game {
 
   /** Seats or speed changed: carry on with the same game. */
   settingsChanged(): void {
+    const { seats } = this.settings;
+    if (seats[1] !== this.seatsAtStart[1] || seats[2] !== this.seatsAtStart[2]) {
+      this.unrated ??= "the players changed midway";
+    }
     this.render();
     if (!this.busy) void this.advance();
   }
@@ -156,19 +207,19 @@ export class Game {
       if (seat === "human") break;
       this.busy = this.thinking = true;
       this.render();
-      const [move] = await Promise.all([askBot(seat, this.state), this.skip ? 0 : wait(BOT_PAUSE_MS)]);
+      const [{ move, note }] = await Promise.all([askBot(seat, this.state), this.skip ? 0 : wait(BOT_PAUSE_MS)]);
       if (gen !== this.gen) return;
       this.thinking = false;
       // The seats may have changed while it thought.
       if (move === null || this.seat(this.state.current) !== seat) break;
-      await this.play(move, gen);
+      await this.play(move, gen, note);
       if (gen !== this.gen) return;
     }
     this.busy = this.thinking = false;
     this.render();
   }
 
-  private async play(move: number, gen: number): Promise<void> {
+  private async play(move: number, gen: number, note: string | null = null): Promise<void> {
     const r = playTurn(this.state, move);
     if (r.invalid) return;
     this.busy = true;
@@ -177,8 +228,9 @@ export class Game {
     await this.animate(r.events, gen);
     if (gen !== this.gen) return;
     this.state = r.state;
+    this.moves.push(move);
     this.board.sowingFrom(null);
-    this.record(r);
+    this.record(r, note);
     this.busy = false;
     this.render();
   }
@@ -198,12 +250,14 @@ export class Game {
           break;
         case "drop":
           this.board.setCount(e.pit, e.count, !this.skip && !reduceMotion);
+          if (!this.skip) sound.drop(e.pit);
           this.ui.hand.textContent = String(e.inHand);
           if (!this.skip) await wait(dropMs);
           break;
         case "capture":
           if (!this.skip) await wait(CAPTURE_PAUSE_MS);
           this.board.flashCapture([e.landing, e.opposite, e.store], 700);
+          if (!this.skip) sound.capture();
           this.board.setCount(e.opposite, 0);
           this.board.setCount(e.store, e.storeCount, true);
           break;
@@ -217,18 +271,34 @@ export class Game {
   }
 
   /** Logs the move and says what happened. */
-  private record(r: Extract<TurnResult, { invalid: false }>): void {
+  private record(r: Extract<TurnResult, { invalid: false }>, note: string | null): void {
     const who = this.name(r.player);
     const parts = [`pit ${pitNumber(r.move)}`];
     if (r.relays) parts.push(`relay ×${r.relays}`);
     if (r.captured) parts.push(`captured ${r.captured}`);
     if (r.freeTurn) parts.push("free turn");
+    if (note) parts.push(note);
     this.log.push({ player: r.player, text: `${who} · ${parts.join(" · ")}` });
 
+    if (r.gameOver) sound.gameOver();
+    else if (r.freeTurn && !this.skip) sound.freeTurn();
     if (r.gameOver) this.say(`Game over. ${this.result()}.`);
     else if (r.captured) this.say(`Capture! ${r.captured} seeds.`);
     else if (r.freeTurn) this.say(who === "You" ? "Free turn: play again." : `Free turn: ${who} plays again.`);
     else this.say("");
+    if (r.gameOver && !this.replaying) this.save();
+  }
+
+  private save(): void {
+    const game = recordGame({
+      seats: { ...this.settings.seats },
+      rules: this.settings.rules,
+      first: this.opening.current,
+      score: [score(this.state, 1), score(this.state, 2)],
+      winner: winnerOf(this.state),
+      moves: [...this.moves],
+    }, this.unrated);
+    this.onGameSaved(game);
   }
 
   private result(): string {
@@ -256,7 +326,7 @@ export class Game {
     board.setTurn(state.gameOver ? null : state.current);
     board.setStoreLabels({ 1: this.name(1), 2: this.name(2) });
 
-    const canPlay = !this.busy && this.isHumanTurn();
+    const canPlay = !this.busy && !this.replaying && this.isHumanTurn();
     const playable = new Set(canPlay ? validMoves(state) : []);
     board.setPlayable(playable, (pit, n) => {
       const owner: Player = pit <= 6 ? 1 : 2;
@@ -281,10 +351,12 @@ export class Game {
       const who = this.name(current);
       if (this.seat(current) !== "human") {
         ui.turnText.textContent = this.thinking ? `${who} is thinking` : `${who} to play`;
-        ui.turnNote.textContent = animating ? "sowing…" : "";
+        ui.turnNote.textContent = this.replaying ? "replay" : animating ? "sowing…" : "";
       } else {
         ui.turnText.textContent = who === "You" ? "Your turn" : `${who}'s turn`;
-        ui.turnNote.textContent = animating
+        ui.turnNote.textContent = this.replaying
+          ? "replay"
+          : animating
           ? "sowing…"
           : who === "You"
           ? "pick one of your pits"
@@ -295,6 +367,7 @@ export class Game {
     ui.undo.disabled = this.undoStack.length === 0 || (animating && !this.skip);
     ui.hint.disabled = !canPlay;
     ui.skip.disabled = !this.busy;
+    ui.replay.hidden = !state.gameOver || this.replaying || this.moves.length === 0;
 
     // The move log, newest first
     ui.moveCount.textContent = this.log.length ? `· ${this.log.length}` : "";

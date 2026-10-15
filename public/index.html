@@ -35,6 +35,7 @@
         </div>
         <div class="controls">
           <button class="btn btn--primary" id="newGame" type="button">New game</button>
+          <button class="btn btn--ghost" id="replay" type="button" hidden>Replay</button>
           <label class="select">
             <span class="visually-hidden">Opponent</span>
             <select id="opponent"></select>
@@ -42,6 +43,12 @@
           <button class="btn btn--ghost" id="undo" type="button" aria-keyshortcuts="U">Undo</button>
           <button class="btn btn--ghost" id="hint" type="button" aria-keyshortcuts="H">Hint</button>
           <button class="btn btn--ghost" id="skip" type="button" aria-keyshortcuts="S">Skip</button>
+          <button class="btn btn--ghost btn--icon" id="openStats" type="button" aria-label="Your games and rating">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+            </svg>
+          </button>
           <button class="btn btn--ghost btn--icon" id="openSettings" type="button" aria-label="Settings">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
               stroke-linejoin="round" aria-hidden="true">
@@ -105,6 +112,7 @@
         <li
           id="captureRule"><strong>Capture:</strong> if the last seed lands in an empty pit on your side, bank everything
           in the pit opposite. The seed that landed stays put.</li>
+        <li id="firstRule"></li>
         <li
           id="endRule">The game ends when a side runs out of seeds. Each player banks what's left on their side, and the
           fuller store wins.</li>
@@ -113,6 +121,23 @@
         game, <kbd>U</kbd> undo, <kbd>H</kbd> hint, <kbd>S</kbd> skip, <kbd>?</kbd> this help.</p>
       <form method="dialog" class="dialog__actions">
         <button class="btn btn--primary">Let's play</button>
+      </form>
+    </dialog>
+
+    <dialog id="stats" aria-labelledby="statsTitle">
+      <p class="label eyebrow">Your games</p>
+      <h2 id="statsTitle">Rating <span id="statsRating">1000</span></h2>
+      <p class="turn__note" id="statsSummary"></p>
+      <svg class="trend" id="statsTrend" viewBox="0 0 300 60" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <table class="stats-table" id="statsVs"></table>
+      <ol class="stats-games" id="statsGames"></ol>
+      <p class="turn__note">
+        Saved in this browser only. A game is rated when it's you against one bot, played to the end under the
+        standard rules, without Undo or Hint. Each game keeps the bot's rating from the day you played it.
+      </p>
+      <form method="dialog" class="dialog__actions">
+        <button class="btn btn--ghost" type="button" id="clearHistory">Clear history</button>
+        <button class="btn btn--primary">Done</button>
       </form>
     </dialog>
 
@@ -142,6 +167,7 @@
             <label><input type="radio" name="speed" value="fast"><span>Fast</span></label>
           </div>
         </fieldset>
+        <label class="check" style="margin-bottom: var(--space-4)"><input type="checkbox" name="sound"> Sound</label>
         <fieldset class="field">
           <legend class="label">Theme</legend>
           <div class="segmented">

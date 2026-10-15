@@ -5,11 +5,22 @@
  */
 import { playTurn, score, validMoves } from "../game/engine.ts";
 import type { GameState } from "../game/types.ts";
-import { search } from "./minimax.ts";
+import { search, type SearchResult } from "./minimax.ts";
 
 export interface Bot {
   /** The pit to play, or null if there's no legal move. */
   choose(state: GameState): number | null;
+  /** What the last choice was based on, for the move log ("saw 9 moves ahead, +12"), if it searched. */
+  note?(): string | null;
+}
+
+/** How a search bot describes what it saw. */
+function describe(r: SearchResult): string | null {
+  if (r.depth === 0) return null;
+  if (r.score >= 10_000) return `sees a forced win`;
+  if (r.score <= -10_000) return `sees a forced loss`;
+  const lead = Math.round(r.score);
+  return `saw ${r.depth} ${r.depth === 1 ? "move" : "moves"} ahead, ${lead > 0 ? "+" : ""}${lead}`;
 }
 
 type Rng = () => number;
@@ -119,9 +130,14 @@ export class DfsBot implements Bot {
 
 /** Alpha-beta search that plans for the opponent's replies too. See minimax.ts. */
 export class MinimaxBot implements Bot {
+  private last: SearchResult | null = null;
   constructor(private opts: { timeMs?: number; depth?: number } = { timeMs: 700 }) {}
   choose(state: GameState): number | null {
-    return search(state, this.opts).move;
+    this.last = search(state, this.opts);
+    return this.last.move;
+  }
+  note(): string | null {
+    return this.last && describe(this.last);
   }
 }
 
@@ -131,9 +147,13 @@ export class MinimaxBot implements Bot {
  * but misses the long chains, and its games vary.
  */
 export class LookaheadBot implements Bot {
+  private last: SearchResult | null = null;
   constructor(private depth = 2, private slack = 3, private rng: Rng = Math.random) {}
+  note(): string | null {
+    return this.last && describe(this.last);
+  }
   choose(state: GameState): number | null {
-    const r = search(state, { depth: this.depth, scoreAll: true, extensions: 0 });
+    const r = this.last = search(state, { depth: this.depth, scoreAll: true, extensions: 0 });
     if (!r.scores || r.scores.size === 0) return r.move;
     const good = [...r.scores].filter(([, v]) => v >= r.score - this.slack).map(([m]) => m);
     return good[Math.floor(this.rng() * good.length)];
@@ -141,38 +161,39 @@ export class LookaheadBot implements Bot {
 }
 
 /**
- * The bots, weakest first; the menus list them in this order. Levels follow the Elo ratings from
+ * The bots, weakest first; the menus list them in this order. `level` is the everyday name players
+ * see ("Hard bot"); `label` is the algorithm behind it. Levels follow the Elo ratings from
  * `deno task tournament` (see the README).
  */
 export const BOTS = {
   pushover: {
     label: "Pushover",
-    level: "Worst possible",
+    level: "Hopeless",
     blurb: "Searches ahead like Minimax, but to lose by as much as it can.",
     create: () => new PushoverBot(4),
   },
   generous: {
     label: "Generous",
-    level: "Beginner",
+    level: "Very easy",
     blurb: "Greedy's opposite: banks as little as it can, turning down free turns and captures.",
     create: () => new GenerousBot(),
   },
-  random: { label: "Random", level: "Novice", blurb: "Plays any legal pit.", create: () => new RandomBot() },
+  random: { label: "Random", level: "Easy", blurb: "Plays any legal pit.", create: () => new RandomBot() },
   first: {
     label: "First",
-    level: "Novice",
+    level: "Casual",
     blurb: "Always plays its first pit with seeds, from its own left.",
     create: () => new FirstBot(),
   },
   greedy: {
     label: "Greedy",
-    level: "Easy",
+    level: "Average",
     blurb: "Takes whatever banks the most seeds this turn.",
     create: () => new GreedyBot(),
   },
   lookahead: {
     label: "Lookahead",
-    level: "Medium",
+    level: "Tricky",
     blurb: "Looks two moves ahead and plays one of its better moves, not always the best.",
     create: () => new LookaheadBot(2, 3),
   },

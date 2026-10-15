@@ -2,6 +2,8 @@
  * Elo ratings from `deno task tournament 40 --write` (40 games per pairing). Generated: don't edit.
  * Random is pinned at 1000; low and high bound the 90% range.
  */
+export const RATINGS_VERSION = "2026-10-15";
+
 export const RATINGS: Record<string, { elo: number; low: number; high: number }> = {
   minimax: { elo: 1908, low: 1816, high: 2026 },
   dfs: { elo: 1838, low: 1753, high: 1939 },

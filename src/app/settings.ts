@@ -12,6 +12,7 @@ export interface Settings {
   speed: Speed;
   theme: Theme;
   first: First;
+  sound: boolean;
   rules: Rules;
 }
 
@@ -22,6 +23,7 @@ export const DEFAULTS: Settings = {
   speed: "normal",
   theme: "system",
   first: "random",
+  sound: false,
   rules: { ...DEFAULT_RULES },
 };
 
@@ -45,6 +47,7 @@ export function loadSettings(): Settings {
     speed: saved.speed && saved.speed in DROP_MS ? saved.speed : DEFAULTS.speed,
     theme: saved.theme === "light" || saved.theme === "dark" ? saved.theme : "system",
     first: saved.first === "1" || saved.first === "2" ? saved.first : "random",
+    sound: saved.sound === true,
     rules: {
       seeds: Number.isInteger(r.seeds) && r.seeds >= 3 && r.seeds <= 7 ? r.seeds : DEFAULT_RULES.seeds,
       capture: r.capture === "any" ? "any" : "own",
