@@ -3,7 +3,7 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `deno.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
-## Unreleased
+## v2.3.0 · 2026-10-15
 
 - **A tidier toolbar** in three groups: New game and the opponent; Undo, Hint and Skip as icon buttons (Replay takes
   Skip's place when a game is over); and Sound, Your games, Settings and How to play. Every icon button names its key in
