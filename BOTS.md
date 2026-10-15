@@ -93,7 +93,8 @@ dormant: it moves from `BOTS` to `DORMANT` in `src/bots/bots.ts`. It's out of th
 id stays reserved, and `deno task rate --bots random,minimax,grandmaster` still rates it, so it can come back when
 something changes. Say why next to it.
 
-Dormant now: Grandmaster (Minimax searching to depth 10; level with Minimax for five times the time).
+Dormant now: Grandmaster (Minimax searching to depth 10; level with Minimax for five times the time), and First (always
+its leftmost pit; level with Random, 999 against 1000 over 240 games, so it added no step to the ladder).
 
 ## Retiring a bot
 

@@ -1,5 +1,5 @@
 /** The "Your games" dialog: your rating and its trend, your record against each bot, recent games. */
-import { type BotId, BOTS } from "../bots/bots.ts";
+import { type BotId, BOTS, DORMANT, type DormantId, isDormantId } from "../bots/bots.ts";
 import { RATINGS } from "../bots/ratings.ts";
 import { humanSide, playerStats, type SavedGame, seatName, START_RATING } from "../app/history.ts";
 
@@ -40,10 +40,13 @@ export function renderStats(els: StatsEls, games: SavedGame[]): void {
   els.trend.toggleAttribute("hidden", !path);
 
   // Your record against each bot you've played, in the menu's order
-  const rows = (Object.keys(BOTS) as BotId[]).filter((id) => s.vs.has(id)).map((id) => {
+  // Bots made dormant since come after the current ones, so old games still show.
+  const ids = [...Object.keys(BOTS), ...Object.keys(DORMANT)] as (BotId | DormantId)[];
+  const rows = ids.filter((id) => s.vs.has(id)).map((id) => {
     const r = s.vs.get(id)!;
     const n = r.w + r.l + r.d;
-    return `<tr><td>${BOTS[id].level} <span class="muted">${BOTS[id].label}</span></td>` +
+    const spec = isDormantId(id) ? DORMANT[id] : BOTS[id];
+    return `<tr><td>${spec.level} <span class="muted">${spec.label}</span></td>` +
       `<td class="mono">${RATINGS[id]?.elo ?? "–"}</td><td class="mono">${r.w}–${r.l}${r.d ? `–${r.d}` : ""}</td>` +
       `<td class="mono">${Math.round(((r.w + r.d / 2) / n) * 100)}%</td></tr>`;
   });

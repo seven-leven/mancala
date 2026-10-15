@@ -8,7 +8,7 @@
  * A game counts toward the rating ("rated") only if it was one person against one bot, played to
  * the end under the standard rules, with no Undo or Hint and no change of opponent midway.
  */
-import { type BotId, BOTS, isBotId, type Seat } from "../bots/bots.ts";
+import { type BotId, BOTS, DORMANT, type DormantId, isBotId, isDormantId, type Seat } from "../bots/bots.ts";
 import { RATINGS, RATINGS_VERSION } from "../bots/ratings.ts";
 import { DEFAULT_RULES, type Player, type Rules } from "../game/types.ts";
 
@@ -127,7 +127,7 @@ export interface PlayerStats {
   rated: number;
   played: number;
   /** Per bot: wins, losses and draws against it (any game with one person against that bot). */
-  vs: Map<BotId, { w: number; l: number; d: number }>;
+  vs: Map<BotId | DormantId, { w: number; l: number; d: number }>;
   /** Rating change from each game, by index into the saved games (rated games only). */
   change: Map<number, number>;
 }
@@ -136,14 +136,15 @@ export interface PlayerStats {
 export function playerStats(games: SavedGame[]): PlayerStats {
   let rating = START_RATING;
   const trend: number[] = [];
-  const vs = new Map<BotId, { w: number; l: number; d: number }>();
+  const vs = new Map<BotId | DormantId, { w: number; l: number; d: number }>();
   const change = new Map<number, number>();
   games.forEach((g, i) => {
     const me = humanSide(g.seats);
     if (me === null) return;
     const them = (me === 1 ? 2 : 1) as Player;
-    const bot = g.seats[them];
-    if (!isBotId(bot)) return;
+    // A bot made dormant since still counts: the game was played and rated against it.
+    const bot: string = g.seats[them];
+    if (!isBotId(bot) && !isDormantId(bot)) return;
     const result = g.winner === null ? 0.5 : g.winner === me ? 1 : 0;
     const rec = vs.get(bot) ?? { w: 0, l: 0, d: 0 };
     if (result === 1) rec.w++;
@@ -160,6 +161,12 @@ export function playerStats(games: SavedGame[]): PlayerStats {
   return { rating: Math.round(rating), trend, rated: trend.length, played: games.length, vs, change };
 }
 
-/** "Hard bot (DFS)" style name for a seat in the history. */
-export const seatName = (seat: Seat): string =>
-  seat === "human" ? "A person" : isBotId(seat) ? `${BOTS[seat].level} bot` : String(seat);
+/** "Hard bot" style name for a seat in the history. Saved games may name a bot made dormant since. */
+export const seatName = (seat: Seat | DormantId): string =>
+  seat === "human"
+    ? "A person"
+    : isBotId(seat)
+    ? `${BOTS[seat].level} bot`
+    : isDormantId(seat)
+    ? `${DORMANT[seat].level} bot`
+    : String(seat);

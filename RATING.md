@@ -100,7 +100,7 @@ win rate against each other bot.
 - **Read the ratings as a ladder, not exact numbers.** A 100% pairing only says one bot is much stronger, not how much.
   Those gaps are set by the closer pairings in between.
 - **Too close to call:** neighbours whose 90% ranges overlap. The ladder chart draws them in red. Today: Chainer and
-  Spoiler, Greedy and Turtle, Random and First.
+  Spoiler, Greedy and Turtle.
 - **Noise, not a change:** a new rating inside the old range. Only a move outside it says the bot really changed.
 - **The ends move most.** The strongest and weakest bots are placed only by lopsided pairings, which carry little
   information, so more games move them furthest.
@@ -144,13 +144,14 @@ Each rating so far, from `src/bots/ratings.ts` in git history. "Typical" is the 
 first rating (v2.0, 14 October 2026) there were four named levels with no numbers behind them: Easy (Random), Medium
 (Greedy), Hard (DFS) and Expert (Minimax).
 
-| Ratings                       | Bots | Games a pairing | Openings          | Typical 90% range | Widest |
-| ----------------------------- | ---: | --------------: | ----------------- | ----------------: | -----: |
-| Difficulty levels only (v2.0) |    4 |               – | –                 |         not rated |      – |
-| First Elo ladder (v2.1)       |    8 |              40 | Each game its own |               ±75 |   ±105 |
-| Bot standard (v2.2.0)         |   12 |              40 | Matched pairs     |               ±50 |    ±63 |
-| Seventeen bots (v2.2.0)       |   17 |              60 | Matched pairs     |               ±36 |    ±41 |
-| After the speed-ups (v2.2.2)  |   17 |             240 | Matched pairs     |               ±20 |    ±25 |
+| Ratings                         | Bots | Games a pairing | Openings          | Typical 90% range | Widest |
+| ------------------------------- | ---: | --------------: | ----------------- | ----------------: | -----: |
+| Difficulty levels only (v2.0)   |    4 |               – | –                 |         not rated |      – |
+| First Elo ladder (v2.1)         |    8 |              40 | Each game its own |               ±75 |   ±105 |
+| Bot standard (v2.2.0)           |   12 |              40 | Matched pairs     |               ±50 |    ±63 |
+| Seventeen bots (v2.2.0)         |   17 |              60 | Matched pairs     |               ±36 |    ±41 |
+| After the speed-ups (v2.2.2)    |   17 |             240 | Matched pairs     |               ±20 |    ±25 |
+| First made dormant (unreleased) |   16 |             240 | Matched pairs     |               ±21 |    ±26 |
 
 What it taught:
 
@@ -160,16 +161,17 @@ What it taught:
 - **With seventeen bots, games are the cheaper lever.** Four times the games did more in 5 minutes than five more bots
   would. Giving the games to close pairings (adaptive allocation, in [TODO.md](TODO.md)) should do better still.
 
-### The ladder's shape, as of v2.2.2
+### The ladder's shape, sixteen bots without First
 
-The ladder runs from 494 (Pushover) to 2064 (Minimax). The average step is about 100 Elo, so each bot beats the one
-below it about 64% of the time: each step up is noticeably harder, and none is a wall. Most rungs sit between 900 and
-1750, where people play.
+The ladder runs from 516 (Pushover) to 2043 (Minimax), sixteen bots. The average step is about 100 Elo, so each bot
+beats the one below it about 64% of the time: each step up is noticeably harder, and none is a wall. Most rungs sit
+between 900 and 1750, where people play.
 
-- **Same strength, different style:** Random and First (1 apart), Greedy and Turtle (10), Chainer and Spoiler (18). They
-  earn their place as styles, not as steps.
-- **The widest gaps:** Planner to Chainer (204), Hoarder to Sometimes generous (190), Sometimes generous to Generous
-  (169). A new bot does most good in the first two: Planner to Chainer is the middle of the ladder, where players climb.
+- **Same strength, different style:** Greedy and Turtle (13 apart), Chainer and Spoiler (11). They earn their place as
+  styles, not as steps. First, level with Random (1 apart), added no style worth a rung and is now dormant.
+- **The widest gaps:** Planner to Chainer (208), Hoarder to Sometimes generous (186), Sometimes generous to Generous
+  (172), Shrewd to Lookahead (169). A new bot does most good in the first two: Planner to Chainer is the middle of the
+  ladder, where players climb.
 - **The ceiling:** nothing is above Minimax, so a strong player runs out of ladder. That's for a stronger Expert (v2.4),
   not for more bots in the middle.
 

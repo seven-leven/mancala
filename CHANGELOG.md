@@ -5,6 +5,10 @@ release has a section here; work since the last one sits under _Unreleased_.
 
 ## Unreleased
 
+- **First is dormant.** It always played its leftmost pit, and with matched pairs it rated level with Random (999
+  against 1000), so it added no step to the ladder. It's out of the menus but kept in the code; games you played against
+  it still count toward your rating and still show in Your games. Re-rated without it over 240 games a pairing: every
+  90% range within ±26, and two neighbouring pairs too close to call.
 - **RATING.md**, one guide to rating the bots: when to re-rate, how many games, the commands, how to read the ranges,
   where a new bot should land and what to update after. Two diagrams go with it: a rating session in five steps, and how
   to read a rating. The README and BOTS.md now link to it instead of repeating it.

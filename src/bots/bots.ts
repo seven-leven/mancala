@@ -71,13 +71,6 @@ export const BOTS = {
     family: "basic",
     create: ({ rng }) => new RandomBot(rng),
   },
-  first: {
-    label: "First",
-    level: "Casual",
-    blurb: "Always plays its first pit with seeds, from its own left.",
-    family: "basic",
-    create: () => new FirstBot(),
-  },
   striker: {
     label: "Striker",
     level: "Bold",
@@ -172,6 +165,16 @@ export const BOTS = {
  * See BOTS.md, "Dormant bots".
  */
 export const DORMANT = {
+  // Rated level with Random (999 against 1000 over 240 games, too close to call), so it adds no
+  // step to the ladder, and a player can't tell the two apart. Kept as the simplest fixed
+  // strategy for tests and research.
+  first: {
+    label: "First",
+    level: "Casual",
+    blurb: "Always plays its first pit with seeds, from its own left.",
+    family: "basic",
+    create: () => new FirstBot(),
+  },
   // Rated level with Minimax (1992 against 1985 over 60 games) for five times the search time:
   // depth 10 adds almost nothing to depth 6 here. Waits for a better evaluation (v2.4) or a
   // capture extension (#13) to make deeper search pay. See TODO.md, v2.5.
