@@ -4,9 +4,12 @@
  *
  *   deno task rate [games per pairing, default 40] [--openings random-moves|symmetric|standard]
  *                        [--bots random,greedy,...] [--time 10m] [--resume] [--record games.mgn] [--write]
- *                        [--workers N, default one per CPU core]
+ *                        [--workers N, default one per CPU core] [--adaptive]
  *
  * --write saves the ratings to src/bots/ratings.ts, which the game's menus show.
+ *
+ * --adaptive gives close pairings more games and lopsided ones fewer (adaptive.ts), planned from
+ * the current ratings before the run, and plays them all from one queue instead of in rounds.
  *
  * Games are played in matched pairs: an opening is set up once (see openings.ts), then each bot
  * plays it from both seats. An opening that favours one seat then comes out even, and a bot only
@@ -34,6 +37,8 @@ import { aboveShare, fit, misfits, rangesOf, resample, sum } from "./elo.ts";
 import { isOpening, type Opening, OPENINGS } from "./openings.ts";
 import type { PairJob, PairResult } from "./play.ts";
 import { Pool } from "./pool.ts";
+import { plan, weight } from "./adaptive.ts";
+import { RATINGS } from "../../src/bots/ratings.ts";
 
 /** A flag's value: `--name value` or `--name=value`. */
 function flag(name: string): string | undefined {
@@ -81,6 +86,18 @@ const RECORD = flag("record");
 const WORKERS = Math.max(1, Math.floor(Number(flag("workers") ?? navigator.hardwareConcurrency ?? 4)));
 const pool = new Pool(WORKERS);
 
+// --adaptive: close pairings many games, lopsided ones few, fixed before the run from ratings.ts.
+const ADAPTIVE = Deno.args.includes("--adaptive");
+const PLAN = ADAPTIVE ? plan(ids, RATINGS, GAMES) : null;
+
+// Each bot's thinking time and moves, for Elo against time per move (this run's games only).
+const think = ids.map(() => ({ ms: 0, moves: 0 }));
+const addThink = (r: PairResult) => {
+  for (const [k, bot] of [r.i, r.j].entries()) {
+    [think[bot].ms, think[bot].moves] = [think[bot].ms + r.thinkMs[k], think[bot].moves + r.moves[k]];
+  }
+};
+
 let state: Checkpoint = {
   opening: OPENING,
   bots: names,
@@ -88,12 +105,16 @@ let state: Checkpoint = {
   results: Array.from({ length: n }, () => Array.from({ length: n }, () => [] as number[])),
   firstWon: 0,
   decided: 0,
+  ...(PLAN ? { plan: PLAN, done: {} } : {}),
 };
 if (Deno.args.includes("--resume")) {
   const saved = await load();
   if (!saved) throw new Error("--resume: no checkpoint to resume");
   if (saved.opening !== OPENING || saved.bots.join() !== names.join()) {
     throw new Error(`--resume: the checkpoint is for --openings ${saved.opening} with ${saved.bots.join(", ")}`);
+  }
+  if (JSON.stringify(saved.plan ?? null) !== JSON.stringify(PLAN)) {
+    throw new Error("--resume: the checkpoint was planned differently (--adaptive, or other ratings or games)");
   }
   state = saved;
 }
@@ -181,27 +202,101 @@ async function playRound(round: number): Promise<PairResult[] | null> {
   return out;
 }
 
-while (state.rounds < ROUNDS && !stopping && performance.now() - startedAt < BUDGET) {
-  const round = await playRound(state.rounds);
-  if (!round) break;
-  const recorded: string[] = [];
-  for (const { i, j, results, firstWon, decided, games } of round) {
-    state.results[i][j].push(...results);
-    state.results[j][i].push(...results.map((x) => 1 - x));
-    state.firstWon += firstWon;
-    state.decided += decided;
-    recorded.push(...games);
+/** Rebuilds the results from the adaptive pairs done, in plan order, so the fit and its ranges repeat. */
+function rebuild(): void {
+  state.results = Array.from({ length: n }, () => Array.from({ length: n }, () => [] as number[]));
+  state.firstWon = state.decided = 0;
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      for (let round = 0; round < PLAN![i][j]; round++) {
+        const d = state.done![`${i} ${j} ${round}`];
+        if (!d) continue;
+        state.results[i][j].push(d[0], d[1]);
+        state.results[j][i].push(1 - d[0], 1 - d[1]);
+        state.firstWon += d[2];
+        state.decided += d[3];
+      }
+    }
   }
-  state.rounds++;
-  if (RECORD) await Deno.writeTextFile(RECORD, recorded.join("\n") + "\n", { append: true });
-  await save(state);
+  state.rounds = Object.keys(state.done!).length;
 }
+
+/** --adaptive: every planned pair from one queue, the costliest pairings first. */
+async function playAdaptive(): Promise<void> {
+  const jobs: PairJob[] = [];
+  let total = 0;
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      for (let round = 0; round < PLAN![i][j]; round++, total++) {
+        if (state.done![`${i} ${j} ${round}`]) continue;
+        jobs.push({ round, i, j, a: ids[i], b: ids[j], opening: OPENING as Opening, record: !!RECORD });
+      }
+    }
+  }
+  const cost = (job: PairJob) => weight(job.a) + weight(job.b);
+  const order = jobs.map((_, k) => k).sort((a, b) => cost(jobs[b]) - cost(jobs[a]) || a - b);
+  const left = sum(jobs.map(cost));
+  let doneCost = 0, sinceSave = 0, recorded: string[] = [];
+  let saving = Promise.resolve();
+  const flush = () => {
+    const games = recorded;
+    recorded = [];
+    rebuild();
+    saving = saving.then(async () => {
+      if (RECORD && games.length) await Deno.writeTextFile(RECORD, games.join("\n") + "\n", { append: true });
+      await save(state);
+    });
+  };
+  await pool.run(jobs, order, {
+    stop: () => stopping || performance.now() - startedAt > BUDGET,
+    done: (k, _ms, r) => {
+      state.done![`${r.i} ${r.j} ${jobs[k].round}`] = [r.results[0], r.results[1], r.firstWon, r.decided];
+      addThink(r);
+      recorded.push(...r.games);
+      doneCost += cost(jobs[k]);
+      // A checkpoint every 50 pairs.
+      if (++sinceSave >= 50) {
+        sinceSave = 0;
+        flush();
+      }
+      if (!live) return;
+      const elapsed = performance.now() - startedAt;
+      const doneNow = Object.keys(state.done!).length;
+      const eta = doneCost ? elapsed * (left - doneCost) / doneCost : null;
+      const line =
+        `Adaptive · ${doneNow}/${total} pairs · ${clock(elapsed)} elapsed · ETA ${
+          eta === null ? "--:--" : clock(eta)
+        }` + (stopping ? " · stopping" : "");
+      Deno.stderr.writeSync(new TextEncoder().encode(`\r\x1b[2K${line.slice(0, columns() - 1)}`));
+    },
+  });
+  flush();
+  await saving;
+}
+
+if (ADAPTIVE) await playAdaptive();
+else {while (state.rounds < ROUNDS && !stopping && performance.now() - startedAt < BUDGET) {
+    const round = await playRound(state.rounds);
+    if (!round) break;
+    const recorded: string[] = [];
+    for (const r of round) addThink(r);
+    for (const { i, j, results, firstWon, decided, games } of round) {
+      state.results[i][j].push(...results);
+      state.results[j][i].push(...results.map((x) => 1 - x));
+      state.firstWon += firstWon;
+      state.decided += decided;
+      recorded.push(...games);
+    }
+    state.rounds++;
+    if (RECORD) await Deno.writeTextFile(RECORD, recorded.join("\n") + "\n", { append: true });
+    await save(state);
+  }}
 pool.close();
 Deno.removeSignalListener("SIGINT", onInterrupt);
 if (live) Deno.stderr.writeSync(new TextEncoder().encode("\r\x1b[2K"));
 
 if (state.rounds === 0) {
-  console.log("No complete rounds yet, so no ratings.");
+  console.log(ADAPTIVE ? "No pairs played yet, so no ratings." : "No complete rounds yet, so no ratings.");
   Deno.exit(0);
 }
 const { results, firstWon, decided } = state;
@@ -213,19 +308,32 @@ const range = rangesOf(samples);
 const order = [...ids.keys()].sort((a, b) => rating[b] - rating[a]);
 // "Above next": the share of resamples in which each bot rates above the next one down.
 const above = order.map((i, k) => (k + 1 < order.length ? aboveShare(samples, i, order[k + 1]) : null));
-console.log("| Bot | Elo | 90% range | Above next | Won |");
-console.log("| --- | ---: | :---: | ---: | ---: |");
+const msPerMove = (i: number) => think[i].moves ? think[i].ms / think[i].moves : null;
+console.log("| Bot | Elo | 90% range | Above next | Won | ms a move |");
+console.log("| --- | ---: | :---: | ---: | ---: | ---: |");
 for (const [k, i] of order.entries()) {
   const all = results[i].flat();
   const rng90 = i === 0 ? "anchor" : `${range[i][0]}–${range[i][1]}`;
   const next = above[k] === null ? "–" : `${Math.round(above[k]! * 100)}%`;
-  console.log(`| ${labels[i]} | ${rating[i]} | ${rng90} | ${next} | ${Math.round((sum(all) / all.length) * 100)}% |`);
+  const won = `${Math.round((sum(all) / all.length) * 100)}%${ADAPTIVE ? ` of ${all.length}` : ""}`;
+  const ms = msPerMove(i);
+  console.log(
+    `| ${labels[i]} | ${rating[i]} | ${rng90} | ${next} | ${won} | ${
+      ms === null ? "–" : ms < 1 ? ms.toFixed(2) : ms.toFixed(1)
+    } |`,
+  );
 }
 
 console.log(`\n| Wins against → | ${order.map((i) => labels[i]).join(" | ")} |`);
 console.log(`| --- | ${order.map(() => "---:").join(" | ")} |`);
 for (const i of order) {
-  const cells = order.map((j) => (i === j ? "–" : `${Math.round((sum(results[i][j]) / results[i][j].length) * 100)}%`));
+  const cells = order.map((j) =>
+    i === j
+      ? "–"
+      : `${Math.round((sum(results[i][j]) / results[i][j].length) * 100)}%${
+        ADAPTIVE ? ` (${results[i][j].length})` : ""
+      }`
+  );
   console.log(`| **${labels[i]}** | ${cells.join(" | ")} |`);
 }
 const misses = misfits(results, rating);
@@ -247,11 +355,17 @@ const describeOpening: Record<Opening, string> = {
   symmetric: "a random board that's the same from both seats",
   standard: "the standard board",
 };
+const counts = ids.flatMap((_, i) => ids.slice(i + 1).map((_, k) => results[i][i + 1 + k].length));
+const allGames = sum(counts);
+const planned = PLAN ? 2 * sum(PLAN.flatMap((row, i) => row.slice(i + 1))) : 0;
+const howMany = ADAPTIVE
+  ? `${allGames} games${allGames < planned ? ` (stopped early; ${planned} planned)` : ""}, adaptive: ${
+    Math.min(...counts)
+  } to ${Math.max(...counts)} a pairing, more for close pairings (planned from ratings.ts, ${GAMES} at 50/50)`
+  : `${played} games per pairing${played < GAMES ? ` (stopped early; ${GAMES} planned)` : ""}, as ${state.rounds} ` +
+    `matched ${state.rounds === 1 ? "pair" : "pairs"}`;
 console.log(
-  `\n${played} games per pairing${played < GAMES ? ` (stopped early; ${GAMES} planned)` : ""}, as ${state.rounds} ` +
-    `matched ${state.rounds === 1 ? "pair" : "pairs"}: each opening (${
-      describeOpening[OPENING]
-    }) played once from each seat. ` +
+  `\n${howMany}: each opening (${describeOpening[OPENING]}) played once from each seat. ` +
     `The player moving first won ${Math.round((firstWon / decided) * 100)}% of decided games.
 A 100% pairing only shows one bot is much stronger; those gaps come from the closer pairings ` +
     `in between, hence the ranges.`,
@@ -269,7 +383,9 @@ if (Deno.args.includes("--write")) {
   await Deno.writeTextFile(
     file,
     `/**
- * Elo ratings from \`deno task rate ${played} --openings ${OPENING} --write\` (${played} games per pairing,
+ * Elo ratings from \`deno task rate ${GAMES}${ADAPTIVE ? " --adaptive" : ""} --openings ${OPENING} --write\` (${
+      ADAPTIVE ? `${allGames} games, adaptive` : `${played} games per pairing`
+    },
  * in matched pairs). Generated: don't edit. Random is pinned at 1000; low and high bound the 90% range;
  * above is the share of resampled fits in which the bot rates above the next one down.
  */
@@ -282,3 +398,20 @@ ${entries.join("\n")}
   );
   console.log("\nWrote src/bots/ratings.ts");
 }
+
+// Elo against time per move, for the chart (this run's games; wall-clock, so it depends on the machine).
+try {
+  await Deno.mkdir(new URL("../../data/", import.meta.url), { recursive: true });
+  const rows = order.map((i) => ({
+    id: ids[i],
+    label: labels[i],
+    elo: rating[i],
+    low: range[i][0],
+    high: range[i][1],
+    msPerMove: msPerMove(i),
+  }));
+  await Deno.writeTextFile(
+    new URL("../../data/elo-time.json", import.meta.url),
+    JSON.stringify({ workers: WORKERS, rows }, null, 2),
+  );
+} catch { /* data/ isn't writable: the table above has the same numbers */ }

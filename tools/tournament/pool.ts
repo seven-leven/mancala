@@ -6,8 +6,8 @@
 import type { PairJob, PairResult } from "./play.ts";
 
 export interface RunHooks {
-  /** A pairing finished: its index in `jobs`, and how long it took in ms. */
-  done?(k: number, ms: number): void;
+  /** A pairing finished: its index in `jobs`, how long it took in ms, and its result. */
+  done?(k: number, ms: number, result: PairResult): void;
   /** Checked before each pairing is handed out: true stops the run (pairings in flight finish). */
   stop?(): boolean;
 }
@@ -41,7 +41,7 @@ export class Pool {
         w.onmessage = (e: MessageEvent<PairResult>) => {
           out[k] = e.data;
           busy--;
-          hooks.done?.(k, performance.now() - sent);
+          hooks.done?.(k, performance.now() - sent, e.data);
           feed(w);
         };
         w.onerror = (e) => reject(e.error ?? new Error(e.message));

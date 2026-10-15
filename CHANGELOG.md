@@ -5,6 +5,10 @@ release has a section here; work since the last one sits under _Unreleased_.
 
 ## Unreleased
 
+- **Adaptive allocation** (`deno task rate 240 --adaptive`): close pairings get many games, lopsided ones as few as 10,
+  planned from the current ratings, played from one queue. See docs/RATING.md.
+- The rating run times every bot's moves: a "ms a move" column, and `data/elo-time.json` for a chart.
+- Pushover searches 3 moves deep instead of 4: just as hopeless, 5.5× quicker.
 - **The rating run reports two more things:** "Above next", how sure each bot is of its place over the next one down
   (saved as `above` in the ratings; the ladder chart marks pairs under 90%), and a model check that flags any pairing
   the ratings don't explain.

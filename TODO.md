@@ -141,8 +141,9 @@ ratings 18% of that short run (a fixed ~2 s). Ordered by what each should save. 
       slowest pairing first, with no round boundaries, and checkpoint every so many finished pairs. Show games played in
       the Won and head-to-head tables, and add it to RATING.md. Keep it only if it gives today's ±25 ranges in clearly
       less time than a plain 240-game run, with ratings inside those ranges.
-- [ ] **Pushover: prune or cap.** It's 7% of the time because a search that wants to lose can't prune. A smaller depth
-      or a time cap would do; it's the weakest bot either way.
+- [x] **Pushover: prune or cap.** Done: depth 3, 5.5× faster (1.0 ms a move against 5.6), and just as hopeless (0.5 of
+      80 games against Random, 36 against Generous; depth 4: 1 and 38). Was: It's 7% of the time because a search that
+      wants to lose can't prune. A smaller depth or a time cap would do; it's the weakest bot either way.
 - [ ] **Grandmaster, dormant until it pays.** Depth 10 gained 7 Elo over Minimax's depth 6 for 5× the time, and some
       moves took 9 s. Bring it back with something that makes depth count (a better evaluation, #15; a capture
       extension, #13), or a time cap, and keep it only if it rates clearly above Minimax.

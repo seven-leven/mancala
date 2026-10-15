@@ -8,7 +8,7 @@
  */
 import { assertEquals } from "@std/assert";
 import type { BotId } from "../src/bots/bots.ts";
-import { type PairJob, playPair } from "../tools/tournament/play.ts";
+import { type PairJob, type PairResult, playPair } from "../tools/tournament/play.ts";
 import { Pool } from "../tools/tournament/pool.ts";
 
 // Quick bots only: the test stays well under a second of play.
@@ -25,15 +25,18 @@ for (let round = 0; round < ROUNDS; round++) {
   }
 }
 
+/** A pairing's result without its timings, which are wall-clock and vary. */
+const played = ({ thinkMs: _t, ...rest }: PairResult) => rest;
+
 Deno.test("a pairing plays the same games on 1 worker, on 4, in any order, and as the snapshot", async () => {
-  const direct = jobs.map(playPair);
+  const direct = jobs.map(playPair).map(played);
 
   const one = new Pool(1);
   const four = new Pool(4);
   try {
-    assertEquals(await one.run(jobs), direct, "1 worker differs from playing the pairings directly");
+    assertEquals((await one.run(jobs))!.map(played), direct, "1 worker differs from playing the pairings directly");
     const reversed = jobs.map((_, k) => jobs.length - 1 - k);
-    assertEquals(await four.run(jobs, reversed), direct, "4 workers, in reverse order, differ");
+    assertEquals((await four.run(jobs, reversed))!.map(played), direct, "4 workers, in reverse order, differ");
   } finally {
     one.close();
     four.close();

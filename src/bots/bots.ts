@@ -39,7 +39,8 @@ export const BOTS = {
     level: "Hopeless",
     blurb: "Searches ahead like Minimax, but to lose by as much as it can.",
     family: "search",
-    create: () => new PushoverBot(4),
+    // Depth 3: as hopeless as depth 4 (both lose about 99% to Random) at a fifth of the time.
+    create: () => new PushoverBot(3),
   },
   generous: {
     label: "Generous",

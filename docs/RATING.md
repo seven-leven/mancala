@@ -56,6 +56,22 @@ Ranges shrink with the square root of the games, so four times the games halves 
 
 Minimax pairings are most of the time. A placement run with only a few bots is much quicker.
 
+### Adaptive allocation
+
+`deno task rate 240 --adaptive` spends the games where they tell you something. A game between bots that win p and 1 − p
+of the time carries p(1 − p) of information: a quarter at 50/50, almost nothing at 99/1. So each pairing gets max(10,
+round(240 × 4p(1 − p))) games, p from the ratings in `src/bots/ratings.ts`: 240 for an even pairing, a few dozen for a
+clear one, and the floor of 10 for a mismatch, which keeps every bot linked to Random and still shows a bot that isn't
+transitive. The lopsided games are mostly the slow searchers', so they're the costliest to skip playing.
+
+Rules it keeps:
+
+- **The plan is fixed before the run**, from the last ratings, never from results as they come in, which would bias the
+  fit and its ranges. A bot with no rating yet plays every pairing in full.
+- **One queue, no rounds.** Every planned pair goes on one queue, the costliest pairings first; a checkpoint every 50
+  pairs, so `--resume` and `--time` work as before. Results are put back in plan order, so a run repeats exactly.
+- **Counts in the tables:** "Won" shows the games each bot played, and each head-to-head cell its game count.
+
 ## How a run works
 
 **Matched pairs.** Each opening is set up once, then played twice, the bots swapping seats. A board that favours the

@@ -14,6 +14,9 @@ export interface Checkpoint {
   results: number[][][];
   firstWon: number;
   decided: number;
+  /** --adaptive only: matched pairs planned for each pairing, and the pairs done, by "i j round". */
+  plan?: number[][];
+  done?: Record<string, [number, number, number, number]>;
 }
 
 export const CHECKPOINT = new URL("./checkpoint.json", import.meta.url);
