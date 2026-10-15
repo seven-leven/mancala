@@ -58,25 +58,13 @@ why Settings lets you choose who goes first.
 | Very easy  | Generous           |  561 |  537–586  | Greedy's opposite: banks as little as it can                               |
 | Hopeless   | Pushover           |  494 |  471–518  | Searches ahead like Minimax, but to lose by as much as it can              |
 
-The ratings come from `deno task rate`: every bot plays every other 240 times, in matched pairs. Each pair of games
-starts from the same opening (the standard board after two random moves), once with each bot in each seat, so an opening
-that favours one side comes out even. Elo is fitted to all the results at once, and Random is pinned at 1000.
+Every bot played every other 240 times, in matched pairs, with Random pinned at 1000. Read the ratings as a ladder: the
+bars are 90% ranges, and neighbours drawn in red are too close to call. [RATING.md](RATING.md) explains how they're made
+and how to read them; [BOTS.md](BOTS.md) has the standard every bot follows.
 
-Bots were added where the ladder had gaps: a game between bots close in strength tells you far more than a 100–0
-mismatch, so every new neighbour firms up the ratings around it. With seventeen bots and 240 games a pairing, every 90%
-range is within ±25. [BOTS.md](BOTS.md) has the standard every bot follows. A Grandmaster (Minimax searching deeper) is
-built but dormant: it rated level with Minimax for five times the time.
-
-**Read them as a ladder, not exact numbers.** Many pairings end 100–0, which only says one bot is much stronger, not how
-much; those gaps come from the closer pairings in between. The 90% ranges (from re-fitting resampled results) show how
-firm each number is. Three neighbouring pairs are too close to call (red in the chart): Chainer and Spoiler (Chainer won
-52% of their 240 games), Greedy and Turtle (46%), and Random and First (45%). At 60 games a pairing, Minimax and DFS and
-Lookahead and Planner were too close to call as well; 240 games separate them.
-
-**Your rating.** Finished games are saved in your browser, and your own Elo is worked out from them (everyone starts at
-1000, level with Random). A game is rated when it's you against one bot, played to the end under the standard rules,
-without Undo or Hint. Each saved game keeps the bot's rating from the day you played, so adding bots later doesn't
-rewrite your history. "Your games" shows the rating, its trend, your record against each bot, and a backup button.
+**Your rating.** Your own Elo is worked out in your browser from your finished games against the bots (everyone starts
+at 1000, level with Random); see [RATING.md](RATING.md#your-rating) for which games count. "Your games" shows the
+rating, its trend, your record against each bot, and a backup button.
 
 ## How it's built
 
@@ -115,21 +103,19 @@ deno task check        # type check
 deno task rate         # the rating harness: rate the bots (add --write to update the menus)
 deno task bench        # how deep and fast Minimax searches
 deno task ladder       # redraw docs/ladder.svg from the ratings
-deno task profile      # where a tournament round spends its time (data/profile/)
+deno task profile      # where a rating run spends its time (data/profile/)
 deno task release      # from dev: check everything, then ship to main
 ```
 
-Two words kept apart: the **test harness** (`deno task test`, `tests/`) checks the code is correct and runs on every
-push; the **rating harness** (`deno task rate`, `tools/tournament/`) plays the bots against each other to set their Elo,
-and runs by hand before a release. A test run, a rating run.
+The **test harness** (`deno task test`) checks the code is correct and runs on every push. The **rating harness**
+(`deno task rate`) sets the bots' Elo and runs by hand: see [RATING.md](RATING.md).
 
 Every push runs the same checks on GitHub. A push to `main` builds the site and publishes `dist/` to the `gh-pages`
 branch, which GitHub Pages serves. Work happens on `dev`. `main` is protected: it only takes a pull request whose checks
 passed, never a direct push or a force-push. `deno task release` opens that pull request from `dev` (or uses the open
 one), waits for its checks, merges it, and waits for the deploy.
 
-To add a bot, follow [BOTS.md](BOTS.md): write it in its family's file in `src/bots/players/`, add it to `BOTS` in
-`src/bots/bots.ts`, and run `deno task rate --write`. The tournament rates everything in `BOTS`.
+To add a bot, follow [BOTS.md](BOTS.md) to write it and [RATING.md](RATING.md) to place and rate it.
 
 ## Changes
 

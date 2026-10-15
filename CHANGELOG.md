@@ -3,6 +3,14 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `deno.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
+## Unreleased
+
+- **RATING.md**, one guide to rating the bots: when to re-rate, how many games, the commands, how to read the ranges,
+  where a new bot should land and what to update after. Two diagrams go with it: a rating session in five steps, and how
+  to read a rating. The README and BOTS.md now link to it instead of repeating it.
+- **A truthful ETA** during a rating run: it counts rounds rather than games, so it no longer reads far too short early
+  on. Pairings now run slowest first, so the cores stay busy to the end of each round. Results are unchanged.
+
 ## v2.2.2 · 2026-10-15
 
 - **A new opponent picker.** The long dropdown is now a list grouped by strength (Strong, Club, Learner, Starter), each

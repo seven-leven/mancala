@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 506" width="720" height="506" role="img" aria-labelledby="t d">
+  <title id="t">A rating session, step by step</title>
+  <desc
+    id="d">1. Decide whether to re-rate: A new or changed bot, or an engine or harness change that plays different games. 2. Place a new bot: A quick run with Random and a few neighbours; tune its knob until it lands in its gap. 3. Run the full rating: Every bot in BOTS, 240 games a pairing: about 5 min on 16 cores. Ctrl+C stops; --resume goes on. 4. Read it as a ladder: Neighbours whose 90% ranges overlap are too close to call; a move inside the old range is noise. 5. Publish: Redraw the chart, reorder levels if the ladder changed, update the README table and CHANGELOG.</desc>
+  <style>
+  svg {
+    --ink: #161514;
+    --muted: #6b6760;
+    --rule: #dfdad0;
+    --accent: #a8483f;
+    --bg: #f6f4ef;
+    --tint: #efe2dc;
+  }
+  @media (prefers-color-scheme: dark) {
+    svg {
+      --ink: #f6f4ef;
+      --muted: rgba(246,244,239,0.62);
+      --rule: rgba(246,244,239,0.14);
+      --accent: #e39a86;
+      --bg: #161514;
+      --tint: rgba(227,154,134,0.14);
+    }
+  }
+  text {
+    font: 12px Inter, system-ui, sans-serif;
+    fill: var(--ink);
+  }
+  .muted {
+    fill: var(--muted);
+  }
+  .title {
+    font: 400 20px "Instrument Serif", Georgia, serif;
+  }
+  .h {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .mono {
+    font: 11.5px "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  }
+  .small {
+    font-size: 11px;
+  }
+  .num {
+    font: 600 13px Inter, system-ui, sans-serif;
+    fill: var(--bg);
+  }
+  .accent {
+    fill: var(--accent);
+  }
+  .bg {
+    fill: var(--bg);
+  }
+  .rule {
+    stroke: var(--rule);
+    fill: none;
+  }
+  .box {
+    stroke: var(--rule);
+    fill: none;
+  }
+  .dot {
+    fill: var(--ink);
+  }
+  .bar {
+    stroke: var(--ink);
+    stroke-width: 4;
+    stroke-linecap: round;
+  }
+  .bar.close {
+    stroke: var(--accent);
+  }
+  .bar.old {
+    stroke: var(--muted);
+    stroke-width: 2;
+  }
+  .dot.close {
+    fill: var(--accent);
+  }
+  .circle {
+    fill: var(--ink);
+  }
+  .tint {
+    fill: var(--tint);
+  }
+  .curve {
+    stroke: var(--ink);
+    stroke-width: 2;
+    fill: none;
+  }
+  .mark {
+    fill: var(--accent);
+  }
+  </style>
+  <rect class="bg" width="720" height="506" rx="12" />
+  <text class="title" x="24" y="34">A rating session</text>
+  <text class="muted small" x="696" y="34" text-anchor="end">deno task rate · see RATING.md</text>
+  <line class="rule" x1="44" x2="44" y1="98" y2="154" />
+  <circle class="circle" cx="44" cy="84" r="14" />
+  <text class="num" x="44" y="89" text-anchor="middle">1</text>
+  <text class="h" x="72" y="89">Decide whether to re-rate</text>
+  <text class="muted" x="72" y="109">A new or changed bot, or an engine or harness</text>
+  <text class="muted" x="72" y="125">change that plays different games.</text>
+  <rect class="box" x="420" y="68" width="276" height="62" rx="8" />
+  <text class="mono" x="434" y="94">git diff main -- src/bots src/game</text>
+  <text class="mono muted" x="434" y="114"># does anything play differently?</text>
+  <line class="rule" x1="44" x2="44" y1="184" y2="240" />
+  <circle class="circle" cx="44" cy="170" r="14" />
+  <text class="num" x="44" y="175" text-anchor="middle">2</text>
+  <text class="h" x="72" y="175">Place a new bot</text>
+  <text class="muted" x="72" y="195">A quick run with Random and a few neighbours;</text>
+  <text class="muted" x="72" y="211">tune its knob until it lands in its gap.</text>
+  <rect class="box" x="420" y="154" width="276" height="62" rx="8" />
+  <text class="mono" x="434" y="180">deno task rate 40 --bots \</text>
+  <text class="mono" x="434" y="200">  random,greedy,turtle,newBot</text>
+  <line class="rule" x1="44" x2="44" y1="270" y2="326" />
+  <circle class="circle" cx="44" cy="256" r="14" />
+  <text class="num" x="44" y="261" text-anchor="middle">3</text>
+  <text class="h" x="72" y="261">Run the full rating</text>
+  <text class="muted" x="72" y="281">Every bot in BOTS, 240 games a pairing: about</text>
+  <text class="muted" x="72" y="297">5 min on 16 cores. Ctrl+C stops; --resume goes on.</text>
+  <rect class="box" x="420" y="240" width="276" height="62" rx="8" />
+  <text class="mono" x="434" y="266">deno task rate 240 --write \</text>
+  <text class="mono" x="434" y="286">  | tee data/ratings-240.md</text>
+  <line class="rule" x1="44" x2="44" y1="356" y2="412" />
+  <circle class="circle" cx="44" cy="342" r="14" />
+  <text class="num" x="44" y="347" text-anchor="middle">4</text>
+  <text class="h" x="72" y="347">Read it as a ladder</text>
+  <text class="muted" x="72" y="367">Neighbours whose 90% ranges overlap are too</text>
+  <text class="muted" x="72" y="383">close to call; a move inside the old range is noise.</text>
+  <rect class="box" x="420" y="326" width="276" height="62" rx="8" />
+  <text class="mono" x="434" y="352">Elo · 90% range · Won</text>
+  <text class="mono muted" x="434" y="372">and the head-to-head table</text>
+  <circle class="circle" cx="44" cy="428" r="14" />
+  <text class="num" x="44" y="433" text-anchor="middle">5</text>
+  <text class="h" x="72" y="433">Publish</text>
+  <text class="muted" x="72" y="453">Redraw the chart, reorder levels if the ladder</text>
+  <text class="muted" x="72" y="469">changed, update the README table and CHANGELOG.</text>
+  <rect class="box" x="420" y="412" width="276" height="62" rx="8" />
+  <text class="mono" x="434" y="438">deno task ladder</text>
+  <text class="mono" x="434" y="458">deno task test  # then commit</text>
+</svg>

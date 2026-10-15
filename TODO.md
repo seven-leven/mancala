@@ -126,11 +126,9 @@ ratings 18% of that short run (a fixed ~2 s). Ordered by what each should save. 
 - [x] **Re-rated after the speed-ups**, with 240 games a pairing (4× as many) in 5 minutes: every 90% range within ±25
       (was ±40), three neighbouring pairs too close to call (was five). `deno task rate 4`: 37 s → 10 s (16 cores);
       bench 1220k → 1769k positions/s; rating fit 55 s → 0.7 s. Next: Pushover below.
-- [ ] **A truthful ETA.** The progress line divides games left by the average speed so far, but pairings differ hugely
-      in cost (two quick bots finish in milliseconds; anything with Minimax takes seconds), and each round plays the
-      quick ones and the slow ones in a fixed order, so the ETA swings and reads far too short early on. Every round
-      plays the same pairings: time each pairing in the first round and estimate from those (or from the last complete
-      round), and count the work left, not the games left.
+- [x] **A truthful ETA.** It counts rounds, not games: the median of the last five round times, plus what's left of this
+      round weighted by each pairing's last time. Pairings also run slowest first, so a round no longer ends with one
+      long Minimax pairing while the other cores wait. Same results.
 - [ ] **Pushover: prune or cap.** It's 7% of the time because a search that wants to lose can't prune. A smaller depth
       or a time cap would do; it's the weakest bot either way.
 - [ ] **Grandmaster, dormant until it pays.** Depth 10 gained 7 Elo over Minimax's depth 6 for 5× the time, and some
