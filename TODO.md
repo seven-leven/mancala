@@ -94,9 +94,6 @@ in `src/bots/players/`.
 
 - [ ] [#13](https://github.com/seven-leven/mancala/issues/13) Capture extension: like the free-turn extension (12 in a
       row today), keep searching past the depth limit after a capture, so the search doesn't stop just before the reply.
-- [ ] [#14](https://github.com/seven-leven/mancala/issues/14) Faster table keys: the transposition table keys positions
-      by a 17-character string; a number (Zobrist hashing) should be cheaper. Measure with `deno task bench` before
-      keeping it.
 - [ ] [#15](https://github.com/seven-leven/mancala/issues/15) Tune the evaluation weights from self-play (Texel's
       method: fit the weights so the evaluation predicts game results). Keep a weight set only if it wins a matched-pair
       match against the old one.
@@ -108,6 +105,9 @@ in `src/bots/players/`.
 - [ ] [#17](https://github.com/seven-leven/mancala/issues/17) A **pie rule** house rule: after the first move, the
       second player may swap sides. A real answer to the first-move edge for human games, beside choosing who goes
       first.
+- [ ] [#14](https://github.com/seven-leven/mancala/issues/14) Last in v2.4 (the profile: building keys is 1.5% of the
+      time). Faster table keys: the transposition table keys positions by a 17-character string; a number (Zobrist
+      hashing) should be cheaper. Measure with `deno task bench` before keeping it.
 
 ## v2.5 · Faster
 
@@ -152,8 +152,8 @@ ratings 18% of that short run (a fixed ~2 s). Ordered by what each should save. 
 - [ ] **Grandmaster, dormant until it pays.** Depth 10 gained 7 Elo over Minimax's depth 6 for 5× the time, and some
       moves took 9 s. Bring it back with something that makes depth count (a better evaluation, #15; a capture
       extension, #13), or a time cap, and keep it only if it rates clearly above Minimax.
-- [ ] Re-rank [#14](https://github.com/seven-leven/mancala/issues/14) (Zobrist keys): building keys is only 1.5% of the
-      time, so it's the least of these.
+- [x] Re-rank [#14](https://github.com/seven-leven/mancala/issues/14) (Zobrist keys): moved to the end of v2.4.:
+      building keys is only 1.5% of the time, so it's the least of these.
 - [ ] **WebAssembly**, still parked (see Parked): every item above is cheaper and comes first.
 
 ## Test harness
