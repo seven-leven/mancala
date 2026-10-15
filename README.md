@@ -40,37 +40,38 @@ why Settings lets you choose who goes first.
 
 | Level      | Bot                |  Elo | 90% range | How it plays                                                               |
 | ---------- | ------------------ | ---: | :-------: | -------------------------------------------------------------------------- |
-| Expert     | Minimax            | 1974 | 1939–2014 | Alpha-beta search with a transposition table; follows free-turn chains     |
-| Hard       | DFS                | 1898 | 1859–1941 | Chains its own free turns as far as they go (the original 2024 bot)        |
-| Sharp      | Shrewd             | 1845 | 1813–1883 | Lookahead's method, three moves deep instead of two                        |
-| Tricky     | Lookahead          | 1689 | 1656–1730 | Two moves deep, and picks one of its better moves, not always the best     |
-| Thoughtful | Planner            | 1669 | 1633–1705 | Two moves deep, weighing free turns set up, captures threatened, open pits |
-| Keen       | Chainer            | 1470 | 1436–1509 | Usually takes a free turn or two before banking; otherwise like Greedy     |
-| Crafty     | Spoiler            | 1447 | 1414–1481 | Often plays to leave your best reply weakest; otherwise like Greedy        |
-| Average    | Greedy             | 1319 | 1286–1351 | Takes whatever banks the most seeds this turn                              |
-| Careful    | Turtle             | 1303 | 1276–1334 | Banks what it can, but won't leave a loaded pit open to capture            |
-| Relaxed    | Sometimes greedy   | 1211 | 1182–1243 | Greedy's move half the time, any legal pit the rest                        |
-| Bold       | Striker            | 1154 | 1124–1187 | Banks what it can, but would rather line up a capture for next turn        |
-| Casual     | First              | 1012 | 982–1042  | Always plays its first pit with seeds, from its own left                   |
+| Expert     | Minimax            | 2064 | 2043–2092 | Alpha-beta search with a transposition table; follows free-turn chains     |
+| Hard       | DFS                | 1976 | 1957–2004 | Chains its own free turns as far as they go (the original 2024 bot)        |
+| Sharp      | Shrewd             | 1905 | 1884–1931 | Lookahead's method, three moves deep instead of two                        |
+| Tricky     | Lookahead          | 1750 | 1729–1776 | Two moves deep, and picks one of its better moves, not always the best     |
+| Thoughtful | Planner            | 1698 | 1680–1720 | Two moves deep, weighing free turns set up, captures threatened, open pits |
+| Keen       | Chainer            | 1494 | 1475–1515 | Usually takes a free turn or two before banking; otherwise like Greedy     |
+| Crafty     | Spoiler            | 1476 | 1459–1495 | Often plays to leave your best reply weakest; otherwise like Greedy        |
+| Average    | Greedy             | 1325 | 1310–1344 | Takes whatever banks the most seeds this turn                              |
+| Careful    | Turtle             | 1315 | 1299–1336 | Banks what it can, but won't leave a loaded pit open to capture            |
+| Relaxed    | Sometimes greedy   | 1205 | 1188–1225 | Greedy's move half the time, any legal pit the rest                        |
+| Bold       | Striker            | 1147 | 1130–1165 | Banks what it can, but would rather line up a capture for next turn        |
 | Easy       | Random             | 1000 |  anchor   | Any legal pit                                                              |
-| Thrifty    | Hoarder            |  951 |  914–983  | Keeps its seeds on its own side, banking only a little                     |
-| Gentle     | Sometimes generous |  776 |  740–819  | Generous's move most of the time, any legal pit the rest                   |
-| Very easy  | Generous           |  638 |  600–678  | Greedy's opposite: banks as little as it can                               |
-| Hopeless   | Pushover           |  566 |  520–599  | Searches ahead like Minimax, but to lose by as much as it can              |
+| Casual     | First              |  999 | 984–1017  | Always plays its first pit with seeds, from its own left                   |
+| Thrifty    | Hoarder            |  920 |  905–940  | Keeps its seeds on its own side, banking only a little                     |
+| Gentle     | Sometimes generous |  730 |  709–752  | Generous's move most of the time, any legal pit the rest                   |
+| Very easy  | Generous           |  561 |  537–586  | Greedy's opposite: banks as little as it can                               |
+| Hopeless   | Pushover           |  494 |  471–518  | Searches ahead like Minimax, but to lose by as much as it can              |
 
-The ratings come from `deno task rate`: every bot plays every other 60 times, in matched pairs. Each pair of games
+The ratings come from `deno task rate`: every bot plays every other 240 times, in matched pairs. Each pair of games
 starts from the same opening (the standard board after two random moves), once with each bot in each seat, so an opening
 that favours one side comes out even. Elo is fitted to all the results at once, and Random is pinned at 1000.
 
 Bots were added where the ladder had gaps: a game between bots close in strength tells you far more than a 100–0
-mismatch, so every new neighbour firms up the ratings around it. With seventeen bots and 60 games a pairing, every 90%
-range is within ±40. [BOTS.md](BOTS.md) has the standard every bot follows. A Grandmaster (Minimax searching deeper) is
+mismatch, so every new neighbour firms up the ratings around it. With seventeen bots and 240 games a pairing, every 90%
+range is within ±25. [BOTS.md](BOTS.md) has the standard every bot follows. A Grandmaster (Minimax searching deeper) is
 built but dormant: it rated level with Minimax for five times the time.
 
 **Read them as a ladder, not exact numbers.** Many pairings end 100–0, which only says one bot is much stronger, not how
 much; those gaps come from the closer pairings in between. The 90% ranges (from re-fitting resampled results) show how
-firm each number is. Four neighbouring pairs are too close to call (red in the chart): Minimax and DFS (Minimax won 52%
-of their 60 games), Lookahead and Planner (48%), Chainer and Spoiler (53%), and Greedy and Turtle (58%).
+firm each number is. Three neighbouring pairs are too close to call (red in the chart): Chainer and Spoiler (Chainer won
+52% of their 240 games), Greedy and Turtle (46%), and Random and First (45%). At 60 games a pairing, Minimax and DFS and
+Lookahead and Planner were too close to call as well; 240 games separate them.
 
 **Your rating.** Finished games are saved in your browser, and your own Elo is worked out from them (everyone starts at
 1000, level with Random). A game is rated when it's you against one bot, played to the end under the standard rules,

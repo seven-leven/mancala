@@ -11,7 +11,7 @@ Done items stay ticked for a release or two, then go.
 | **[v2.2 · Fairer ratings](https://github.com/seven-leven/mancala/milestone/1)**    | Ratings that measure play, not the first-move edge         | The tournament plays matched pairs and can pause and resume     |
 | **[v2.3 · Bots in the gap](https://github.com/seven-leven/mancala/milestone/2)**   | Fill the Average (1383) → Tricky (1677) gap with real bots | Two or more new bots land in the gap; ranges there narrow       |
 | **[v2.4 · A stronger Expert](https://github.com/seven-leven/mancala/milestone/3)** | A better evaluation and search at the top                  | New Minimax beats v2.3's Minimax over a matched-pair tournament |
-| **v2.5 · Faster**                                                                  | Tournaments and searches that cost less time               | A 60-game tournament of every bot in BOTS runs under 3 minutes  |
+| **v2.5 · Faster**                                                                  | Tournaments and searches that cost less time               | A 60-game rating run of every bot in BOTS runs under 3 minutes  |
 | **Research** (no release)                                                          | Questions about the game itself                            | Each answer is written up in the README or on the folio         |
 | **Parked**                                                                         | Ideas that don't pay for themselves yet                    | Revisit only when the trigger listed next to them happens       |
 
@@ -123,12 +123,9 @@ ratings 18% of that short run (a fixed ~2 s). Ordered by what each should save. 
       most of the garbage collection. Play and undo moves on one board inside the search, or reuse a pool of boards.
 - [x] **Order moves without sorting objects.** `children()` builds an object per move, plays each move to score it, then
       sorts: keep the played positions, and use a small insertion sort on parallel arrays instead.
-- **Status, 2026-10-15 (paused):** the five above are done. Same results throughout, except that parallel pairings give
-  each pairing its own seed, so every result changes once. `deno task rate 4`: 37 s → 10 s (16 cores); bench 1220k →
-  1769k positions/s; rating fit 55 s → 0.7 s. Still to do: re-rate with `deno task rate 60
-  --write` (the ratings in
-  the menus predate the per-pairing seeds), then `deno task ladder`, the README table and the CHANGELOG; then Pushover
-  below.
+- [x] **Re-rated after the speed-ups**, with 240 games a pairing (4× as many) in 5 minutes: every 90% range within ±25
+      (was ±40), three neighbouring pairs too close to call (was five). `deno task rate 4`: 37 s → 10 s (16 cores);
+      bench 1220k → 1769k positions/s; rating fit 55 s → 0.7 s. Next: Pushover below.
 - [ ] **A truthful ETA.** The progress line divides games left by the average speed so far, but pairings differ hugely
       in cost (two quick bots finish in milliseconds; anything with Minimax takes seconds), and each round plays the
       quick ones and the slow ones in a fixed order, so the ETA swings and reads far too short early on. Every round
