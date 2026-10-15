@@ -87,7 +87,8 @@ All the results are fitted at once (a Bradley–Terry model, read as Elo), so th
 matter. One virtual draw per pairing keeps 100–0 pairings finite. Random is the anchor, pinned at 1000.
 
 Each rating's **90% range** comes from re-fitting 300 times, each time resampling every pairing's results with
-replacement, a matched pair at a time. The range runs from the 5th to the 95th of those 300 values.
+replacement, a matched pair at a time. The range runs from the 5th to the 95th percentile of those 300 values (the
+[formulas](#the-maths)).
 
 ## Reading the results
 
@@ -136,3 +137,71 @@ Players have an Elo too, worked out in the browser from their saved games (`src/
 rated when it's one person against one bot, played to the end under the standard rules, with no Undo or Hint and no
 change of opponent. Each saved game keeps the bot's rating from the day it was played, so a re-rating never rewrites
 anyone's history.
+
+## The maths
+
+The formulas behind the sections above, for checking or changing `tools/tournament/elo.ts` and `src/app/history.ts`.
+Everything else on this page says the same things in words.
+
+**The model.** Each bot has a strength γ, and bot i beats bot j with probability γᵢ / (γᵢ + γⱼ) (Bradley–Terry). On the
+Elo scale, R = 400 · log₁₀ γ, which is the familiar
+
+```
+P(i beats j) = 1 / (1 + 10^((Rⱼ − Rᵢ) / 400))
+```
+
+A draw counts as half a win. The ratings are shifted so Random is exactly 1000; only differences mean anything.
+
+**The fit.** Maximum likelihood over every result at once, by minorisation–maximisation: 1000 rounds of
+
+```
+γᵢ ← Wᵢ / Σⱼ nᵢⱼ / (γᵢ + γⱼ)
+```
+
+where Wᵢ is bot i's total score and nᵢⱼ the games between i and j. One virtual draw per pairing (half a win to each
+side, one game more) keeps a 100–0 pairing from pushing a rating to infinity.
+
+**The 90% ranges.** A bootstrap: 300 times, redraw every pairing's results with replacement, a matched pair at a time
+(the two legs share an opening, so they go together), and re-fit. A bot's range runs from the 5th to the 95th percentile
+of its 300 re-fitted ratings. The resampling is seeded (711), so ranges repeat too.
+
+**Too close to call** means the 90% ranges of two ladder neighbours overlap. That's a cautious reading, not a formal
+test: two ranges can overlap a little while their difference is still fairly sure.
+
+**What a game is worth.** A game between bots i and j tells you about Rᵢ − Rⱼ in proportion to p(1 − p), with p = P(i
+beats j). Relative to an even game that's 4p(1 − p):
+
+| Elo gap |    p | Worth |
+| ------: | ---: | ----: |
+|       0 | 0.50 |  100% |
+|     200 | 0.76 |   73% |
+|     400 | 0.91 |   33% |
+|     700 | 0.98 |    7% |
+
+**Why √games.** A rating's uncertainty goes as 1 / √(Σ n · p(1 − p)) over its pairings. Four times the games gives half
+the range; the same games moved to closer pairings give a narrower range for free. That is the case for adaptive
+allocation in [TODO.md](TODO.md).
+
+**The first-move edge.** The first player wins about 53% of decided games in a rating run. Matched pairs cancel it: each
+bot plays every opening from both seats, so the edge adds the same to both sides of every pair.
+
+**Your rating.** Elo's update, replayed over your rated games in order from 1000:
+
+```
+expected = 1 / (1 + 10^((R_bot − R_you) / 400))
+R_you   ← R_you + 32 · (score − expected)        score: 1 win, ½ draw, 0 loss
+```
+
+R_bot is the bot's rating stored with that game. With K = 32 your rating moves fast and settles near the level you beat
+about half the time; it's a running estimate, not a fit like the bots'.
+
+**Strength checks in the test harness.** A test like "Lookahead beats Random" needs enough games that the result isn't
+luck, and a pass mark the stronger bot clears with room to spare. With n games and w wins, pass when
+
+```
+w ≥ n/2 + 3.1 · √n / 2
+```
+
+That's the one-sided 0.1% line under "the two bots are equal": 30 of 40, 54 of 80. Tests are seeded, so they don't
+flicker from run to run; the rule is there so a broken bot can't pass on a lucky seed, and so changing the seed doesn't
+break a sound test. Pick pairings at least 400 Elo apart (about 90% or more): they clear the line with a wide margin.
