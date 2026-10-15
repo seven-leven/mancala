@@ -10,8 +10,9 @@
  * different move orders, and every deeper pass revisits the last one), so each is searched once
  * per depth, and the best move found for it last time is tried first.
  */
-import { other, pitsOf, playTurn, score, storeOf, validMoves } from "../game/engine.ts";
-import type { GameState, Player } from "../game/types.ts";
+import { playTurn, storeOf, validMoves } from "../../game/engine.ts";
+import type { GameState } from "../../game/types.ts";
+import { evaluate, WIN } from "./evaluate.ts";
 
 export interface SearchOptions {
   /** Stop after this many milliseconds (keeps the deepest finished search). */
@@ -41,7 +42,6 @@ export interface SearchResult {
   scores?: Map<number, number>;
 }
 
-const WIN = 10_000;
 /** What a remembered value means: exact, or only a bound because the search was cut off early. */
 const EXACT = 0, LOWER = 1, UPPER = 2;
 interface Entry {
@@ -54,15 +54,6 @@ interface Entry {
 const keyOf = (s: GameState) => String.fromCharCode(...s.pits, s.current);
 const FREE_TURN_EXTENSIONS = 12;
 class OutOfTime extends Error {}
-
-/** How good `s` looks for `me`. */
-function evaluate(s: GameState, me: Player): number {
-  const lead = score(s, me) - score(s, other(me));
-  if (s.gameOver) return lead > 0 ? WIN + lead : lead < 0 ? -WIN + lead : 0;
-  // Seeds still on your side are yours if the game ends now, so they count for a little.
-  const side = (p: Player) => pitsOf(p).reduce((n, i) => n + s.pits[i], 0);
-  return lead + 0.25 * (side(me) - side(other(me)));
-}
 
 export function search(
   root: GameState,

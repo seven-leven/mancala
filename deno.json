@@ -12,7 +12,7 @@
     "build": "deno run -A tools/build.ts",
     "test": "deno test",
     "check": "deno check src tools tests",
-    "tournament": "deno run --allow-write=src/bots/ratings.ts tools/tournament.ts",
+    "tournament": "deno run --allow-write=src/bots/ratings.ts tools/tournament/main.ts",
     "design-sheet": "deno run -A tools/design-sheet.ts",
     "release": "deno run --allow-read --allow-run=git,gh,deno tools/release.ts",
     "bench": "deno run tools/bench.ts"

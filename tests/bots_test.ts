@@ -9,7 +9,7 @@ import {
   PushoverBot,
   RandomBot,
 } from "../src/bots/bots.ts";
-import { search } from "../src/bots/minimax.ts";
+import { search } from "../src/bots/search/minimax.ts";
 import { newGame, playTurn, validMoves } from "../src/game/engine.ts";
 import { DEFAULT_RULES, type GameState, P1, P2 } from "../src/game/types.ts";
 import { playMatch, seeded } from "../tools/match.ts";

@@ -1,11 +1,111 @@
 # To do
 
-What's left, and what was decided. Done items stay ticked for a release or two, then go.
+What's next, in order, and what was decided. Each version below is a release and a
+[GitHub milestone](https://github.com/seven-leven/mancala/milestones), with an issue per item; work them top to bottom.
+Done items stay ticked for a release or two, then go.
 
-## Still to do
+## Roadmap
 
-- [ ] Ideas: a perfect-play endgame table (the one place WebAssembly would earn its keep); more bots between Average and
-      Tricky, which would also firm up the ratings in that gap.
+| Milestone                                                                          | Goal                                                       | Done when                                                       |
+| ---------------------------------------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------- |
+| **[v2.2 · Fairer ratings](https://github.com/seven-leven/mancala/milestone/1)**    | Ratings that measure play, not the first-move edge         | The tournament plays matched pairs and can pause and resume     |
+| **[v2.3 · Bots in the gap](https://github.com/seven-leven/mancala/milestone/2)**   | Fill the Average (1383) → Tricky (1677) gap with real bots | Two or more new bots land in the gap; ranges there narrow       |
+| **[v2.4 · A stronger Expert](https://github.com/seven-leven/mancala/milestone/3)** | A better evaluation and search at the top                  | New Minimax beats v2.3's Minimax over a matched-pair tournament |
+| **Research** (no release)                                                          | Questions about the game itself                            | Each answer is written up in the README or on the folio         |
+| **Parked**                                                                         | Ideas that don't pay for themselves yet                    | Revisit only when the trigger listed next to them happens       |
+
+Why this order: v2.3 and v2.4 both need ratings you can trust to tell whether a change helped, so the tournament comes
+first. v2.3's bots are built from the evaluation pieces v2.4 then tunes.
+
+## [v2.2 · Fairer ratings](https://github.com/seven-leven/mancala/milestone/1)
+
+Today `tools/tournament/main.ts` plays a round robin, 40 games a pairing, each opening with two random moves, sides
+alternating. Every game's opening is different, so a lucky opening counts for whoever had it.
+
+- [x] [#18](https://github.com/seven-leven/mancala/issues/18) **Reorganise, move only.** Bots split into
+      `src/bots/players/` and `src/bots/search/` (`bots.ts` stays the one entry point), and the tournament into
+      `tools/tournament/` (`main.ts`, `elo.ts`). The tournament prints exactly what it did before.
+- [ ] [#2](https://github.com/seven-leven/mancala/issues/2) **Matched pairs.** Play each opening twice, the bots
+      swapping sides on the second game; score the pair, not the game. A board that simply favours the first player then
+      comes out 1–1.
+- [ ] [#3](https://github.com/seven-leven/mancala/issues/3) **Symmetric random starts** as a second opening mode: 49
+      seeds a side, 3–10 per pit, the same on both sides, stores empty. Needs a way to start `newGame()` from a given
+      layout (the rules stay in `src/game/engine.ts`). Test that both sides always hold the same seeds.
+- [ ] [#4](https://github.com/seven-leven/mancala/issues/4) `--openings random-moves|symmetric|standard` on the
+      tournament (keep the two random moves as the default until the symmetric mode is proven).
+- [ ] [#5](https://github.com/seven-leven/mancala/issues/5) `--time 10m` / `--games N` budgets, and a checkpoint file
+      (git-ignored) saved every 25 pairs and on Ctrl+C, so a long run can stop and resume without losing games.
+- [ ] [#6](https://github.com/seven-leven/mancala/issues/6) A live progress line: elapsed, games, games a second, ETA.
+- [ ] [#7](https://github.com/seven-leven/mancala/issues/7) A ladder check in `tests/bots_test.ts`, kept under 20 s:
+      Lookahead beats Random, Greedy beats Pushover, Minimax beats Pushover. (Minimax beats Random and Greedy is already
+      there.)
+- [ ] [#8](https://github.com/seven-leven/mancala/issues/8) Re-run `deno task tournament --write`, and update the README
+      table and its "how the ratings are made" paragraph.
+
+Later, if runs get long: pair bots mainly with their neighbours on the ladder (games near 50% tell the most) instead of
+everyone with everyone.
+
+## [v2.3 · Bots in the gap](https://github.com/seven-leven/mancala/milestone/2)
+
+Bots are classes with `choose(state)` in `src/bots/players/`, listed in `src/bots/bots.ts`; to add one, see the README.
+
+- [ ] [#9](https://github.com/seven-leven/mancala/issues/9) **Evaluation pieces** in `src/bots/search/evaluate.ts`, each
+      a small function so bots can weigh them differently:
+  - store lead (today's term) and seeds on your side (today 0.25 a seed);
+  - free turns ready: pits whose seeds land exactly in your store;
+  - exposure: loaded pits opposite an empty pit the opponent can reach;
+  - threats: your empty pits opposite their loaded ones;
+  - mobility: few legal moves left is bad.
+- [ ] [#10](https://github.com/seven-leven/mancala/issues/10) New bots, each a one-move or two-move search with its own
+      weights (names follow the everyday levels in DESIGN.md):
+  - **Turtle**: empties pits that are open to capture;
+  - **Striker**: overweights captures;
+  - **Chainer**: overweights free turns;
+  - **Denier**: picks the move that leaves the opponent's best reply weakest.
+- [ ] [#11](https://github.com/seven-leven/mancala/issues/11) Add them to `BOTS` and the tournament, rate them, and keep
+      the ones that land between Average and Tricky. A bot that lands on top of another adds nothing to the menu; it can
+      stay in the tournament as a stepping stone.
+- [ ] [#12](https://github.com/seven-leven/mancala/issues/12) README table, CHANGELOG.
+
+## [v2.4 · A stronger Expert](https://github.com/seven-leven/mancala/milestone/3)
+
+- [ ] [#13](https://github.com/seven-leven/mancala/issues/13) Capture extension: like the free-turn extension (12 in a
+      row today), keep searching past the depth limit after a capture, so the search doesn't stop just before the reply.
+- [ ] [#14](https://github.com/seven-leven/mancala/issues/14) Faster table keys: the transposition table keys positions
+      by a 17-character string; a number (Zobrist hashing) should be cheaper. Measure with `deno task bench` before
+      keeping it.
+- [ ] [#15](https://github.com/seven-leven/mancala/issues/15) Tune the evaluation weights from self-play (Texel's
+      method: fit the weights so the evaluation predicts game results). Keep a weight set only if it wins a matched-pair
+      match against the old one.
+- [ ] [#16](https://github.com/seven-leven/mancala/issues/16) Try an MCTS bot (UCB1, random playouts). If it rates above
+      Minimax, it becomes the new top level.
+- [ ] [#17](https://github.com/seven-leven/mancala/issues/17) A **pie rule** house rule: after the first move, the
+      second player may swap sides. A real answer to the first-move edge for human games, beside choosing who goes
+      first.
+
+## Research
+
+None of these ship in the game; each ends as a note in the README or on the folio.
+
+- [x] Does the first player win by force? Yes: pit 1 opens a free-turn chain that clinches (see the README).
+- [ ] Opening statistics: average chain length, seeds per relay, game length; each opening pit's result.
+- [ ] Rule balance: over a few thousand games, which best cancels the first-move edge: the pie rule, no relays on turn
+      one, or a simultaneous start (as in traditional congkak)?
+- [ ] Solve small boards completely (3 pits × 3 seeds, 4 × 4), backwards from the end, and compare with Minimax.
+- [ ] A perfect-play endgame table for the real board. This is the one place WebAssembly would earn its keep (see
+      Parked).
+
+## Parked
+
+- **A Rust core compiled to WebAssembly.** Revisit only for the endgame table above, or if `deno task bench` shows the
+  engine itself (not the search) is the limit.
+- **WebGPU.** Fast for many random or MCTS playouts at once, poor for alpha-beta. Revisit only if the MCTS bot needs far
+  more playouts than the CPU gives.
+- **Numeric bot IDs (`TT.DD.HH`) and a registry/factory.** Eight to a dozen bots fit in `BOTS` with readable names.
+  Revisit past about twenty.
+- **A new directory layout and npm scripts.** The project is Deno with `deno task`; the layout in the README stays.
+- **Cycle detection in relays.** Not needed: every lap banks a seed, `engine.ts` stops after 100,000 drops anyway, and
+  the tournament stops a game at 1,000 moves.
 
 ## Decided
 

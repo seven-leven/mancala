@@ -1,164 +1,17 @@
 /**
- * The bots. Each one is stateless and plays for whoever's turn it is (`state.current`), so any
- * bot can sit on either side. To add one, write a `choose` and register it in BOTS below: the
- * menus fill themselves from that list.
+ * The bots, and the one place the rest of the game gets them from. Each one is stateless and plays
+ * for whoever's turn it is (`state.current`), so any bot can sit on either side. To add one, write
+ * a class with `choose` in players/ and register it in BOTS below: the menus fill themselves from
+ * that list.
  */
-import { playTurn, score, validMoves } from "../game/engine.ts";
-import type { GameState } from "../game/types.ts";
-import { search, type SearchResult } from "./minimax.ts";
+import type { Bot } from "./bot.ts";
+import { FirstBot, RandomBot } from "./players/basic.ts";
+import { DfsBot } from "./players/dfs.ts";
+import { GenerousBot, GreedyBot } from "./players/greedy.ts";
+import { LookaheadBot, MinimaxBot, PushoverBot } from "./players/searchers.ts";
 
-export interface Bot {
-  /** The pit to play, or null if there's no legal move. */
-  choose(state: GameState): number | null;
-  /** What the last choice was based on, for the move log ("saw 9 moves ahead, +12"), if it searched. */
-  note?(): string | null;
-}
-
-/** How a search bot describes what it saw. */
-function describe(r: SearchResult): string | null {
-  if (r.depth === 0) return null;
-  if (r.score >= 10_000) return `sees a forced win`;
-  if (r.score <= -10_000) return `sees a forced loss`;
-  const lead = Math.round(r.score);
-  return `saw ${r.depth} ${r.depth === 1 ? "move" : "moves"} ahead, ${lead > 0 ? "+" : ""}${lead}`;
-}
-
-type Rng = () => number;
-
-/** Plays any legal pit. */
-export class RandomBot implements Bot {
-  constructor(private rng: Rng = Math.random) {}
-  choose(state: GameState): number | null {
-    const moves = validMoves(state);
-    return moves.length ? moves[Math.floor(this.rng() * moves.length)] : null;
-  }
-}
-
-/**
- * The worst possible player: it searches ahead like Minimax but plays to lose by as much as it can,
- * assuming you play to win. Even a careless opponent ends up winning.
- */
-export class PushoverBot implements Bot {
-  constructor(private depth = 4) {}
-  choose(state: GameState): number | null {
-    // Nothing prunes a search where both sides want the same result, so it follows only short
-    // free-turn chains (3), which keeps a move under ~0.1 s.
-    return search(state, { depth: this.depth, aim: "lose", extensions: 3 }).move;
-  }
-}
-
-/**
- * Greedy's opposite: the pit that banks the fewest seeds this turn, so it turns down free turns
- * and captures. The gentlest opponent, for learning the rules.
- */
-export class GenerousBot implements Bot {
-  constructor(private rng: Rng = Math.random) {}
-  choose(state: GameState): number | null {
-    const me = state.current;
-    let worst: number[] = [];
-    let worstScore = Infinity;
-    for (const move of validMoves(state)) {
-      const r = playTurn(state, move, { record: false });
-      if (r.invalid) continue;
-      const s = score(r.state, me);
-      if (s < worstScore) [worst, worstScore] = [[move], s];
-      else if (s === worstScore) worst.push(move);
-    }
-    // Several moves often bank nothing; pick among them so its games vary.
-    return worst.length ? worst[Math.floor(this.rng() * worst.length)] : null;
-  }
-}
-
-/**
- * Always plays its first pit that has seeds, counted from its own left: the leftmost pit on screen
- * for Player 1, the rightmost for Player 2 (who sits across the board). No thought at all, though
- * pit 1 happens to be the best opening move.
- */
-export class FirstBot implements Bot {
-  choose(state: GameState): number | null {
-    const moves = validMoves(state);
-    if (!moves.length) return null;
-    // Player 1's pits run 0..6 from their left; Player 2's run 13..7 from theirs.
-    return state.current === 1 ? Math.min(...moves) : Math.max(...moves);
-  }
-}
-
-/** One move deep: the pit that banks the most seeds right now, captures and free turns included. */
-export class GreedyBot implements Bot {
-  choose(state: GameState): number | null {
-    const me = state.current;
-    let best: number | null = null;
-    let bestScore = -Infinity;
-    for (const move of validMoves(state)) {
-      const r = playTurn(state, move, { record: false });
-      if (r.invalid) continue;
-      const s = score(r.state, me);
-      if (s > bestScore) [best, bestScore] = [move, s];
-    }
-    return best;
-  }
-}
-
-/**
- * The 2024 bot: depth-first search through its own free-turn chains, keeping the chain that ends
- * with the fullest store. It never looks at the opponent's replies, so it strings free turns
- * together brilliantly and walks into captures.
- */
-export class DfsBot implements Bot {
-  constructor(private maxDepth = 8) {}
-
-  choose(state: GameState): number | null {
-    const me = state.current;
-    let best: number | null = null;
-    let bestScore = -Infinity;
-    for (const move of validMoves(state)) {
-      const s = this.chain(state, move, 0, me);
-      if (s > bestScore) [best, bestScore] = [move, s];
-    }
-    return best;
-  }
-
-  private chain(state: GameState, move: number, depth: number, me: GameState["current"]): number {
-    const r = playTurn(state, move, { record: false });
-    if (r.invalid) return -Infinity;
-    if (!r.freeTurn || depth + 1 >= this.maxDepth) return score(r.state, me);
-    let best = score(r.state, me);
-    for (const next of validMoves(r.state)) best = Math.max(best, this.chain(r.state, next, depth + 1, me));
-    return best;
-  }
-}
-
-/** Alpha-beta search that plans for the opponent's replies too. See minimax.ts. */
-export class MinimaxBot implements Bot {
-  private last: SearchResult | null = null;
-  constructor(private opts: { timeMs?: number; depth?: number } = { timeMs: 700 }) {}
-  choose(state: GameState): number | null {
-    this.last = search(state, this.opts);
-    return this.last.move;
-  }
-  note(): string | null {
-    return this.last && describe(this.last);
-  }
-}
-
-/**
- * A gentler Minimax: it looks only a couple of moves ahead, doesn't follow free-turn chains past
- * them, and picks at random among the moves within `slack` seeds of its best. It plays sensibly
- * but misses the long chains, and its games vary.
- */
-export class LookaheadBot implements Bot {
-  private last: SearchResult | null = null;
-  constructor(private depth = 2, private slack = 3, private rng: Rng = Math.random) {}
-  note(): string | null {
-    return this.last && describe(this.last);
-  }
-  choose(state: GameState): number | null {
-    const r = this.last = search(state, { depth: this.depth, scoreAll: true, extensions: 0 });
-    if (!r.scores || r.scores.size === 0) return r.move;
-    const good = [...r.scores].filter(([, v]) => v >= r.score - this.slack).map(([m]) => m);
-    return good[Math.floor(this.rng() * good.length)];
-  }
-}
+export type { Bot };
+export { DfsBot, FirstBot, GenerousBot, GreedyBot, LookaheadBot, MinimaxBot, PushoverBot, RandomBot };
 
 /**
  * The bots, weakest first; the menus list them in this order. `level` is the everyday name players

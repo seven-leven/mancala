@@ -25,10 +25,11 @@ import {
   MinimaxBot,
   PushoverBot,
   RandomBot,
-} from "../src/bots/bots.ts";
-import { newGame, playTurn, validMoves } from "../src/game/engine.ts";
-import { DEFAULT_RULES, P1, P2, type Player } from "../src/game/types.ts";
-import { seeded } from "./match.ts";
+} from "../../src/bots/bots.ts";
+import { newGame, playTurn, validMoves } from "../../src/game/engine.ts";
+import { DEFAULT_RULES, P1, P2, type Player } from "../../src/game/types.ts";
+import { seeded } from "../match.ts";
+import { fit, ranges, sum } from "./elo.ts";
 
 const args = Deno.args.filter((a) => !a.startsWith("--"));
 const GAMES = Number(args[0] ?? 40);
@@ -81,47 +82,8 @@ for (let i = 0; i < n; i++) {
   }
 }
 
-const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
-
-/** Elo ratings from a table of results: Bradley–Terry by minorisation–maximisation. */
-function fit(res: number[][][]): number[] {
-  const gamma = new Array<number>(n).fill(1);
-  for (let it = 0; it < 1000; it++) {
-    for (let i = 0; i < n; i++) {
-      let wins = 0, denom = 0;
-      for (let j = 0; j < n; j++) {
-        if (i === j) continue;
-        wins += sum(res[i][j]) + 0.5; // plus one virtual draw
-        denom += (res[i][j].length + 1) / (gamma[i] + gamma[j]);
-      }
-      gamma[i] = wins / denom;
-    }
-  }
-  const elo = gamma.map((g) => 400 * Math.log10(g));
-  return elo.map((e) => e - elo[0] + 1000);
-}
-
 const rating = fit(results).map(Math.round);
-
-// 90% ranges: re-fit 300 times, each time resampling every pairing's games with replacement.
-const samples: number[][] = entrants.map(() => []);
-for (let b = 0; b < 300; b++) {
-  const res = results.map((row) => row.map(() => [] as number[]));
-  for (let i = 0; i < n; i++) {
-    for (let j = i + 1; j < n; j++) {
-      for (let k = 0; k < results[i][j].length; k++) {
-        const x = results[i][j][Math.floor(rng() * results[i][j].length)];
-        res[i][j].push(x);
-        res[j][i].push(1 - x);
-      }
-    }
-  }
-  fit(res).forEach((r, i) => samples[i].push(r));
-}
-const range = samples.map((xs) => {
-  const s = [...xs].sort((a, b) => a - b);
-  return [Math.round(s[Math.floor(s.length * 0.05)]), Math.round(s[Math.floor(s.length * 0.95)])];
-});
+const range = ranges(results, rng);
 
 const order = [...entrants.keys()].sort((a, b) => rating[b] - rating[a]);
 console.log("| Bot | Elo | 90% range | Won |");
@@ -153,7 +115,7 @@ if (Deno.args.includes("--write")) {
       i === 0 ? rating[i] : range[i][1]
     } },`;
   });
-  const file = new URL("../src/bots/ratings.ts", import.meta.url);
+  const file = new URL("../../src/bots/ratings.ts", import.meta.url);
   await Deno.writeTextFile(
     file,
     `/**

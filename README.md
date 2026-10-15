@@ -65,12 +65,15 @@ TypeScript on [Deno](https://deno.com), bundled with esbuild, no runtime depende
 
 ```
 src/game/    the rules: one pure engine, playTurn(), that returns the new state and an event log
-src/bots/    the eight bots, the Minimax search, the ratings, and the Web Worker they run in
+src/bots/    the bot list the game uses (bots.ts), the ratings, and the Web Worker they run in
+  players/   the eight bots, by family: basic, greedy, DFS, and the ones built on the search
+  search/    the Minimax search and how it scores a position
 src/ui/      the board, the stats dialog, sound
 src/app/     the turn loop (game.ts), settings, saved games and your rating
 public/      the page and its styles
 tests/       the rules, the bots, the rating maths
-tools/       build, release, tournament, bench, design sheet
+tools/       build, release, bench, design sheet, bot-against-bot games (match.ts)
+  tournament/  rates the bots: the games (main.ts) and the Elo fit (elo.ts)
 ```
 
 **The screen never re-implements the rules.** `playTurn()` records every pickup, drop, capture and sweep as it plays a
@@ -97,8 +100,8 @@ Every push runs the same checks on GitHub. A push to `main` builds the site and 
 branch, which GitHub Pages serves. Work happens on `dev`; `deno task release` fast-forwards `main` and waits for the
 deploy.
 
-To add a bot, write a class with `choose(state)` in `src/bots/bots.ts`, add it to `BOTS` with a level name, add it to
-`tools/tournament.ts`, and run `deno task tournament --write`.
+To add a bot, write a class with `choose(state)` in `src/bots/players/`, add it to `BOTS` in `src/bots/bots.ts` with a
+level name, add it to `tools/tournament/main.ts`, and run `deno task tournament --write`.
 
 ## Changes
 

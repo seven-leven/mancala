@@ -3,6 +3,13 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `deno.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
+## Unreleased
+
+- A roadmap: TODO.md now lists the next three releases, each a
+  [GitHub milestone](https://github.com/seven-leven/mancala/milestones) with an issue per item.
+- The bots and the tournament are split into folders (`src/bots/players/`, `src/bots/search/`, `tools/tournament/`).
+  Nothing plays differently: the tournament prints exactly what it did before.
+
 ## v2.1.3 · 2026-10-15
 
 - The version has its own place in the footer, beside "Source on GitHub", and links to this changelog. The build writes
