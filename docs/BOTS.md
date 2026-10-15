@@ -1,7 +1,7 @@
 # Bot standard
 
 How a bot is built, named, rated and kept. Read this before adding or changing one. The types are in
-[src/bots/contracts.ts](src/bots/contracts.ts); this explains the rules behind them.
+[src/bots/contracts.ts](../src/bots/contracts.ts); this explains the rules behind them.
 
 ## The contract
 
@@ -26,7 +26,7 @@ interface BotContext {
 }
 ```
 
-Every bot is one entry in `BOTS` in [src/bots/bots.ts](src/bots/bots.ts), and the registry is the only list there is.
+Every bot is one entry in `BOTS` in [src/bots/bots.ts](../src/bots/bots.ts), and the registry is the only list there is.
 The menus, the Web Worker, saved games and the tournament all read it.
 
 ## Rules every bot follows
@@ -56,8 +56,8 @@ The menus, the Web Worker, saved games and the tournament all read it.
 | `mixed`    | Another bot's move some of the time, else a random one | `src/bots/players/mixed.ts`    | Sometimes greedy, Sometimes generous                                         |
 
 Scoring pieces (store lead, seeds on your side, exposure, threats, free turns set up, mobility) live in
-[src/bots/search/evaluate.ts](src/bots/search/evaluate.ts) as `Evaluator`s, so one-move bots and the search share them.
-A new idea is a new function there, not a copy inside a bot.
+[src/bots/search/evaluate.ts](../src/bots/search/evaluate.ts) as `Evaluator`s, so one-move bots and the search share
+them. A new idea is a new function there, not a copy inside a bot.
 
 ## Names
 

@@ -50,8 +50,8 @@ Later: give close pairings more games than lopsided ones. Now planned as adaptiv
 
 ## [v2.3 · Bots in the gap](https://github.com/seven-leven/mancala/milestone/2)
 
-Every bot follows [BOTS.md](BOTS.md): the contract in `src/bots/contracts.ts`, one entry in `BOTS`, a family file in
-`src/bots/players/`.
+Every bot follows [BOTS.md](docs/BOTS.md): the contract in `src/bots/contracts.ts`, one entry in `BOTS`, a family file
+in `src/bots/players/`.
 
 - [x] **A bot standard.** BOTS.md, TypeScript contracts (`Bot`, `BotSpec`, `BotContext`, `Evaluator`), and the eight
       existing bots rewritten against them (they play exactly as before: the tournament repeats game for game). The
@@ -71,7 +71,7 @@ Every bot follows [BOTS.md](BOTS.md): the contract in `src/bots/contracts.ts`, o
 - [x] [#11](https://github.com/seven-leven/mancala/issues/11) Rated and kept: the widest gap went from 422 to 269 Elo,
       and every rating's 90% range is 25–35% narrower.
 - [x] [#12](https://github.com/seven-leven/mancala/issues/12) README table, CHANGELOG.
-- [x] **Game notation (MGN).** [NOTATION.md](NOTATION.md): games as text, checked against the engine both ways.
+- [x] **Game notation (MGN).** [NOTATION.md](docs/NOTATION.md): games as text, checked against the engine both ways.
       `deno task rate --record` saves every game, and `deno task positions` turns them into training data for #15.
 - [x] **Six more bots** (eighteen in all): Hoarder, Striker, Spoiler, Planner, Shrewd and Grandmaster, each placed in a
       gap with a quick rating script before the full run. Grandmaster rated level with Minimax for five times the time,
@@ -152,20 +152,21 @@ ratings 18% of that short run (a fixed ~2 s). Ordered by what each should save. 
 
 ## Test harness
 
-Alongside the releases: work these before v2.3's new bots and v2.5's adaptive allocation, which both lean on them. The
-strength checks are [#7](https://github.com/seven-leven/mancala/issues/7), under v2.2.
+All done (October 2026): see [docs/TESTING.md](docs/TESTING.md). They were worked before v2.3's new bots and v2.5's
+adaptive allocation, which both lean on them. The strength checks are
+[#7](https://github.com/seven-leven/mancala/issues/7), under v2.2.
 
-- [ ] **Random-game invariants for the engine.** Play a few thousand random games from random seeds and openings, and
+- [x] **Random-game invariants for the engine.** Play a few thousand random games from random seeds and openings, and
       check after every turn: no seed created or lost, the game always ends, the event log replays to the final
       position, `playTurn` never changes its input. Today these are checked on a handful of hand-made positions.
-- [ ] **Repeatability of the rating harness.** A tiny run (Random, Greedy, First, 4 games) prints the same table with 1
+- [x] **Repeatability of the rating harness.** A tiny run (Random, Greedy, First, 4 games) prints the same table with 1
       worker as with 4, and matches a saved snapshot. Turns "same results" from a check by hand into a test, for
       adaptive allocation and every speed-up after it.
-- [ ] **A docs link check.** Every relative link and `#anchor` in the `.md` files resolves, so RATING.md, BOTS.md and
+- [x] **A docs link check.** Every relative link and `#anchor` in the `.md` files resolves, so RATING.md, BOTS.md and
       the README can't drift apart when a heading changes.
-- [ ] **Coverage.** `deno task coverage` (`deno test --coverage`, then `deno coverage`) to see what nothing exercises.
+- [x] **Coverage.** `deno task coverage` (`deno test --coverage`, then `deno coverage`) to see what nothing exercises.
       Likely gaps: `src/app/game.ts` (undo, hint, which games are rated) and `src/ui/stats.ts`.
-- [ ] **A short testing guide**, like RATING.md but smaller: what each test file covers, the 20 s budget, slow tests in
+- [x] **A short testing guide**, like RATING.md but smaller: what each test file covers, the 20 s budget, slow tests in
       their own file so `--parallel` helps, and that strength claims belong to the rating harness.
 
 ## Rating statistics

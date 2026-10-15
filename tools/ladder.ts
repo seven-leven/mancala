@@ -5,7 +5,7 @@
  *
  *   deno task ladder        after `deno task rate --write`
  *
- * The colours are the design guide's (DESIGN.md), light and dark.
+ * The colours are the design guide's (docs/DESIGN.md), light and dark.
  */
 import { type BotId, BOTS } from "../src/bots/bots.ts";
 import { RATINGS, RATINGS_VERSION } from "../src/bots/ratings.ts";

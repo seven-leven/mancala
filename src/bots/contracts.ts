@@ -1,5 +1,5 @@
 /**
- * What a bot is, and what every bot gets and promises. BOTS.md explains the rules behind these
+ * What a bot is, and what every bot gets and promises. docs/BOTS.md explains the rules behind these
  * types; the registry (bots.ts) checks each entry against BotSpec.
  */
 import type { GameState, Player } from "../game/types.ts";

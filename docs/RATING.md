@@ -7,7 +7,7 @@ Two harnesses, two words. The **test harness** (`deno task test`, `tests/`) chec
 push. The **rating harness** (`deno task rate`, `tools/tournament/`) plays the bots against each other to set their Elo,
 and runs by hand. A test run, a rating run.
 
-![A rating session in five steps: decide, place, rate, read, publish](docs/rating-session.svg)
+![A rating session in five steps: decide, place, rate, read, publish](rating-session.svg)
 
 ## Commands
 
@@ -17,7 +17,7 @@ and runs by hand. A test run, a rating run.
 | `deno task rate 240 --write \| tee data/ratings-240.md` | The full rating for the menus, kept as a table in `data/` (git-ignored)    |
 | `deno task rate 40 --bots random,greedy,newBot`         | A placement run: only these bots. Random is always needed: it's the anchor |
 | `deno task rate 240 --write --resume`                   | Carries on after Ctrl+C or `--time`: repeat the run's own games and flags  |
-| `deno task ladder`                                      | Redraws [docs/ladder.svg](docs/ladder.svg) from `src/bots/ratings.ts`      |
+| `deno task ladder`                                      | Redraws [docs/ladder.svg](ladder.svg) from `src/bots/ratings.ts`           |
 | `deno task profile`                                     | Where a short rating run spends its time (`data/profile/`)                 |
 
 Flags:
@@ -92,7 +92,7 @@ replacement, a matched pair at a time. The range runs from the 5th to the 95th p
 
 ## Reading the results
 
-![Three ways two ratings can sit, and what a game is worth by the Elo gap](docs/rating-reading.svg)
+![Three ways two ratings can sit, and what a game is worth by the Elo gap](rating-reading.svg)
 
 The run prints a table (Elo, 90% range, the share of all its games each bot won), then a head-to-head table: each bot's
 win rate against each other bot.
@@ -159,7 +159,7 @@ What it taught:
   at the same 40 games) took a third off. From 12 to 17 bots took a little more off, beyond what the extra games
   explain. From 60 to 240 games roughly halved them.
 - **With seventeen bots, games are the cheaper lever.** Four times the games did more in 5 minutes than five more bots
-  would. Giving the games to close pairings (adaptive allocation, in [TODO.md](TODO.md)) should do better still.
+  would. Giving the games to close pairings (adaptive allocation, in [TODO.md](../TODO.md)) should do better still.
 
 ### The ladder's shape, sixteen bots without First
 
@@ -219,7 +219,7 @@ beats j). Relative to an even game that's 4p(1 − p):
 
 **Why √games.** A rating's uncertainty goes as 1 / √(Σ n · p(1 − p)) over its pairings. Four times the games gives half
 the range; the same games moved to closer pairings give a narrower range for free. That is the case for adaptive
-allocation in [TODO.md](TODO.md).
+allocation in [TODO.md](../TODO.md).
 
 **The first-move edge.** The first player wins about 53% of decided games in a rating run. Matched pairs cancel it: each
 bot plays every opening from both seats, so the edge adds the same to both sides of every pair.

@@ -1,7 +1,7 @@
 /**
  * The site's icons, from the one sprite (public/svg/icons.svg). In HTML write
  * `<svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#name"/></svg>`;
- * from a script, call icon(). DESIGN.md, "Icons", has the rules and the full set.
+ * from a script, call icon(). docs/DESIGN.md, "Icons", has the rules and the full set.
  */
 export type IconName =
   | "sun"

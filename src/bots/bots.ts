@@ -1,6 +1,6 @@
 /**
  * The bots: the one list the game, the Web Worker, saved games and the tournament all read. Each
- * entry is a BotSpec (contracts.ts); BOTS.md has the rules every bot follows and how to add one.
+ * entry is a BotSpec (contracts.ts); docs/BOTS.md has the rules every bot follows and how to add one.
  */
 import type { Bot, BotContext, BotSpec } from "./contracts.ts";
 import { FirstBot, RandomBot } from "./players/basic.ts";
@@ -53,7 +53,7 @@ export const BOTS = {
     level: "Gentle",
     blurb: "Plays Generous's move most of the time and any legal pit the rest.",
     family: "mixed",
-    // q places it between Generous and Random; see BOTS.md, "Tunable on purpose".
+    // q places it between Generous and Random; see docs/BOTS.md, "Tunable on purpose".
     create: ({ rng }) => new MixedBot(new GenerousBot(rng), 0.75, rng),
   },
   hoarder: {
@@ -162,7 +162,7 @@ export const BOTS = {
 /**
  * Dormant bots: kept in the code, out of the menus and the default tournament. Their ids are
  * reserved. The tournament still rates one when it's named: `deno task rate --bots ...`.
- * See BOTS.md, "Dormant bots".
+ * See docs/BOTS.md, "Dormant bots".
  */
 export const DORMANT = {
   // Rated level with Random (999 against 1000 over 240 games, too close to call), so it adds no

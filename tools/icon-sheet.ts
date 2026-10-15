@@ -1,6 +1,6 @@
 /**
  * Renders the icon set (public/svg/icons.svg) to docs/icons.png with headless Chrome: every icon,
- * named, at its sizes, in the light and the dark theme. DESIGN.md and the design guide show it.
+ * named, at its sizes, in the light and the dark theme. docs/DESIGN.md and the design guide show it.
  * Run after adding or changing an icon:  deno task icon-sheet
  *
  * The page is built here with the sprite inlined, so it needs no files and no server.
@@ -28,7 +28,7 @@ const sprite = await Deno.readTextFile(new URL("../public/svg/icons.svg", import
 const names = [...sprite.matchAll(/<symbol id="([^"]+)"/g)].map((m) => m[1]);
 const out = new URL("../docs/icons.png", import.meta.url);
 
-// The design guide's tokens (DESIGN.md): paper and ink, the rule, the muted text.
+// The design guide's tokens (docs/DESIGN.md): paper and ink, the rule, the muted text.
 const themes = [
   { name: "Light", bg: "#f6f4ef", card: "#fffdf9", ink: "#161514", muted: "#6b6760", rule: "#dfdad0" },
   {

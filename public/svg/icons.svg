@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg">
   <!--
     The site's icons, one per <symbol>, used as <svg class="icon"><use href="svg/icons.svg#name"/></svg>
-    (src/ui/icons.ts makes them from scripts). DESIGN.md, "Icons", has the rules: outline only, a
+    (src/ui/icons.ts makes them from scripts). docs/DESIGN.md, "Icons", has the rules: outline only, a
     24 px grid, drawn with a 2 px line, round caps and joins, no fills; the page's .icon style sets
-    the line, so these hold only the shapes. Keep this list in the order of DESIGN.md's sheet.
+    the line, so these hold only the shapes. Keep this list in the order of docs/DESIGN.md's sheet.
   -->
   <symbol id="sun" viewBox="0 0 24 24">
     <circle cx="12" cy="12" r="4" />

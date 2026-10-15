@@ -1,6 +1,6 @@
 /**
  * Every bot plays every other bot; prints Elo ratings and a win-rate table (as in the README).
- * RATING.md is the guide: when to run it, how many games, and how to read the results.
+ * docs/RATING.md is the guide: when to run it, how many games, and how to read the results.
  *
  *   deno task rate [games per pairing, default 40] [--openings random-moves|symmetric|standard]
  *                        [--bots random,greedy,...] [--time 10m] [--resume] [--record games.mgn] [--write]
@@ -33,6 +33,7 @@ import { type Checkpoint, load, save } from "./checkpoint.ts";
 import { fit, ranges, sum } from "./elo.ts";
 import { isOpening, type Opening, OPENINGS } from "./openings.ts";
 import type { PairJob, PairResult } from "./play.ts";
+import { Pool } from "./pool.ts";
 
 /** A flag's value: `--name value` or `--name=value`. */
 function flag(name: string): string | undefined {
@@ -78,10 +79,7 @@ const RECORD = flag("record");
 // Pairings are played in parallel, one per worker (play.ts has the games themselves). Each has its
 // own seed, so the results are the same for any number of workers.
 const WORKERS = Math.max(1, Math.floor(Number(flag("workers") ?? navigator.hardwareConcurrency ?? 4)));
-const pool = Array.from(
-  { length: WORKERS },
-  () => new Worker(new URL("./worker.ts", import.meta.url), { type: "module" }),
-);
+const pool = new Pool(WORKERS);
 
 let state: Checkpoint = {
   opening: OPENING,
@@ -157,46 +155,30 @@ function progress(pairsThisRound: number) {
  * Plays one round on the worker pool: every pairing once. Resolves with the results in pairing
  * order, or null if Ctrl+C stopped it (the pairings already sent are let finish, then dropped).
  */
-function playRound(round: number): Promise<PairResult[] | null> {
+async function playRound(round: number): Promise<PairResult[] | null> {
   const jobs: PairJob[] = [];
   for (let i = 0; i < n; i++) {
     for (let j = i + 1; j < n; j++) {
       jobs.push({ round, i, j, a: ids[i], b: ids[j], opening: OPENING as Opening, record: !!RECORD });
     }
   }
-  const out: PairResult[] = new Array(jobs.length);
   // Slowest pairings first (by last round's times), so the round doesn't end with one long
   // pairing running while the other workers wait. Results don't change: each pairing has its own
-  // seed and its own slot in `out`.
+  // seed and its own slot.
   const order = jobs.map((_, k) => k).sort((a, b) => (cost[b] ?? 0) - (cost[a] ?? 0));
   finished = jobs.map(() => false);
   const startedRound = performance.now();
-  let next = 0, done = 0, busy = 0;
-  return new Promise((resolve, reject) => {
-    const feed = (w: Worker) => {
-      if (stopping || next >= jobs.length) {
-        if (busy === 0) {
-          if (!stopping) roundTimes.push(performance.now() - startedRound);
-          resolve(stopping ? null : out);
-        }
-        return;
-      }
-      const k = order[next++];
-      const sent = performance.now();
-      busy++;
-      w.onmessage = (e: MessageEvent<PairResult>) => {
-        out[k] = e.data;
-        cost[k] = performance.now() - sent;
-        finished[k] = true;
-        busy--;
-        progress(++done);
-        feed(w);
-      };
-      w.onerror = (e) => reject(e.error ?? new Error(e.message));
-      w.postMessage(jobs[k]);
-    };
-    pool.forEach(feed);
+  let done = 0;
+  const out = await pool.run(jobs, order, {
+    stop: () => stopping,
+    done: (k, ms) => {
+      cost[k] = ms;
+      finished[k] = true;
+      progress(++done);
+    },
   });
+  if (out) roundTimes.push(performance.now() - startedRound);
+  return out;
 }
 
 while (state.rounds < ROUNDS && !stopping && performance.now() - startedAt < BUDGET) {
@@ -214,7 +196,7 @@ while (state.rounds < ROUNDS && !stopping && performance.now() - startedAt < BUD
   if (RECORD) await Deno.writeTextFile(RECORD, recorded.join("\n") + "\n", { append: true });
   await save(state);
 }
-pool.forEach((w) => w.terminate());
+pool.close();
 Deno.removeSignalListener("SIGINT", onInterrupt);
 if (live) Deno.stderr.writeSync(new TextEncoder().encode("\r\x1b[2K"));
 

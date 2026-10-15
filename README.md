@@ -58,11 +58,11 @@ why Settings lets you choose who goes first.
 | Hopeless   | Pushover           |  516 |  491–543  | Searches ahead like Minimax, but to lose by as much as it can              |
 
 Every bot played every other 240 times, in matched pairs, with Random pinned at 1000. Read the ratings as a ladder: the
-bars are 90% ranges, and neighbours drawn in red are too close to call. [RATING.md](RATING.md) explains how they're made
-and how to read them; [BOTS.md](BOTS.md) has the standard every bot follows.
+bars are 90% ranges, and neighbours drawn in red are too close to call. [RATING.md](docs/RATING.md) explains how they're
+made and how to read them; [BOTS.md](docs/BOTS.md) has the standard every bot follows.
 
 **Your rating.** Your own Elo is worked out in your browser from your finished games against the bots (everyone starts
-at 1000, level with Random); see [RATING.md](RATING.md#your-rating) for which games count. "Your games" shows the
+at 1000, level with Random); see [RATING.md](docs/RATING.md#your-rating) for which games count. "Your games" shows the
 rating, its trend, your record against each bot, and a backup button.
 
 ## How it's built
@@ -71,9 +71,9 @@ TypeScript on [Deno](https://deno.com), bundled with esbuild, no runtime depende
 
 ```
 src/game/    the rules: one pure engine, playTurn(), that returns the new state and an event log;
-             and MGN, the game notation (notation.ts, see NOTATION.md)
+             and MGN, the game notation (notation.ts, see docs/NOTATION.md)
 src/bots/    the bot list the game uses (bots.ts), the ratings, and the Web Worker they run in
-  players/   the bots, by family: basic, one-move, chain, search and mixed (see BOTS.md)
+  players/   the bots, by family: basic, one-move, chain, search and mixed (see docs/BOTS.md)
   search/    the Minimax search, and the scoring pieces bots share (evaluate.ts)
 src/ui/      the board, the stats dialog, sound
 src/app/     the turn loop (game.ts), settings, saved games and your rating
@@ -88,8 +88,8 @@ tools/       build, release, bench, design sheet, the ladder chart (ladder.ts), 
 move; the animation only replays that log, so what you see is what the engine did. Bots run in a Web Worker, so a long
 search never freezes the page.
 
-**The design** follows [DESIGN.md](DESIGN.md), which borrows the folio's paper, ink, type and pills so the two read as
-one body of work. Here it is on one sheet ([docs/design-guide.png](docs/design-guide.png)):
+**The design** follows [DESIGN.md](docs/DESIGN.md), which borrows the folio's paper, ink, type and pills so the two read
+as one body of work. Here it is on one sheet ([docs/design-guide.png](docs/design-guide.png)):
 
 ![The design guide as one sheet](docs/design-guide.png)
 
@@ -107,14 +107,14 @@ deno task release      # from dev: check everything, then ship to main
 ```
 
 The **test harness** (`deno task test`) checks the code is correct and runs on every push. The **rating harness**
-(`deno task rate`) sets the bots' Elo and runs by hand: see [RATING.md](RATING.md).
+(`deno task rate`) sets the bots' Elo and runs by hand: see [RATING.md](docs/RATING.md).
 
 Every push runs the same checks on GitHub. A push to `main` builds the site and publishes `dist/` to the `gh-pages`
 branch, which GitHub Pages serves. Work happens on `dev`. `main` is protected: it only takes a pull request whose checks
 passed, never a direct push or a force-push. `deno task release` opens that pull request from `dev` (or uses the open
 one), waits for its checks, merges it, and waits for the deploy.
 
-To add a bot, follow [BOTS.md](BOTS.md) to write it and [RATING.md](RATING.md) to place and rate it.
+To add a bot, follow [BOTS.md](docs/BOTS.md) to write it and [RATING.md](docs/RATING.md) to place and rate it.
 
 ## Changes
 

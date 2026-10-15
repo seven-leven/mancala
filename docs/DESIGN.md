@@ -141,7 +141,7 @@ usable size. Pits must stay at least 40px across, the smallest comfortable tap t
 
 ## Icons
 
-One outline set, kept in one file: [public/svg/icons.svg](public/svg/icons.svg), a sprite of `<symbol>`s. Nothing is
+One outline set, kept in one file: [public/svg/icons.svg](../public/svg/icons.svg), a sprite of `<symbol>`s. Nothing is
 pasted into the page: HTML writes
 `<svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#name"/></svg>` (the build stamps the URL,
 like the scripts), and scripts call `icon("name")` from `src/ui/icons.ts`.
@@ -156,7 +156,7 @@ like the scripts), and scripts call `icon("name")` from `src/ui/icons.ts`.
 - **Adding one:** draw it to these rules, add a `<symbol>` to the sprite and its name to `IconName` in
   `src/ui/icons.ts`, add it to the table below, and run `deno task icon-sheet`.
 
-![Every icon at 32, 20 and 16px, light and dark](docs/icons.png)
+![Every icon at 32, 20 and 16px, light and dark](icons.png)
 
 `deno task icon-sheet` redraws that sheet from the sprite.
 

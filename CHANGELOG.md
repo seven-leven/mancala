@@ -5,6 +5,11 @@ release has a section here; work since the last one sits under _Unreleased_.
 
 ## Unreleased
 
+- **More tests**, and a guide to them ([docs/TESTING.md](docs/TESTING.md)): the engine over 3000 random games, the
+  rating harness (same games on any number of workers, and a snapshot), strength checks in their own file, and a check
+  that every link in the docs resolves. `deno task coverage` shows what nothing tests.
+- The docs (BOTS, DESIGN, NOTATION, RATING, TESTING) moved into `docs/`, so the root holds only the README, the
+  changelog, the licence and the to-do list.
 - **The theme switch is in the masthead**: a moon in the light theme, a sun in the dark. Until it's pressed the site
   follows your device; Settings no longer has a Theme choice.
 - **A new visitor plays Random** (Easy) to start with, not Lookahead.
@@ -65,10 +70,10 @@ release has a section here; work since the last one sits under _Unreleased_.
 - **Fairer ratings.** The tournament plays matched pairs (each opening once from each seat), can deal symmetric random
   boards (`--openings symmetric`), stops on a time budget (`--time 10m`), saves after every round and resumes
   (`--resume`), and shows its progress on one line that fits the terminal. All the ratings changed; see the README.
-- **A bot standard.** [BOTS.md](BOTS.md) and TypeScript contracts every bot follows; the existing bots were rewritten
-  against them and play exactly as before.
-- **Game notation.** [NOTATION.md](NOTATION.md): a game as text, like chess's PGN. The tournament can record every game
-  (`--record`), and `deno task positions` turns them into training data for the evaluation.
+- **A bot standard.** [BOTS.md](docs/BOTS.md) and TypeScript contracts every bot follows; the existing bots were
+  rewritten against them and play exactly as before.
+- **Game notation.** [NOTATION.md](docs/NOTATION.md): a game as text, like chess's PGN. The tournament can record every
+  game (`--record`), and `deno task positions` turns them into training data for the evaluation.
 - `main` is protected: only pull requests whose checks pass. `deno task release` now ships `dev` through a pull request
   instead of pushing to `main`.
 - Seeds per pit (a house rule) is now a slider from 3 to 15; 7 is still the standard.
@@ -126,9 +131,9 @@ A rewrite in TypeScript.
   captures, and the early finish.
 - Bots in a Web Worker, so the page never freezes; a new alpha-beta Minimax that follows free-turn chains without using
   up depth.
-- A new interface built to [DESIGN.md](DESIGN.md), which borrows the [folio](https://seven-leven.github.io/folio/)'s
-  design language: paper and ink themes, a wooden board with drawn seeds, who plays each side and who goes first, undo,
-  hint, skip, a move log, keyboard play and a phone layout.
+- A new interface built to [DESIGN.md](docs/DESIGN.md), which borrows the
+  [folio](https://seven-leven.github.io/folio/)'s design language: paper and ink themes, a wooden board with drawn
+  seeds, who plays each side and who goes first, undo, hint, skip, a move log, keyboard play and a phone layout.
 - Built with esbuild (as WebAssembly) by Deno; CI checks every push and deploys `main` to the `gh-pages` branch;
   `deno task release` ships `dev` to `main`.
 

@@ -1,4 +1,4 @@
-/* Mancala: styles. Tokens and rules come from DESIGN.md, which borrows them from the folio
+/* Mancala: styles. Tokens and rules come from docs/DESIGN.md, which borrows them from the folio
    (seven-leven.github.io/folio). Components use only the semantic roles, so the dark theme
    (the folio's Coding band) just redefines them. */
 
@@ -218,7 +218,7 @@ kbd {
   cursor: pointer;
   transition: transform 0.2s var(--ease), background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
-/* Icons: one outline set from public/svg/icons.svg (DESIGN.md, "Icons"). The line is set here, so
+/* Icons: one outline set from public/svg/icons.svg (docs/DESIGN.md, "Icons"). The line is set here, so
    every icon draws the same way: 2px on a 24px grid, round caps and joins, in the text colour. */
 .icon {
   width: 16px;
