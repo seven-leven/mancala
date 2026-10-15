@@ -8,14 +8,18 @@ export const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
 /** Elo ratings from a table of results: Bradley–Terry by minorisation–maximisation. */
 export function fit(res: number[][][]): number[] {
   const n = res.length;
+  // Each pairing's score and game count, once: they don't change between steps. One virtual
+  // draw per pairing keeps 100% pairings finite.
+  const won = res.map((row) => row.map((games) => sum(games) + 0.5));
+  const played = res.map((row) => row.map((games) => games.length + 1));
   const gamma = new Array<number>(n).fill(1);
   for (let it = 0; it < 1000; it++) {
     for (let i = 0; i < n; i++) {
       let wins = 0, denom = 0;
       for (let j = 0; j < n; j++) {
         if (i === j) continue;
-        wins += sum(res[i][j]) + 0.5; // plus one virtual draw
-        denom += (res[i][j].length + 1) / (gamma[i] + gamma[j]);
+        wins += won[i][j];
+        denom += played[i][j] / (gamma[i] + gamma[j]);
       }
       gamma[i] = wins / denom;
     }

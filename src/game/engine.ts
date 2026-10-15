@@ -20,7 +20,9 @@ import {
 
 /** One lap of the board, in the order seeds travel. */
 export const SOW_ORDER = [0, 1, 2, 3, 4, 5, 6, M1, 13, 12, 11, 10, 9, 8, 7, M2] as const;
-const NEXT = new Map<number, number>(SOW_ORDER.map((pit, i) => [pit, SOW_ORDER[(i + 1) % SOW_ORDER.length]]));
+/** The slot after each slot on that lap (an array, not a Map: it's looked up for every seed). */
+const NEXT = new Int8Array(16);
+SOW_ORDER.forEach((slot, i) => (NEXT[slot] = SOW_ORDER[(i + 1) % SOW_ORDER.length]));
 
 /** A relay can't really go on forever (every lap banks a seed), but never trust a loop. */
 const MAX_DROPS = 100_000;
@@ -67,34 +69,46 @@ export function winnerOf(s: GameState): Player | null {
   return a === b ? null : a > b ? P1 : P2;
 }
 
-/**
- * Plays the pit `start` for the player whose turn it is.
- * `record: false` skips the event log, for the bots' searches.
- */
-export function playTurn(input: GameState, start: number, { record = true } = {}): TurnResult {
-  const state = cloneState(input);
-  const player = state.current;
-  if (state.gameOver || !isPit(start) || ownerOf(start) !== player || state.pits[start] === 0) {
-    return { invalid: true, state };
-  }
+/** What a turn did, besides the new position. */
+interface TurnInfo {
+  captured: number;
+  relays: number;
+}
+type Log = ((e: TurnEvent) => void) | null;
 
-  const events: TurnEvent[] = [];
-  const log = (e: TurnEvent) => record && events.push(e);
+/** turn()'s answer: a bit set, or INVALID. */
+export const FREE_TURN = 1, GAME_OVER = 2, INVALID = -1;
+
+const sideEmpty = (pits: readonly number[], p: Player) => {
+  for (const i of pitsOf(p)) if (pits[i] !== 0) return false;
+  return true;
+};
+
+/**
+ * Plays the pit `start` for the player whose turn it is, changing `state` in place: the rules,
+ * once, for both playTurn() and the bots' searches (which reuse boards instead of copying them).
+ * Returns INVALID, or FREE_TURN and GAME_OVER bits. `log` receives the event log, if wanted.
+ */
+export function turn(state: GameState, start: number, log: Log = null, info: TurnInfo | null = null): number {
+  const pits = state.pits;
+  const player = state.current;
+  if (state.gameOver || !isPit(start) || ownerOf(start) !== player || pits[start] === 0) return INVALID;
+
   const skip = storeOf(other(player));
   let drops = 0;
 
   // Pick up a pit and drop one seed in each pit after it, skipping the opponent's store.
   const sow = (from: number): number => {
-    let hand = state.pits[from];
-    state.pits[from] = 0;
-    log({ type: "pickup", pit: from, count: hand });
+    let hand = pits[from];
+    pits[from] = 0;
+    log?.({ type: "pickup", pit: from, count: hand });
     let pos = from;
     while (hand > 0 && drops++ < MAX_DROPS) {
-      pos = NEXT.get(pos)!;
+      pos = NEXT[pos];
       if (pos === skip) continue;
-      state.pits[pos]++;
+      pits[pos]++;
       hand--;
-      log({ type: "drop", pit: pos, count: state.pits[pos], inHand: hand });
+      log?.({ type: "drop", pit: pos, count: pits[pos], inHand: hand });
     }
     return pos;
   };
@@ -103,7 +117,7 @@ export function playTurn(input: GameState, start: number, { record = true } = {}
   // and keep going.
   let landing = sow(start);
   let relays = 0;
-  while (isPit(landing) && state.pits[landing] > 1 && drops < MAX_DROPS) {
+  while (isPit(landing) && pits[landing] > 1 && drops < MAX_DROPS) {
     landing = sow(landing);
     relays++;
   }
@@ -114,21 +128,21 @@ export function playTurn(input: GameState, start: number, { record = true } = {}
   // Capture: the last seed landed in an empty pit (on your own side, unless the rules say either
   // side). You bank everything in the pit opposite; the seed that landed stays where it is.
   let captured = 0;
-  const canCapture = isPit(landing) && state.pits[landing] === 1 &&
+  const canCapture = isPit(landing) && pits[landing] === 1 &&
     (state.rules.capture === "any" || ownerOf(landing) === player);
   if (!freeTurn && canCapture) {
     const opposite = oppositeOf(landing);
-    if (state.pits[opposite] > 0) {
-      captured = state.pits[opposite];
-      state.pits[opposite] = 0;
-      state.pits[storeOf(player)] += captured;
-      log({
+    if (pits[opposite] > 0) {
+      captured = pits[opposite];
+      pits[opposite] = 0;
+      pits[storeOf(player)] += captured;
+      log?.({
         type: "capture",
         landing,
         opposite,
         captured,
         store: storeOf(player),
-        storeCount: state.pits[storeOf(player)],
+        storeCount: pits[storeOf(player)],
       });
     }
   }
@@ -136,28 +150,42 @@ export function playTurn(input: GameState, start: number, { record = true } = {}
   // Game over: a side is empty, or (if the rules allow) a store holds more than half the seeds,
   // a lead the other player can't catch. Each side then banks what's left on it.
   const majority = Math.floor(totalSeeds(state.rules) / 2) + 1;
-  const clinched = state.rules.clinch && (state.pits[M1] >= majority || state.pits[M2] >= majority);
-  const sideEmpty = (p: Player) => pitsOf(p).every((i) => state.pits[i] === 0);
-  if (clinched || sideEmpty(P1) || sideEmpty(P2)) {
-    const p1Remain = P1_PITS.reduce((n, i) => n + state.pits[i], 0);
-    const p2Remain = P2_PITS.reduce((n, i) => n + state.pits[i], 0);
-    for (let i = 0; i <= 13; i++) state.pits[i] = 0;
-    state.pits[M1] += p1Remain;
-    state.pits[M2] += p2Remain;
+  const clinched = state.rules.clinch && (pits[M1] >= majority || pits[M2] >= majority);
+  if (clinched || sideEmpty(pits, P1) || sideEmpty(pits, P2)) {
+    let p1Remain = 0, p2Remain = 0;
+    for (const i of P1_PITS) p1Remain += pits[i];
+    for (const i of P2_PITS) p2Remain += pits[i];
+    for (let i = 0; i <= 13; i++) pits[i] = 0;
+    pits[M1] += p1Remain;
+    pits[M2] += p2Remain;
     state.gameOver = true;
-    log({ type: "sweep", p1Remain, p2Remain, m1: state.pits[M1], m2: state.pits[M2] });
+    log?.({ type: "sweep", p1Remain, p2Remain, m1: pits[M1], m2: pits[M2] });
   }
 
   if (!freeTurn && !state.gameOver) state.current = other(player);
+  if (info) [info.captured, info.relays] = [captured, relays];
+  return (freeTurn && !state.gameOver ? FREE_TURN : 0) | (state.gameOver ? GAME_OVER : 0);
+}
 
+/**
+ * Plays the pit `start` for the player whose turn it is, on a copy: the input is never changed.
+ * `record: false` skips the event log, for the bots.
+ */
+export function playTurn(input: GameState, start: number, { record = true } = {}): TurnResult {
+  const state = cloneState(input);
+  const player = state.current;
+  const events: TurnEvent[] = [];
+  const info: TurnInfo = { captured: 0, relays: 0 };
+  const flags = turn(state, start, record ? (e) => events.push(e) : null, info);
+  if (flags === INVALID) return { invalid: true, state };
   return {
     invalid: false,
     state,
     player,
     move: start,
-    freeTurn: freeTurn && !state.gameOver,
-    captured,
-    relays,
+    freeTurn: (flags & FREE_TURN) !== 0,
+    captured: info.captured,
+    relays: info.relays,
     gameOver: state.gameOver,
     winner: state.gameOver ? winnerOf(state) : null,
     events,
