@@ -5,6 +5,9 @@ release has a section here; work since the last one sits under _Unreleased_.
 
 ## Unreleased
 
+- **The rating run reports two more things:** "Above next", how sure each bot is of its place over the next one down
+  (saved as `above` in the ratings; the ladder chart marks pairs under 90%), and a model check that flags any pairing
+  the ratings don't explain.
 - **More tests**, and a guide to them ([docs/TESTING.md](docs/TESTING.md)): the engine over 3000 random games, the
   rating harness (same games on any number of workers, and a snapshot), strength checks in their own file, and a check
   that every link in the docs resolves. `deno task coverage` shows what nothing tests.

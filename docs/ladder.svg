@@ -65,7 +65,7 @@
   <rect class="bg" width="720" height="544" rx="12" />
   <text class="title" x="24" y="30">The bots, by Elo</text>
   <text class="note" x="696" y="30"
-    text-anchor="end">Dot: rating · bar: 90% range · <tspan class="accent">red: too close to call</tspan></text>
+    text-anchor="end">Dot: rating · bar: 90% range · <tspan class="accent">red: order under 90% sure</tspan></text>
   <line class="grid" x1="230" x2="230" y1="36" y2="500" />
   <text class="tick" x="230" y="516" text-anchor="middle">250</text>
   <line class="grid" x1="282.5" x2="282.5" y1="36" y2="500" />

@@ -1,6 +1,8 @@
 /**
  * Draws the bots' Elo ladder, with each 90% range, as docs/ladder.svg (shown in the README). Two
- * neighbours are marked when one's rating falls inside the other's range: too close to call yet.
+ * neighbours are marked when the order between them is less than 90% sure: in fewer than 90% of
+ * the resampled fits does the higher one rate above the lower (`above` in ratings.ts). Ratings
+ * written before `above` existed fall back to one rating inside the other's range.
  * (Ranges that merely touch are common and say little.)
  *
  *   deno task ladder        after `deno task rate --write`
@@ -15,11 +17,15 @@ const rows = (Object.keys(BOTS) as BotId[])
   .map((id) => ({ id, ...BOTS[id], ...RATINGS[id] }))
   .sort((a, b) => b.elo - a.elo);
 
-// Too close to call: a neighbour's rating inside this range, or this rating inside the neighbour's.
+// Too close to call: a pair of neighbours whose order is less than 90% sure. rows[i].above is the
+// share of resamples in which row i rates above row i + 1.
 const inside = (v: number, r: { low: number; high: number }) => r.low < r.high && r.low <= v && v <= r.high;
-const overlaps = rows.map((r, i) =>
-  [rows[i - 1], rows[i + 1]].some((n) => n && (inside(n.elo, r) || inside(r.elo, n)))
-);
+const unsure = (i: number) => {
+  const [a, b] = [rows[i], rows[i + 1]];
+  if (!a || !b) return false;
+  return a.above === undefined ? inside(b.elo, a) || inside(a.elo, b) : a.above < 0.9;
+};
+const overlaps = rows.map((_, i) => unsure(i - 1) || unsure(i));
 
 const W = 720, L = 230, R = 70, top = 44, rowH = 28;
 const H = top + rows.length * rowH + 52;
@@ -72,7 +78,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" wid
 <text class="title" x="24" y="30">The bots, by Elo</text>
 <text class="note" x="${
   W - 24
-}" y="30" text-anchor="end">Dot: rating · bar: 90% range · <tspan class="accent">red: too close to call</tspan></text>
+}" y="30" text-anchor="end">Dot: rating · bar: 90% range · <tspan class="accent">red: order under 90% sure</tspan></text>
 ${body}
 <text class="note" x="24" y="${
   H - 10

@@ -30,7 +30,7 @@
 import { type BotId, BOTS, DORMANT, type DormantId, isBotId, isDormantId } from "../../src/bots/bots.ts";
 import { seeded } from "../match.ts";
 import { type Checkpoint, load, save } from "./checkpoint.ts";
-import { fit, ranges, sum } from "./elo.ts";
+import { aboveShare, fit, misfits, rangesOf, resample, sum } from "./elo.ts";
 import { isOpening, type Opening, OPENINGS } from "./openings.ts";
 import type { PairJob, PairResult } from "./play.ts";
 import { Pool } from "./pool.ts";
@@ -207,15 +207,19 @@ if (state.rounds === 0) {
 const { results, firstWon, decided } = state;
 const played = state.rounds * 2;
 const rating = fit(results).map(Math.round);
-const range = ranges(results, seeded(711), 2);
+const samples = resample(results, seeded(711), 2);
+const range = rangesOf(samples);
 
 const order = [...ids.keys()].sort((a, b) => rating[b] - rating[a]);
-console.log("| Bot | Elo | 90% range | Won |");
-console.log("| --- | ---: | :---: | ---: |");
-for (const i of order) {
+// "Above next": the share of resamples in which each bot rates above the next one down.
+const above = order.map((i, k) => (k + 1 < order.length ? aboveShare(samples, i, order[k + 1]) : null));
+console.log("| Bot | Elo | 90% range | Above next | Won |");
+console.log("| --- | ---: | :---: | ---: | ---: |");
+for (const [k, i] of order.entries()) {
   const all = results[i].flat();
   const rng90 = i === 0 ? "anchor" : `${range[i][0]}–${range[i][1]}`;
-  console.log(`| ${labels[i]} | ${rating[i]} | ${rng90} | ${Math.round((sum(all) / all.length) * 100)}% |`);
+  const next = above[k] === null ? "–" : `${Math.round(above[k]! * 100)}%`;
+  console.log(`| ${labels[i]} | ${rating[i]} | ${rng90} | ${next} | ${Math.round((sum(all) / all.length) * 100)}% |`);
 }
 
 console.log(`\n| Wins against → | ${order.map((i) => labels[i]).join(" | ")} |`);
@@ -224,6 +228,20 @@ for (const i of order) {
   const cells = order.map((j) => (i === j ? "–" : `${Math.round((sum(results[i][j]) / results[i][j].length) * 100)}%`));
   console.log(`| **${labels[i]}** | ${cells.join(" | ")} |`);
 }
+const misses = misfits(results, rating);
+console.log(
+  misses.length
+    ? `\nModel check: ${misses.length} pairing${
+      misses.length === 1 ? "" : "s"
+    } the ratings don't explain (more than 3 standard errors off):\n` +
+      misses.map((m) =>
+        `- ${labels[m.i]} against ${labels[m.j]}: scored ${Math.round(m.observed * 100)}%, the ratings say ${
+          Math.round(m.expected * 100)
+        }% (${m.z > 0 ? "+" : ""}${m.z.toFixed(1)})`
+      ).join("\n")
+    : "\nModel check: every pairing's score is within chance of what the ratings predict.",
+);
+
 const describeOpening: Record<Opening, string> = {
   "random-moves": "the standard board after two random moves",
   symmetric: "a random board that's the same from both seats",
@@ -240,22 +258,24 @@ A 100% pairing only shows one bot is much stronger; those gaps come from the clo
 );
 
 if (Deno.args.includes("--write")) {
-  const entries = order.map((i) => {
+  const entries = order.map((i, k) => {
     const id = ids[i];
+    const next = above[k] === null ? "" : `, above: ${above[k]!.toFixed(2)}`;
     return `  ${id}: { elo: ${rating[i]}, low: ${i === 0 ? rating[i] : range[i][0]}, high: ${
       i === 0 ? rating[i] : range[i][1]
-    } },`;
+    }${next} },`;
   });
   const file = new URL("../../src/bots/ratings.ts", import.meta.url);
   await Deno.writeTextFile(
     file,
     `/**
  * Elo ratings from \`deno task rate ${played} --openings ${OPENING} --write\` (${played} games per pairing,
- * in matched pairs). Generated: don't edit. Random is pinned at 1000; low and high bound the 90% range.
+ * in matched pairs). Generated: don't edit. Random is pinned at 1000; low and high bound the 90% range;
+ * above is the share of resampled fits in which the bot rates above the next one down.
  */
 export const RATINGS_VERSION = "${new Date().toISOString().slice(0, 10)}";
 
-export const RATINGS: Record<string, { elo: number; low: number; high: number }> = {
+export const RATINGS: Record<string, { elo: number; low: number; high: number; above?: number }> = {
 ${entries.join("\n")}
 };
 `,

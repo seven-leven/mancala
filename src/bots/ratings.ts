@@ -4,7 +4,7 @@
  */
 export const RATINGS_VERSION = "2026-10-15";
 
-export const RATINGS: Record<string, { elo: number; low: number; high: number }> = {
+export const RATINGS: Record<string, { elo: number; low: number; high: number; above?: number }> = {
   minimax: { elo: 2043, low: 2020, high: 2070 },
   dfs: { elo: 1980, low: 1955, high: 2008 },
   shrewd: { elo: 1908, low: 1885, high: 1935 },

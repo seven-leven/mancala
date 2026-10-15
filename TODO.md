@@ -39,7 +39,7 @@ opening counted for whoever had it. It now plays matched pairs.
       (git-ignored) saved after every round of pairs, so a long run can stop and resume without losing games. `--resume`
       replays exactly what a straight run would.
 - [x] [#6](https://github.com/seven-leven/mancala/issues/6) A live progress line: elapsed, games, games a second, ETA.
-- [ ] [#7](https://github.com/seven-leven/mancala/issues/7) Strength checks in the test harness, in their own file
+- [x] [#7](https://github.com/seven-leven/mancala/issues/7) Strength checks in the test harness, in their own file
       (`tests/strength_test.ts`, so `--parallel` runs them beside the rest), kept under 20 s: Lookahead beats Random,
       Greedy beats Pushover, Minimax beats Pushover. (Minimax beats Random and Greedy is already there, in
       `tests/bots_test.ts`; move it over.)
@@ -173,10 +173,10 @@ adaptive allocation, which both lean on them. The strength checks are
 
 Small additions to the rating harness's output, each an hour or so. Document each in RATING.md's maths when it lands.
 
-- [ ] **"Is A stronger than B?" as a probability.** The 300 resampled fits are already there: report the share where
+- [x] **"Is A stronger than B?" as a probability.** The 300 resampled fits are already there: report the share where
       each bot ranks above its neighbour ("Chainer above Spoiler in 81% of resamples"), in place of overlapping ranges
       alone, and use it for the ladder chart's red marks.
-- [ ] **A check that the model fits.** Compare each pairing's win rate with what the ratings predict, and flag pairings
+- [x] **A check that the model fits.** Compare each pairing's win rate with what the ratings predict, and flag pairings
       that miss by more than chance: a bot that isn't transitive (beats strong bots, loses to weak ones) shows up here.
       A safeguard for adaptive allocation, which plays fewer lopsided games.
 

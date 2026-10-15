@@ -2,7 +2,7 @@ import { assert, assertEquals, assertThrows } from "@std/assert";
 import { newGame } from "../src/game/engine.ts";
 import { DEFAULT_RULES, M1, M2, P1, P2 } from "../src/game/types.ts";
 import { seeded } from "../tools/match.ts";
-import { fit, ranges } from "../tools/tournament/elo.ts";
+import { aboveShare, fit, misfits, ranges } from "../tools/tournament/elo.ts";
 import { opening, symmetricLayout } from "../tools/tournament/openings.ts";
 
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
@@ -46,4 +46,24 @@ Deno.test("Elo: an even record rates level; ranges resample whole pairs", () => 
   const res = [[[], split], [split.map((x) => 1 - x), []]];
   assertEquals(fit(res).map(Math.round), [1000, 1000]);
   assertEquals(ranges(res, seeded(3), 2)[1], [1000, 1000]);
+});
+
+Deno.test("above: the share of resamples where one bot rates above another", () => {
+  const samples = [[1000, 1000, 1000, 1000], [1100, 990, 1050, 1200], [900, 1010, 950, 800]];
+  assertEquals(aboveShare(samples, 1, 0), 0.75);
+  assertEquals(aboveShare(samples, 1, 2), 0.75); // resample 2: 990 is below 1010
+  assertEquals(aboveShare(samples, 2, 1), 0.25);
+});
+
+Deno.test("model check: a pairing the ratings can't explain is flagged, a fair one isn't", () => {
+  // Three bots, 20 matched pairs each. A beats B and B beats C as expected, but C beats A every
+  // time: rock, paper, scissors, which no set of ratings explains.
+  const pairs = (share: number) => Array.from({ length: 40 }, (_, k) => (k < 40 * share ? 1 : 0));
+  const flip = (xs: number[]) => xs.map((x) => 1 - x);
+  const ab = pairs(0.75), bc = pairs(0.75), ca = pairs(1);
+  const res = [[[], ab, flip(ca)], [flip(ab), [], bc], [ca, flip(bc), []]];
+  const found = misfits(res, fit(res));
+  assert(found.length > 0, "rock-paper-scissors should be flagged");
+  const fair = [[[], ab, pairs(0.9)], [flip(ab), [], bc], [flip(pairs(0.9)), flip(bc), []]];
+  assertEquals(misfits(fair, fit(fair)), []);
 });

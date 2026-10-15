@@ -244,3 +244,15 @@ w ≥ n/2 + 3.1 · √n / 2
 That's the one-sided 0.1% line under "the two bots are equal": 30 of 40, 54 of 80. Tests are seeded, so they don't
 flicker from run to run; the rule is there so a broken bot can't pass on a lucky seed, and so changing the seed doesn't
 break a sound test. Pick pairings at least 400 Elo apart (about 90% or more): they clear the line with a wide margin.
+
+**Is A stronger than B?** The 300 resampled fits that give the ranges also give a probability: the share of them in
+which A rates above B. The results table's "Above next" column is that share for each bot against the next one down, and
+`--write` saves it as `above` in `src/bots/ratings.ts`. The ladder chart marks a pair red when it's under 90%. Two
+ranges can overlap while the order is still fairly sure (say 85%), so this says more than the overlap alone.
+
+**Does the model fit?** For each pairing, A's score against B is set beside what the ratings predict, 1 / (1 + 10^((R_B
+− R_A)/400)), and flagged when they're more than 3 standard errors apart, the error counted over matched pairs (the two
+legs of a pair go together), with p(1 − p) floored at 1% so a 100% pairing still has one. A bot that isn't transitive,
+that beats strong bots and loses to weak ones, shows up as a flagged pairing. The output ends with "Model check": either
+"every pairing's score is within chance", or the pairings that aren't. With 120 pairings, a 3-error limit should flag
+none by chance about 3 times in 4.
