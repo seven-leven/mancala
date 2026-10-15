@@ -5,12 +5,11 @@
     24 px grid, drawn with a 2 px line, round caps and joins, no fills; the page's .icon style sets
     the line, so these hold only the shapes. Keep this list in the order of docs/DESIGN.md's sheet.
   -->
-  <symbol id="sun" viewBox="0 0 24 24">
-    <circle cx="12" cy="12" r="4" />
-    <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+  <symbol id="sound-on" viewBox="0 0 24 24">
+    <path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" />
   </symbol>
-  <symbol id="moon" viewBox="0 0 24 24">
-    <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" />
+  <symbol id="sound-off" viewBox="0 0 24 24">
+    <path d="M4 9v6h4l5 4V5L8 9zM17 9.5l5 5M22 9.5l-5 5" />
   </symbol>
   <symbol id="stats" viewBox="0 0 24 24">
     <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />

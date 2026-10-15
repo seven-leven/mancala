@@ -106,7 +106,7 @@ One column, at most 1100px wide, with a 16px gutter on phones:
    - **Game:** New game (the one primary pill, in words) and the opponent picker, which names the bot ("Easy Random")
      and keeps the Elo for its list;
    - **This game:** Undo, Hint, and Skip, which Replay takes the place of once a game is over: icon buttons;
-   - **Site:** the theme, Your games, Settings and How to play: icon buttons.
+   - **Site:** Sound (off until pressed, and remembered), Your games, Settings and How to play: icon buttons.
 
    Every icon button has an `aria-label` and a tooltip with its key ("Undo (U)"). On a phone the Game group takes the
    first row and the other two share the second.
@@ -161,7 +161,8 @@ like the scripts), and scripts call `icon("name")` from `src/ui/icons.ts`.
   play, which are `--accent`.
 - **Sizes:** 16px in buttons and pickers, 14px in arrow links, 18px in cards, 20px for a dialog's close button.
 - **Words:** an icon is decoration (`aria-hidden`). A button with only an icon needs an `aria-label` that says what it
-  does ("Switch to the dark theme"), and a key if it has one (`aria-keyshortcuts`).
+  does ("Your games and rating"), and a key if it has one (`aria-keyshortcuts`). A button that toggles, like Sound,
+  keeps one label and says whether it's on with `aria-pressed`.
 - **Adding one:** draw it to these rules, add a `<symbol>` to the sprite and its name to `IconName` in
   `src/ui/icons.ts`, add it to the table below, and run `deno task icon-sheet`.
 
@@ -169,22 +170,22 @@ like the scripts), and scripts call `icon("name")` from `src/ui/icons.ts`.
 
 `deno task icon-sheet` redraws that sheet from the sprite.
 
-| Icon           | Used for                                               |
-| -------------- | ------------------------------------------------------ |
-| `sun`, `moon`  | The theme button: what a press switches to             |
-| `stats`        | Your games and rating                                  |
-| `settings`     | Settings                                               |
-| `help`         | How to play                                            |
-| `close`        | Closing a dialog                                       |
-| `chevron-down` | Selects and the opponent picker (turns over when open) |
-| `arrow-right`  | Arrow links ("Source on GitHub →")                     |
-| `undo`         | Undo                                                   |
-| `skip`         | Skip the animation                                     |
-| `replay`       | Replay a finished game                                 |
-| `relay`        | The Relay rule card                                    |
-| `free-turn`    | The Free turn rule card                                |
-| `capture`      | The Capture rule card                                  |
-| `tip`          | Hint, and A word of strategy                           |
+| Icon                    | Used for                                               |
+| ----------------------- | ------------------------------------------------------ |
+| `sound-off`, `sound-on` | The sound button: off (the default) or on              |
+| `stats`                 | Your games and rating                                  |
+| `settings`              | Settings                                               |
+| `help`                  | How to play                                            |
+| `close`                 | Closing a dialog                                       |
+| `chevron-down`          | Selects and the opponent picker (turns over when open) |
+| `arrow-right`           | Arrow links ("Source on GitHub →")                     |
+| `undo`                  | Undo                                                   |
+| `skip`                  | Skip the animation                                     |
+| `replay`                | Replay a finished game                                 |
+| `relay`                 | The Relay rule card                                    |
+| `free-turn`             | The Free turn rule card                                |
+| `capture`               | The Capture rule card                                  |
+| `tip`                   | Hint, and A word of strategy                           |
 
 **Site icons.** The site's mark is `public/svg/favicon.svg`. `deno task icon-sheet` also renders it to `public/png/`: a
 32px PNG favicon for browsers that don't take SVG, and a 180px Apple touch icon on paper (iOS shows transparency as

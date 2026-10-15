@@ -6,8 +6,9 @@ release has a section here; work since the last one sits under _Unreleased_.
 ## Unreleased
 
 - **A tidier toolbar** in three groups: New game and the opponent; Undo, Hint and Skip as icon buttons (Replay takes
-  Skip's place when a game is over); and the site's buttons. Every icon button names its key in a tooltip. The opponent
-  button names the bot without its Elo, which stays in the list. On a phone it's two rows, not three.
+  Skip's place when a game is over); and Sound, Your games, Settings and How to play. Every icon button names its key in
+  a tooltip. The opponent button names the bot without its Elo, which stays in the list. On a phone it's two rows, not
+  three.
 - **Re-rated with eighteen bots** over 240 games a pairing: every bot is above the next one down in at least 91% of
   resampled fits. Elo against time per move is in `data/elo-time.json` after a run.
 - The Elo fit's virtual draw scales with each pairing's games, so adaptive runs don't squeeze the ends of the ladder;
@@ -27,8 +28,7 @@ release has a section here; work since the last one sits under _Unreleased_.
   that every link in the docs resolves. `deno task coverage` shows what nothing tests.
 - The docs (BOTS, DESIGN, NOTATION, RATING, TESTING) moved into `docs/`, so the root holds only the README, the
   changelog, the licence and the to-do list.
-- **The theme switch is in the masthead**: a moon in the light theme, a sun in the dark. Until it's pressed the site
-  follows your device; Settings no longer has a Theme choice.
+- **Sound is a button in the toolbar**, off until you press it (and remembered); Settings no longer has the Sound box.
 - **A new visitor plays Random** (Easy) to start with, not Lookahead.
 - **One icon set.** Every icon is an outline on a 24px grid with a 2px line, from one sprite (`public/svg/icons.svg`,
   beside the favicon in `public/svg/`); the filled rule-card icons and the CSS-drawn chevrons were redrawn to match.

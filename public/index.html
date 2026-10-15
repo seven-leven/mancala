@@ -69,10 +69,10 @@
             </button>
           </div>
           <div class="controls__group" role="group" aria-label="Site">
-            <button class="btn btn--ghost btn--icon" id="toggleTheme" type="button"
-              aria-label="Switch to the dark theme" title="Switch to the dark theme">
+            <button class="btn btn--ghost btn--icon" id="toggleSound" type="button" aria-label="Sound"
+              aria-pressed="false" title="Sound: off">
               <svg class="icon" aria-hidden="true">
-                <use href="svg/icons.svg?v={{ build }}#moon" />
+                <use href="svg/icons.svg?v={{ build }}#sound-off" />
               </svg>
             </button>
             <button class="btn btn--ghost btn--icon" id="openStats" type="button" aria-label="Your games and rating"
@@ -243,7 +243,14 @@
             <label><input type="radio" name="speed" value="fast"><span>Fast</span></label>
           </div>
         </fieldset>
-        <label class="check" style="margin-bottom: var(--space-4)"><input type="checkbox" name="sound"> Sound</label>
+        <fieldset class="field">
+          <legend class="label">Theme</legend>
+          <div class="segmented">
+            <label><input type="radio" name="theme" value="system"><span>System</span></label>
+            <label><input type="radio" name="theme" value="light"><span>Paper</span></label>
+            <label><input type="radio" name="theme" value="dark"><span>Ink</span></label>
+          </div>
+        </fieldset>
 
         <h2 style="margin-top: var(--space-5)">House rules</h2>
         <p class="turn__note">Changing these starts a new game.</p>

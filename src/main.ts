@@ -18,30 +18,21 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
 const settings = loadSettings();
 applyTheme(settings.theme);
 
-// --- Theme: one button in the masthead -------------------------------------------------
-// Until it's pressed the page follows the device ("system"); a press picks the other of light
-// and dark and keeps it. It shows what a press does: a moon in the light theme, a sun in the dark.
-const systemDark = matchMedia("(prefers-color-scheme: dark)");
-const shownTheme = () => (settings.theme === "system" ? (systemDark.matches ? "dark" : "light") : settings.theme);
-const themeButton = $<HTMLButtonElement>("toggleTheme");
-function showThemeButton(): void {
-  const dark = shownTheme() === "dark";
-  const label = `Switch to the ${dark ? "light" : "dark"} theme`;
-  themeButton.setAttribute("aria-label", label);
-  themeButton.title = label;
-  themeButton.querySelector("use")!.setAttribute(
-    "href",
-    themeButton.querySelector("use")!.getAttribute("href")!.replace(/#.*$/, dark ? "#sun" : "#moon"),
-  );
+// --- Sound: one button in the toolbar, off until pressed (the setting is remembered) --------
+const soundButton = $<HTMLButtonElement>("toggleSound");
+function showSoundButton(): void {
+  soundButton.setAttribute("aria-pressed", String(settings.sound));
+  soundButton.title = `Sound: ${settings.sound ? "on" : "off"}`;
+  const use = soundButton.querySelector("use")!;
+  use.setAttribute("href", use.getAttribute("href")!.replace(/#.*$/, settings.sound ? "#sound-on" : "#sound-off"));
 }
-themeButton.addEventListener("click", () => {
-  settings.theme = shownTheme() === "dark" ? "light" : "dark";
+soundButton.addEventListener("click", () => {
+  settings.sound = !settings.sound;
   saveSettings(settings);
-  applyTheme(settings.theme);
-  showThemeButton();
+  setSound(settings.sound);
+  showSoundButton();
 });
-systemDark.addEventListener("change", showThemeButton);
-showThemeButton();
+showSoundButton();
 
 const game = new Game(new BoardView($("board")), {
   turn: $("turn"),
@@ -115,12 +106,12 @@ function showSettings(s: Settings): void {
   (field("p1") as HTMLSelectElement).value = s.seats[1];
   (field("p2") as HTMLSelectElement).value = s.seats[2];
   (field("speed") as RadioNodeList).value = s.speed;
+  (field("theme") as RadioNodeList).value = s.theme;
   (field("first") as RadioNodeList).value = s.first;
   seedRange.value = String(s.rules.seeds);
   showSeeds();
   (field("capture") as RadioNodeList).value = s.rules.capture;
   (form.elements.namedItem("clinch") as HTMLInputElement).checked = s.rules.clinch;
-  (form.elements.namedItem("sound") as HTMLInputElement).checked = s.sound;
   describeRules(s);
 }
 
@@ -148,6 +139,7 @@ function describeRules(s: Settings): void {
 function setSeat(p: 1 | 2, seat: Seat): void {
   settings.seats[p] = seat;
   saveSettings(settings);
+  applyTheme(settings.theme);
   showSettings(settings);
   game.settingsChanged();
 }
@@ -166,8 +158,7 @@ settingsDialog.addEventListener("close", () => {
   settings.seats = { 1: seat(data.get("p1")), 2: seat(data.get("p2")) };
   settings.speed = (data.get("speed") as Settings["speed"]) ?? settings.speed;
   settings.first = (data.get("first") as Settings["first"]) ?? settings.first;
-  settings.sound = data.get("sound") === "on";
-  setSound(settings.sound);
+  settings.theme = (data.get("theme") as Settings["theme"]) ?? settings.theme;
   settings.rules = {
     seeds: Number(data.get("seeds")) || settings.rules.seeds,
     capture: data.get("capture") === "any" ? "any" : "own",

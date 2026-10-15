@@ -4,8 +4,8 @@
  * from a script, call icon(). docs/DESIGN.md, "Icons", has the rules and the full set.
  */
 export type IconName =
-  | "sun"
-  | "moon"
+  | "sound-on"
+  | "sound-off"
   | "stats"
   | "settings"
   | "help"
