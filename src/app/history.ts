@@ -51,7 +51,6 @@ function saveGames(games: SavedGame[]): void {
   } catch { /* storage full or unavailable: history lasts this visit */ }
 }
 
-/** The saved games as a file's contents, for a backup. */
 /**
  * Saved games as MGN (docs/NOTATION.md), one after another: readable, and ready for
  * `deno task positions`. A game that won't replay (from an older version's rules) is left out.
@@ -78,6 +77,7 @@ export function gamesToMgn(games: SavedGame[]): string {
   return out.join("\n");
 }
 
+/** The saved games as a file's contents, for a backup. */
 export const exportGames = (): string => JSON.stringify({ app: "mancala", version: 1, games: loadGames() }, null, 1);
 
 const looksLikeGame = (g: unknown): g is SavedGame => {
