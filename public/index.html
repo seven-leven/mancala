@@ -37,33 +37,63 @@
           <h1 class="serif">Mancala</h1>
         </div>
         <div class="controls">
-          <button class="btn btn--primary" id="newGame" type="button">New game</button>
-          <button class="btn btn--ghost" id="replay" type="button" hidden>Replay</button>
-          <div id="opponent"></div>
-          <button class="btn btn--ghost" id="undo" type="button" aria-keyshortcuts="U">Undo</button>
-          <button class="btn btn--ghost" id="hint" type="button" aria-keyshortcuts="H">Hint</button>
-          <button class="btn btn--ghost" id="skip" type="button" aria-keyshortcuts="S">Skip</button>
-          <button class="btn btn--ghost btn--icon" id="toggleTheme" type="button" aria-label="Switch to the dark theme">
-            <svg class="icon" aria-hidden="true">
-              <use href="svg/icons.svg?v={{ build }}#moon" />
-            </svg>
-          </button>
-          <button class="btn btn--ghost btn--icon" id="openStats" type="button" aria-label="Your games and rating">
-            <svg class="icon" aria-hidden="true">
-              <use href="svg/icons.svg?v={{ build }}#stats" />
-            </svg>
-          </button>
-          <button class="btn btn--ghost btn--icon" id="openSettings" type="button" aria-label="Settings">
-            <svg class="icon" aria-hidden="true">
-              <use href="svg/icons.svg?v={{ build }}#settings" />
-            </svg>
-          </button>
-          <button class="btn btn--ghost btn--icon" id="openRules" type="button" aria-label="How to play"
-            aria-keyshortcuts="?">
-            <svg class="icon" aria-hidden="true">
-              <use href="svg/icons.svg?v={{ build }}#help" />
-            </svg>
-          </button>
+          <!-- Three groups: start a game, help during it, and the site (DESIGN.md, Layout) -->
+          <div class="controls__group" role="group" aria-label="Game">
+            <button class="btn btn--primary" id="newGame" type="button" aria-keyshortcuts="N">New game</button>
+            <div id="opponent"></div>
+          </div>
+          <div class="controls__group" role="group" aria-label="This game">
+            <button class="btn btn--ghost btn--icon" id="undo" type="button" aria-label="Undo" aria-keyshortcuts="U"
+              title="Undo (U)">
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v={{ build }}#undo" />
+              </svg>
+            </button>
+            <button class="btn btn--ghost btn--icon" id="hint" type="button" aria-label="Hint" aria-keyshortcuts="H"
+              title="Hint (H)">
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v={{ build }}#tip" />
+              </svg>
+            </button>
+            <button class="btn btn--ghost btn--icon" id="skip" type="button" aria-label="Skip the animation"
+              aria-keyshortcuts="S" title="Skip the animation (S)">
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v={{ build }}#skip" />
+              </svg>
+            </button>
+            <button class="btn btn--ghost btn--icon" id="replay" type="button" aria-label="Replay the game"
+              title="Replay the game" hidden>
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v={{ build }}#replay" />
+              </svg>
+            </button>
+          </div>
+          <div class="controls__group" role="group" aria-label="Site">
+            <button class="btn btn--ghost btn--icon" id="toggleTheme" type="button"
+              aria-label="Switch to the dark theme" title="Switch to the dark theme">
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v={{ build }}#moon" />
+              </svg>
+            </button>
+            <button class="btn btn--ghost btn--icon" id="openStats" type="button" aria-label="Your games and rating"
+              title="Your games and rating">
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v={{ build }}#stats" />
+              </svg>
+            </button>
+            <button class="btn btn--ghost btn--icon" id="openSettings" type="button" aria-label="Settings"
+              title="Settings">
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v={{ build }}#settings" />
+              </svg>
+            </button>
+            <button class="btn btn--ghost btn--icon" id="openRules" type="button" aria-label="How to play"
+              aria-keyshortcuts="?" title="How to play (?)">
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v={{ build }}#help" />
+              </svg>
+            </button>
+          </div>
         </div>
       </header>
 

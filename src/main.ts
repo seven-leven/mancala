@@ -26,7 +26,9 @@ const shownTheme = () => (settings.theme === "system" ? (systemDark.matches ? "d
 const themeButton = $<HTMLButtonElement>("toggleTheme");
 function showThemeButton(): void {
   const dark = shownTheme() === "dark";
-  themeButton.setAttribute("aria-label", `Switch to the ${dark ? "light" : "dark"} theme`);
+  const label = `Switch to the ${dark ? "light" : "dark"} theme`;
+  themeButton.setAttribute("aria-label", label);
+  themeButton.title = label;
   themeButton.querySelector("use")!.setAttribute(
     "href",
     themeButton.querySelector("use")!.getAttribute("href")!.replace(/#.*$/, dark ? "#sun" : "#moon"),

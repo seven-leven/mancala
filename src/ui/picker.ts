@@ -141,7 +141,7 @@ export class Picker {
     this.button.replaceChildren(
       el("span", "picker__title", item.title),
       ...(item.detail ? [el("span", "picker__detail", item.detail)] : []),
-      ...(item.elo ? [el("span", "picker__elo mono", String(item.elo))] : []),
+      // The Elo stays in the list, where it ranks the bots; the button just names the opponent.
       icon("chevron-down", "picker__chevron"),
     );
   }

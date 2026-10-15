@@ -472,7 +472,16 @@ kbd {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: var(--space-3) var(--space-5);
+}
+/* A group of controls: start a game, help during it, the site. Groups sit further apart than
+   the buttons inside them, so the toolbar reads as three parts. */
+.controls__group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-2);
+  min-width: 0;
 }
 
 /* Turn line */

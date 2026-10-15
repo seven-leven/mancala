@@ -5,6 +5,9 @@ release has a section here; work since the last one sits under _Unreleased_.
 
 ## Unreleased
 
+- **A tidier toolbar** in three groups: New game and the opponent; Undo, Hint and Skip as icon buttons (Replay takes
+  Skip's place when a game is over); and the site's buttons. Every icon button names its key in a tooltip. The opponent
+  button names the bot without its Elo, which stays in the list. On a phone it's two rows, not three.
 - **Re-rated with eighteen bots** over 240 games a pairing: every bot is above the next one down in at least 91% of
   resampled fits. Elo against time per move is in `data/elo-time.json` after a run.
 - The Elo fit's virtual draw scales with each pairing's games, so adaptive runs don't squeeze the ends of the ladder;

@@ -376,6 +376,8 @@ export class Game {
     ui.hint.disabled = !canPlay;
     ui.skip.disabled = !this.busy;
     ui.replay.hidden = !state.gameOver || this.replaying || this.moves.length === 0;
+    // Replay and Skip share a place in the toolbar: Replay once a game is over, Skip until then.
+    ui.skip.hidden = !ui.replay.hidden;
 
     // The move log, newest first
     ui.moveCount.textContent = this.log.length ? `· ${this.log.length}` : "";

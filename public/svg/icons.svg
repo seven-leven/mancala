@@ -33,6 +33,15 @@
   <symbol id="arrow-right" viewBox="0 0 24 24">
     <path d="M5 12h14M13 6l6 6-6 6" />
   </symbol>
+  <symbol id="undo" viewBox="0 0 24 24">
+    <path d="M9 14L4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />
+  </symbol>
+  <symbol id="skip" viewBox="0 0 24 24">
+    <path d="M6 5l10 7-10 7zM19 5v14" />
+  </symbol>
+  <symbol id="replay" viewBox="0 0 24 24">
+    <path d="M12 8v4l2.5 2.5M3.1 11a9 9 0 1 1 .5 4M3 20v-5h5" />
+  </symbol>
   <symbol id="relay" viewBox="0 0 24 24">
     <path d="M20 11a8 8 0 0 0-15.4-2M4 5v4h4M4 13a8 8 0 0 0 15.4 2M20 19v-4h-4" />
   </symbol>

@@ -101,7 +101,15 @@ Scale (rem): label 0.76 · caption 0.82 · small 0.9 · body 1 · lead 1.08 · h
 
 One column, at most 1100px wide, with a 16px gutter on phones:
 
-1. **Header:** the eyebrow ("Ohvalhugondi · the Maldivian mancala"), the title, and the controls as a row of pills.
+1. **Header:** the eyebrow ("Ohvalhugondi · the Maldivian mancala"), the title, and the controls in three groups, set
+   further apart than the buttons inside them:
+   - **Game:** New game (the one primary pill, in words) and the opponent picker, which names the bot ("Easy Random")
+     and keeps the Elo for its list;
+   - **This game:** Undo, Hint, and Skip, which Replay takes the place of once a game is over: icon buttons;
+   - **Site:** the theme, Your games, Settings and How to play: icon buttons.
+
+   Every icon button has an `aria-label` and a tooltip with its key ("Undo (U)"). On a phone the Game group takes the
+   first row and the other two share the second.
 2. **Turn line:** whose turn it is, in their colour.
 3. **Board:** stores at the ends, two rows of seven pits.
 4. **Status:** both scores and the seeds in hand.
@@ -131,7 +139,8 @@ usable size. Pits must stay at least 40px across, the smallest comfortable tap t
 - **Toast:** one line of text, under the board, in an `aria-live="polite"` region. It never covers the board.
 - **Move log:** a mono list, newest first, with each player's moves marked in their colour. A search bot's move says
   what it saw ("saw 9 moves ahead, +12").
-- **Replay:** a ghost pill that appears only when a game is over, and replays it with the turn note "replay".
+- **Replay:** an icon button in Skip's place, shown only when a game is over; it replays the game with the turn note
+  "replay".
 - **Your games** (the stats dialog): the rating in serif, its trend as a single 1.5px line in `--accent`, then a table
   against each bot and the recent games in mono. Rating changes are ink for a gain and muted for a loss, never in a
   player's colour, which belongs to the players.
@@ -169,10 +178,13 @@ like the scripts), and scripts call `icon("name")` from `src/ui/icons.ts`.
 | `close`        | Closing a dialog                                       |
 | `chevron-down` | Selects and the opponent picker (turns over when open) |
 | `arrow-right`  | Arrow links ("Source on GitHub →")                     |
+| `undo`         | Undo                                                   |
+| `skip`         | Skip the animation                                     |
+| `replay`       | Replay a finished game                                 |
 | `relay`        | The Relay rule card                                    |
 | `free-turn`    | The Free turn rule card                                |
 | `capture`      | The Capture rule card                                  |
-| `tip`          | A word of strategy                                     |
+| `tip`          | Hint, and A word of strategy                           |
 
 **Site icons.** The site's mark is `public/svg/favicon.svg`. `deno task icon-sheet` also renders it to `public/png/`: a
 32px PNG favicon for browsers that don't take SVG, and a 180px Apple touch icon on paper (iOS shows transparency as
