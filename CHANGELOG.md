@@ -3,7 +3,7 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `deno.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
-## Unreleased
+## v2.2.0 · 2026-10-15
 
 - A roadmap: TODO.md now lists the next three releases, each a
   [GitHub milestone](https://github.com/seven-leven/mancala/milestones) with an issue per item.
