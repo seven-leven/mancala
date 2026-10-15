@@ -119,8 +119,9 @@ deno task release      # from dev: check everything, then ship to main
 ```
 
 Every push runs the same checks on GitHub. A push to `main` builds the site and publishes `dist/` to the `gh-pages`
-branch, which GitHub Pages serves. Work happens on `dev`; `deno task release` fast-forwards `main` and waits for the
-deploy.
+branch, which GitHub Pages serves. Work happens on `dev`. `main` is protected: it only takes a pull request whose checks
+passed, never a direct push or a force-push. `deno task release` opens that pull request from `dev` (or uses the open
+one), waits for its checks, merges it, and waits for the deploy.
 
 To add a bot, follow [BOTS.md](BOTS.md): write it in its family's file in `src/bots/players/`, add it to `BOTS` in
 `src/bots/bots.ts`, and run `deno task tournament --write`. The tournament rates everything in `BOTS`.

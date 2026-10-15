@@ -28,6 +28,8 @@ release has a section here; work since the last one sits under _Unreleased_.
   against them and play exactly as before.
 - **Game notation.** [NOTATION.md](NOTATION.md): a game as text, like chess's PGN. The tournament can record every game
   (`--record`), and `deno task positions` turns them into training data for the evaluation.
+- `main` is protected: only pull requests whose checks pass. `deno task release` now ships `dev` through a pull request
+  instead of pushing to `main`.
 - Seeds per pit (a house rule) is now a slider from 3 to 15; 7 is still the standard.
 - The player menus in Settings no longer stick out of the dialog with long bot names.
 

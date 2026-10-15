@@ -1,11 +1,13 @@
 /**
- * Release: check everything, merge dev into main, push both, and wait for the deploy.
+ * Release: check everything, then ship dev to main through a pull request, and wait for the deploy.
+ * main is protected: nothing reaches it except a pull request whose "Check" job passed.
  *
- * 1. You must be on dev with nothing uncommitted.
+ * 1. You must be on dev with nothing uncommitted, with the GitHub CLI (gh) installed.
  * 2. Runs the same checks as CI (formatting, lint, types, tests, build); stops if one fails.
- * 3. Pushes dev, fast-forwards main to dev, pushes main, and goes back to dev.
- * 4. GitHub Actions builds main and publishes dist/ to the gh-pages branch, which GitHub Pages
- *    serves. If the GitHub CLI (gh) is installed, this waits for that run and reports.
+ * 3. Pushes dev, and opens a pull request from dev to main (or uses the one already open).
+ * 4. Waits for its checks, then merges it.
+ * 5. GitHub Actions builds main and publishes dist/ to the gh-pages branch, which GitHub Pages
+ *    serves. This waits for that run and reports.
  *
  * Run: deno task release
  */
@@ -34,6 +36,8 @@ function fail(message: string): never {
   Deno.exit(1);
 }
 
+if (await capture("gh", "--version") === null) fail("Install the GitHub CLI (gh): main only takes pull requests.");
+
 const branch = await capture("git", "rev-parse", "--abbrev-ref", "HEAD");
 if (branch !== "dev") fail(`Release from dev (you're on ${branch ?? "?"}).`);
 if (await capture("git", "status", "--porcelain")) fail("Commit or stash your changes first.");
@@ -50,22 +54,65 @@ for (const [name, args] of checks) {
   if (!await run("deno", args)) fail(`${name} failed, so nothing was pushed.`);
 }
 
-console.log("\n→ Pushing dev and fast-forwarding main…");
-const ok = await run("git", ["push", "origin", "dev"]) &&
-  await run("git", ["checkout", "main"]) &&
-  await run("git", ["merge", "--ff-only", "dev"]) &&
-  await run("git", ["push", "origin", "main"]);
-await run("git", ["checkout", "dev"]);
-if (!ok) fail("Couldn't update main (does it have commits that aren't on dev?).");
-
-const sha = (await capture("git", "rev-parse", "HEAD"))!;
 const version = JSON.parse(await Deno.readTextFile(new URL("../deno.json", import.meta.url))).version;
-console.log(`\n✓ Pushed v${version} (${sha.slice(0, 7)}).`);
 
-if (await capture("gh", "--version") === null) {
-  console.log(`Install the GitHub CLI (gh) to wait for the deploy here. Otherwise it'll be live at ${SITE} shortly.`);
-  Deno.exit(0);
+console.log("\n→ Pushing dev…");
+if (!await run("git", ["push", "origin", "dev"])) fail("Couldn't push dev.");
+
+/** The open pull request from dev to main, if there is one. */
+const openPr = () =>
+  capture(
+    "gh",
+    "pr",
+    "list",
+    "--base",
+    "main",
+    "--head",
+    "dev",
+    "--state",
+    "open",
+    "--json",
+    "number",
+    "-q",
+    ".[0].number",
+  );
+let pr = await openPr();
+if (!pr) {
+  console.log("→ Opening a pull request from dev to main…");
+  const body = "Ships dev to main. See CHANGELOG.md for what's in it.";
+  if (
+    !await run("gh", [
+      "pr",
+      "create",
+      "--base",
+      "main",
+      "--head",
+      "dev",
+      "--title",
+      `Release v${version}`,
+      "--body",
+      body,
+    ])
+  ) {
+    fail("Couldn't open the pull request.");
+  }
+  pr = await openPr();
 }
+if (!pr) fail("Couldn't find the pull request from dev to main.");
+
+console.log(`→ Waiting for the checks on #${pr}…`);
+// Give GitHub a moment to start the checks for the push just made.
+await new Promise((r) => setTimeout(r, 10_000));
+if (!await run("gh", ["pr", "checks", pr, "--watch", "--fail-fast"])) {
+  fail(`The checks failed on #${pr}, so nothing was merged.`);
+}
+if (!await run("gh", ["pr", "merge", pr, "--merge"])) fail(`Couldn't merge #${pr}.`);
+await run("git", ["fetch", "origin", "main"]);
+
+const sha = await capture("gh", "pr", "view", pr, "--json", "mergeCommit", "-q", ".mergeCommit.oid");
+if (!sha) fail(`#${pr} merged, but its merge commit wasn't found. Check the Actions tab on GitHub.`);
+console.log(`\n✓ Merged #${pr}: v${version} is on main (${sha.slice(0, 7)}).`);
+
 console.log("→ Waiting for the deploy run…");
 let runId: string | null = null;
 for (let i = 0; i < 24 && !runId; i++) {
