@@ -3,7 +3,7 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `deno.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
-## Unreleased
+## v2.2.2 · 2026-10-15
 
 - **A new opponent picker.** The long dropdown is now a list grouped by strength (Strong, Club, Learner, Starter), each
   bot with its level, its algorithm, its Elo and a bar for where it sits on the ladder; a friend on the same screen is
