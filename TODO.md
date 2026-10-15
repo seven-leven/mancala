@@ -19,53 +19,59 @@ first. v2.3's bots are built from the evaluation pieces v2.4 then tunes.
 
 ## [v2.2 · Fairer ratings](https://github.com/seven-leven/mancala/milestone/1)
 
-Today `tools/tournament/main.ts` plays a round robin, 40 games a pairing, each opening with two random moves, sides
-alternating. Every game's opening is different, so a lucky opening counts for whoever had it.
+Before v2.2 the tournament played a round robin where every game had its own opening (two random moves), so a lucky
+opening counted for whoever had it. It now plays matched pairs.
 
 - [x] [#18](https://github.com/seven-leven/mancala/issues/18) **Reorganise, move only.** Bots split into
       `src/bots/players/` and `src/bots/search/` (`bots.ts` stays the one entry point), and the tournament into
       `tools/tournament/` (`main.ts`, `elo.ts`). The tournament prints exactly what it did before.
-- [ ] [#2](https://github.com/seven-leven/mancala/issues/2) **Matched pairs.** Play each opening twice, the bots
+- [x] [#2](https://github.com/seven-leven/mancala/issues/2) **Matched pairs.** Play each opening twice, the bots
       swapping sides on the second game; score the pair, not the game. A board that simply favours the first player then
       comes out 1–1.
-- [ ] [#3](https://github.com/seven-leven/mancala/issues/3) **Symmetric random starts** as a second opening mode: 49
+- [x] [#3](https://github.com/seven-leven/mancala/issues/3) **Symmetric random starts** as a second opening mode: 49
       seeds a side, 3–10 per pit, the same on both sides, stores empty. Needs a way to start `newGame()` from a given
-      layout (the rules stay in `src/game/engine.ts`). Test that both sides always hold the same seeds.
-- [ ] [#4](https://github.com/seven-leven/mancala/issues/4) `--openings random-moves|symmetric|standard` on the
+      layout (the rules stay in `src/game/engine.ts`). Test that both sides always hold the same seeds. Mirrored by
+      seat: Player 1's pit i matches Player 2's pit 13 − i.
+- [x] [#4](https://github.com/seven-leven/mancala/issues/4) `--openings random-moves|symmetric|standard` on the
       tournament (keep the two random moves as the default until the symmetric mode is proven).
-- [ ] [#5](https://github.com/seven-leven/mancala/issues/5) `--time 10m` / `--games N` budgets, and a checkpoint file
-      (git-ignored) saved every 25 pairs and on Ctrl+C, so a long run can stop and resume without losing games.
-- [ ] [#6](https://github.com/seven-leven/mancala/issues/6) A live progress line: elapsed, games, games a second, ETA.
+- [x] [#5](https://github.com/seven-leven/mancala/issues/5) `--time 10m` / `--games N` budgets, and a checkpoint file
+      (git-ignored) saved after every round of pairs, so a long run can stop and resume without losing games. `--resume`
+      replays exactly what a straight run would.
+- [x] [#6](https://github.com/seven-leven/mancala/issues/6) A live progress line: elapsed, games, games a second, ETA.
 - [ ] [#7](https://github.com/seven-leven/mancala/issues/7) A ladder check in `tests/bots_test.ts`, kept under 20 s:
       Lookahead beats Random, Greedy beats Pushover, Minimax beats Pushover. (Minimax beats Random and Greedy is already
       there.)
-- [ ] [#8](https://github.com/seven-leven/mancala/issues/8) Re-run `deno task tournament --write`, and update the README
-      table and its "how the ratings are made" paragraph.
+- [x] [#8](https://github.com/seven-leven/mancala/issues/8) Re-run `deno task tournament --write`, and update the README
+      table and its "how the ratings are made" paragraph. Rated with all twelve bots (see v2.3).
 
 Later, if runs get long: pair bots mainly with their neighbours on the ladder (games near 50% tell the most) instead of
 everyone with everyone.
 
 ## [v2.3 · Bots in the gap](https://github.com/seven-leven/mancala/milestone/2)
 
-Bots are classes with `choose(state)` in `src/bots/players/`, listed in `src/bots/bots.ts`; to add one, see the README.
+Every bot follows [BOTS.md](BOTS.md): the contract in `src/bots/contracts.ts`, one entry in `BOTS`, a family file in
+`src/bots/players/`.
 
+- [x] **A bot standard.** BOTS.md, TypeScript contracts (`Bot`, `BotSpec`, `BotContext`, `Evaluator`), and the eight
+      existing bots rewritten against them (they play exactly as before: the tournament repeats game for game). The
+      tournament now rates whatever is in `BOTS`.
 - [ ] [#9](https://github.com/seven-leven/mancala/issues/9) **Evaluation pieces** in `src/bots/search/evaluate.ts`, each
       a small function so bots can weigh them differently:
-  - store lead (today's term) and seeds on your side (today 0.25 a seed);
-  - free turns ready: pits whose seeds land exactly in your store;
-  - exposure: loaded pits opposite an empty pit the opponent can reach;
-  - threats: your empty pits opposite their loaded ones;
-  - mobility: few legal moves left is bad.
-- [ ] [#10](https://github.com/seven-leven/mancala/issues/10) New bots, each a one-move or two-move search with its own
-      weights (names follow the everyday levels in DESIGN.md):
-  - **Turtle**: empties pits that are open to capture;
-  - **Striker**: overweights captures;
-  - **Chainer**: overweights free turns;
-  - **Denier**: picks the move that leaves the opponent's best reply weakest.
-- [ ] [#11](https://github.com/seven-leven/mancala/issues/11) Add them to `BOTS` and the tournament, rate them, and keep
-      the ones that land between Average and Tricky. A bot that lands on top of another adds nothing to the menu; it can
-      stay in the tournament as a stepping stone.
-- [ ] [#12](https://github.com/seven-leven/mancala/issues/12) README table, CHANGELOG.
+  - [x] store lead and seeds on your side (`banked`, `onSide`);
+  - [x] exposure: loaded pits opposite an empty pit (`exposed`; Turtle uses it);
+  - [ ] free turns ready: pits whose seeds land exactly in your store;
+  - [ ] threats: your empty pits opposite their loaded ones;
+  - [ ] mobility: few legal moves left is bad.
+- [x] [#10](https://github.com/seven-leven/mancala/issues/10) New bots, placed by where they'd firm up the ratings most
+      (games near 50% carry the most information; see BOTS.md, "Where a new bot should land"): **Sometimes generous**
+      (Gentle, 731), **Sometimes greedy** (Relaxed, 1203), **Turtle** (Careful, 1288) and **Chainer** (Keen, 1462). Each
+      has one knob that places it. Striker and Denier weren't needed: nothing said where they'd land.
+- [x] [#11](https://github.com/seven-leven/mancala/issues/11) Rated and kept: the widest gap went from 422 to 269 Elo,
+      and every rating's 90% range is 25–35% narrower.
+- [x] [#12](https://github.com/seven-leven/mancala/issues/12) README table, CHANGELOG.
+- [x] **Game notation (MGN).** [NOTATION.md](NOTATION.md): games as text, checked against the engine both ways.
+      `deno task tournament --record` saves every game, and `deno task positions` turns them into training data for #15.
+- [ ] Let players export their saved games as MGN from Your games (today the backup is JSON).
 
 ## [v2.4 · A stronger Expert](https://github.com/seven-leven/mancala/milestone/3)
 

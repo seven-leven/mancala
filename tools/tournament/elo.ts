@@ -24,18 +24,24 @@ export function fit(res: number[][][]): number[] {
   return elo.map((e) => e - elo[0] + 1000);
 }
 
-/** 90% ranges: re-fit 300 times, each time resampling every pairing's games with replacement. */
-export function ranges(results: number[][][], rng: () => number): [number, number][] {
+/**
+ * 90% ranges: re-fit 300 times, each time resampling every pairing's games with replacement. Games
+ * are drawn `block` at a time (2 for matched pairs), since the two legs of a pair go together.
+ */
+export function ranges(results: number[][][], rng: () => number, block = 1): [number, number][] {
   const n = results.length;
   const samples: number[][] = results.map(() => []);
   for (let b = 0; b < 300; b++) {
     const res = results.map((row) => row.map(() => [] as number[]));
     for (let i = 0; i < n; i++) {
       for (let j = i + 1; j < n; j++) {
-        for (let k = 0; k < results[i][j].length; k++) {
-          const x = results[i][j][Math.floor(rng() * results[i][j].length)];
-          res[i][j].push(x);
-          res[j][i].push(1 - x);
+        const blocks = results[i][j].length / block;
+        for (let k = 0; k < blocks; k++) {
+          const at = Math.floor(rng() * blocks) * block;
+          for (const x of results[i][j].slice(at, at + block)) {
+            res[i][j].push(x);
+            res[j][i].push(1 - x);
+          }
         }
       }
     }

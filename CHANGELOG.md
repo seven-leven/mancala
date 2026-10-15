@@ -9,6 +9,19 @@ release has a section here; work since the last one sits under _Unreleased_.
   [GitHub milestone](https://github.com/seven-leven/mancala/milestones) with an issue per item.
 - The bots and the tournament are split into folders (`src/bots/players/`, `src/bots/search/`, `tools/tournament/`).
   Nothing plays differently: the tournament prints exactly what it did before.
+- **Twelve bots.** Four new ones fill the widest gaps in the ladder: Gentle (Sometimes generous), Relaxed (Sometimes
+  greedy), Careful (Turtle, which won't leave a loaded pit open to capture) and Keen (Chainer). Each was placed where it
+  would firm up the ratings most, since games between bots close in strength tell you the most: every rating's range is
+  now 25–35% narrower.
+- **Fairer ratings.** The tournament plays matched pairs (each opening once from each seat), can deal symmetric random
+  boards (`--openings symmetric`), stops on a time budget (`--time 10m`), saves after every round and resumes
+  (`--resume`), and shows its progress. All the ratings changed; see the README.
+- **A bot standard.** [BOTS.md](BOTS.md) and TypeScript contracts every bot follows; the existing bots were rewritten
+  against them and play exactly as before.
+- **Game notation.** [NOTATION.md](NOTATION.md): a game as text, like chess's PGN. The tournament can record every game
+  (`--record`), and `deno task positions` turns them into training data for the evaluation.
+- Seeds per pit (a house rule) is now a slider from 3 to 15; 7 is still the standard.
+- The player menus in Settings no longer stick out of the dialog with long bot names.
 
 ## v2.1.3 · 2026-10-15
 

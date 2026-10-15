@@ -1,7 +1,7 @@
-/** Bots that don't look at what a move does. */
+/** Family "basic": bots that don't look at what a move does. */
 import { validMoves } from "../../game/engine.ts";
 import type { GameState } from "../../game/types.ts";
-import type { Bot, Rng } from "../bot.ts";
+import type { Bot, Rng } from "../contracts.ts";
 
 /** Plays any legal pit. */
 export class RandomBot implements Bot {

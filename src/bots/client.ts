@@ -29,7 +29,7 @@ try {
 let nextId = 0;
 const pending = new Map<number, { req: BotRequest; resolve: (answer: BotAnswer) => void }>();
 function onMainThread({ bot, state, timeMs }: BotRequest): BotAnswer {
-  const b = createBot(bot, timeMs);
+  const b = createBot(bot, { timeMs });
   const move = b.choose(state);
   return { move, note: b.note?.() ?? null };
 }

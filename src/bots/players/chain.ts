@@ -1,11 +1,13 @@
+/** Family "chain": follow your own free turns as far as they go, and never look at the replies. */
 import { playTurn, score, validMoves } from "../../game/engine.ts";
 import type { GameState } from "../../game/types.ts";
-import type { Bot } from "../bot.ts";
+import type { Bot } from "../contracts.ts";
 
 /**
- * The 2024 bot: depth-first search through its own free-turn chains, keeping the chain that ends
- * with the fullest store. It never looks at the opponent's replies, so it strings free turns
- * together brilliantly and walks into captures.
+ * Depth-first search through its own free-turn chains, up to `maxDepth` moves in a row, keeping the
+ * chain that ends with the fullest store. With the full depth (8) it's the 2024 bot, DFS: it strings
+ * free turns together brilliantly and walks into captures. With a short one it's Chainer, which
+ * takes a free turn or two and then stops looking.
  */
 export class DfsBot implements Bot {
   constructor(private maxDepth = 8) {}

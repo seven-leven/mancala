@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mancala · ohvalhugondi</title>
     <meta name="description"
-      content="Ohvalhugondi, the Maldivian mancala: seven pits, seven seeds, relay sowing. Play a friend or one of four bots, from Random to an alpha-beta Minimax.">
+      content="Ohvalhugondi, the Maldivian mancala: seven pits, seven seeds, relay sowing. Play a friend or one of twelve bots, from Pushover to an alpha-beta Minimax.">
     <meta property="og:title" content="Mancala · ohvalhugondi">
-    <meta property="og:description" content="The Maldivian mancala in the browser: play a friend or one of four bots.">
+    <meta property="og:description"
+      content="The Maldivian mancala in the browser: play a friend or one of twelve bots.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://seven-leven.github.io/mancala/">
     <meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
@@ -190,7 +191,11 @@
         <p class="turn__note">Changing these starts a new game.</p>
         <fieldset class="field">
           <legend class="label">Seeds per pit</legend>
-          <div class="segmented" id="seedOptions"></div>
+          <div class="range">
+            <input type="range" name="seeds" min="3" max="15" step="1" value="7" aria-label="Seeds per pit">
+            <output id="seedValue" class="range__value">7</output>
+          </div>
+          <div class="range__ends" aria-hidden="true"><span>3</span><span>15</span></div>
         </fieldset>
         <fieldset class="field">
           <legend class="label">Capture</legend>

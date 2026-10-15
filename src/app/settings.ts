@@ -49,7 +49,7 @@ export function loadSettings(): Settings {
     first: saved.first === "1" || saved.first === "2" ? saved.first : "random",
     sound: saved.sound === true,
     rules: {
-      seeds: Number.isInteger(r.seeds) && r.seeds >= 3 && r.seeds <= 7 ? r.seeds : DEFAULT_RULES.seeds,
+      seeds: Number.isInteger(r.seeds) && r.seeds >= 3 && r.seeds <= 15 ? r.seeds : DEFAULT_RULES.seeds,
       capture: r.capture === "any" ? "any" : "own",
       clinch: typeof r.clinch === "boolean" ? r.clinch : DEFAULT_RULES.clinch,
     },

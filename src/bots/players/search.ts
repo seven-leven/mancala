@@ -1,7 +1,17 @@
-/** Bots built on the Minimax search (search/minimax.ts), each asking it something different. */
+/** Family "search": bots built on the Minimax search (search/minimax.ts), each asking it something different. */
 import type { GameState } from "../../game/types.ts";
-import { type Bot, describe, type Rng } from "../bot.ts";
+import type { Bot, Rng } from "../contracts.ts";
 import { search, type SearchResult } from "../search/minimax.ts";
+import { WIN } from "../search/evaluate.ts";
+
+/** How a search bot describes what it saw. */
+function describe(r: SearchResult): string | null {
+  if (r.depth === 0) return null;
+  if (r.score >= WIN) return `sees a forced win`;
+  if (r.score <= -WIN) return `sees a forced loss`;
+  const lead = Math.round(r.score);
+  return `saw ${r.depth} ${r.depth === 1 ? "move" : "moves"} ahead, ${lead > 0 ? "+" : ""}${lead}`;
+}
 
 /** Alpha-beta search that plans for the opponent's replies too. See search/minimax.ts. */
 export class MinimaxBot implements Bot {

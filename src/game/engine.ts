@@ -34,8 +34,19 @@ export const ownerOf = (pit: number): Player => (pit <= 6 ? P1 : P2);
 export const oppositeOf = (pit: number): number => (pit <= 6 ? pit + 7 : pit - 7);
 export const totalSeeds = (rules: Rules): number => 14 * rules.seeds;
 
-export function newGame(rules: Rules = DEFAULT_RULES, first: Player = Math.random() < 0.5 ? P1 : P2): GameState {
-  const pits = new Array<number>(16).fill(rules.seeds);
+/**
+ * A game at the start: `rules.seeds` in every pit, or the 14 pit counts in `layout` (pits 0–13,
+ * which must hold all of `totalSeeds(rules)` between them). Stores start empty.
+ */
+export function newGame(
+  rules: Rules = DEFAULT_RULES,
+  first: Player = Math.random() < 0.5 ? P1 : P2,
+  layout?: readonly number[],
+): GameState {
+  if (layout && (layout.length !== 14 || layout.reduce((a, b) => a + b, 0) !== totalSeeds(rules))) {
+    throw new Error(`a layout needs 14 pits holding ${totalSeeds(rules)} seeds`);
+  }
+  const pits = layout ? [...layout, 0, 0] : new Array<number>(16).fill(rules.seeds);
   pits[M1] = 0;
   pits[M2] = 0;
   return { rules: { ...rules }, pits, current: first, gameOver: false };

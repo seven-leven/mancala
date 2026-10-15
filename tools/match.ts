@@ -1,5 +1,5 @@
 /** Bot-against-bot games, for the tests and the tournament. */
-import type { Bot } from "../src/bots/bots.ts";
+import type { Bot } from "../src/bots/contracts.ts";
 import { newGame, playTurn } from "../src/game/engine.ts";
 import { DEFAULT_RULES, type GameState, P1, type Player, type Rules } from "../src/game/types.ts";
 
