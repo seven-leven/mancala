@@ -6,7 +6,7 @@ import { applyTheme, loadSettings, saveSettings, type Settings } from "./app/set
 import { BoardView } from "./ui/board.ts";
 import { setSound } from "./ui/sound.ts";
 import { renderStats } from "./ui/stats.ts";
-import { clearGames, loadGames, playerStats } from "./app/history.ts";
+import { clearGames, exportGames, importGames, loadGames, playerStats } from "./app/history.ts";
 
 declare const __VERSION__: string;
 
@@ -165,6 +165,30 @@ const showStats = () => {
   if (!statsDialog.open) statsDialog.showModal();
 };
 $("openStats").addEventListener("click", showStats);
+$("exportHistory").addEventListener("click", () => {
+  const url = URL.createObjectURL(new Blob([exportGames()], { type: "application/json" }));
+  const a = Object.assign(document.createElement("a"), {
+    href: url,
+    download: `mancala-games-${new Date().toISOString().slice(0, 10)}.json`,
+  });
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+$("loadCopy").addEventListener("click", () => $("importHistory").click());
+$<HTMLInputElement>("importHistory").addEventListener("change", async (e) => {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = "";
+  if (!file) return;
+  try {
+    const added = importGames(await file.text());
+    showStats();
+    $("statsSummary").textContent = `Loaded ${added} ${added === 1 ? "game" : "games"} from the copy. ` +
+      $("statsSummary").textContent;
+  } catch {
+    alert("That file isn't a Mancala backup.");
+  }
+});
 $("clearHistory").addEventListener("click", () => {
   if (confirm("Clear every saved game, and start your rating again at 1000?")) {
     clearGames();
@@ -197,6 +221,9 @@ document.addEventListener("keydown", (e) => {
   else return;
   e.preventDefault();
 });
+
+// Ask the browser not to clear saved games when it's short of space (Chrome and Firefox honour it).
+void navigator.storage?.persist?.().catch(() => {});
 
 // Audio can only start after a click or key press, so wake it on the first one.
 for (const type of ["pointerdown", "keydown"]) {

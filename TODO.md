@@ -1,50 +1,47 @@
 # To do
 
-What's left after the v2 rewrite (TypeScript, the design guide, four bots, gh-pages deploys), roughly in order.
+What's left, and what was decided. Done items stay ticked for a release or two, then go.
 
-## Before calling v2 finished
+## Still to do
 
-- [ ] **Rewrite the README.** `readme.md` still describes v1 (plain JS in `js/`, "no build step"). It needs: what the
-      game is, a screenshot (`docs/screenshot-light.png` / `-dark.png`), the rules and house-rule options, the keys, the
-      bot table from `deno task tournament`, the architecture (engine → events → animation; bots in a Web Worker),
-      development (`deno task dev`, `test`, `build`, `release`) and how deploys work (main → Actions → `gh-pages`).
-      Rename it to `README.md`.
-- [ ] **Add a CHANGELOG.md**, like the folio's: v1.0 (Aug 2025, first web version), v1.1 (Jul 2026, unified game logic
-      and the bot registry), v2.0 (this rewrite).
-- [ ] **Seed spacing:** a few seeds in a big cup sit off to one side (one seed in a store lands near its edge). Scale
-      the spiral's spread with the count: `spread = 0.42 * min(1, sqrt(shown / 7))` in `seedsHtml()` (`src/ui/board.ts`)
-      and in `docs/design-guide.html`, then `deno task design-sheet`.
-- [ ] **Retake the screenshots** as full-page shots with margins, mid-game, light and dark (the current ones are cropped
-      to the content's edge).
-- [ ] **Prune `deno.lock`.** It was copied from the folio so puppeteer could install offline, so it carries the folio's
-      extra entries.
+- [ ] **Add a LICENSE.** There's none yet, which means all rights reserved; pick one (MIT is the usual choice for a
+      project like this).
+- [ ] **The folio's story page for this project** (in the folio repo): the 2022 command-line game, the 2024 bot, the web
+      versions, and the numbers (the first-move win, the bot ladder).
+- [ ] Ideas: a perfect-play endgame table (the one place WebAssembly would earn its keep); more bots between Average and
+      Tricky, which would also firm up the ratings in that gap.
 
-## The folio
+## Decided
 
-- [ ] Link the Aug 2024 "The mancala bot, finally" entry to the game and the repo ("Play it" →
-      seven-leven.github.io/mancala, "Source" → github.com/seven-leven/mancala), like the Wildlife entry's links.
-- [ ] Bring the folio's own mancala engine (`site/assets/js/coding/mancala.js`) in line with the game's default rules:
-      capture only from your own side, the landing seed is banked too, and the game ends on a clinched majority. It
-      currently captures from either side and doesn't bank the landing seed.
-- [ ] Mention in the entry's text that the web version became a TypeScript rewrite with an alpha-beta bot (with AI's
-      help), keeping the existing story.
+- **Keep esbuild; not Rollup or Rolldown.** Rollup needs a plugin even to read TypeScript. Rolldown is fast and handles
+  TypeScript itself, but ships as native npm binaries, while esbuild runs here as WebAssembly with no npm at all. For a
+  21 kB app with two entry points that builds in half a second, neither would change anything you can see. Worth
+  revisiting only if the game moves to Vite, which now uses Rolldown.
+- **No WebAssembly engine.** Minimax already solves most positions in a fraction of a second; a transposition table gave
+  the speed-up WASM would have (see `deno task bench`).
+- **Elo, read with care.** 100% pairings don't say how much stronger a bot is, so the tournament reports 90% ranges and
+  the README says to read the ratings as a ladder.
 
-## The game
+## Done in v2.1.0
 
-- [ ] **Minimax is close to unbeatable.** With relay sowing and free turns, one good chain ends the game: after your
-      first move it often chains 9–10 free turns and wins 78–20. Consider weaker Minimax levels (a shorter time budget,
-      or a little randomness among near-best moves) so "Expert" isn't the only search bot.
-- [ ] **Tell players about the first-move edge.** From the opening, Minimax proves the first player can force a win in 9
-      plies (open with pit 1). The new "Who goes first" setting lets people play with it; the rules dialog or README
-      could say why it matters.
-- [ ] Speed up the search in plain TypeScript before considering WebAssembly: a transposition table, and the board as a
-      typed array instead of cloned objects. WASM only makes sense for a perfect-play endgame table.
-- [ ] Show the bot's thinking (the depth reached and its evaluation) in the move log.
-- [ ] An option to replay a finished game move by move from the log.
-- [ ] Sound for sowing, captures and free turns, off by default.
+- [x] Rewrite the README (now README.md), and add a CHANGELOG.md written from the git history.
+- [x] Seed spacing scales with the count; fresh full-page screenshots, light and dark; the design sheet re-rendered.
+- [x] deno.lock trimmed (Deno dropped the folio's packages itself).
+- [x] Weaker levels so Expert isn't the only search bot: Lookahead (Tricky), plus Generous, Pushover and First.
+- [x] The first-move edge, in the rules dialog and the README.
+- [x] A stronger Minimax: a transposition table (21 → 25 of 30 benchmark positions solved in 300 ms).
+- [x] Elo for the bots (`deno task tournament`, with ranges), and for you, from games saved in the browser.
+- [x] The bots' thinking in the move log; Replay; sound (off by default).
+- [x] Everyday level names for the bots (Hopeless … Expert).
+- [x] Saved games survive: the browser is asked to keep its storage, and Your games can save and load a backup.
+- [x] Repo description, website and topics on GitHub; CI caches Deno modules and esbuild.
 
-## Housekeeping
+## Done in v2.0.1
 
-- [ ] Add a LICENSE (none yet; choose one).
-- [ ] Set the repo's description, website and topics on GitHub.
-- [ ] Cache `.cache/esbuild-*.wasm` in the Actions workflow so CI doesn't download esbuild on every run.
+- [x] Captures bank only the pit opposite; the landing seed stays put.
+
+## The folio (done alongside v2.1.0, in the folio repo)
+
+- [x] Link the Aug 2024 entry to the game and the repo.
+- [x] The folio's mancala animation follows the game's rules.
+- [x] The entry mentions the TypeScript rewrite.

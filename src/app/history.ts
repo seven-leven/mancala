@@ -50,6 +50,30 @@ function saveGames(games: SavedGame[]): void {
   } catch { /* storage full or unavailable: history lasts this visit */ }
 }
 
+/** The saved games as a file's contents, for a backup. */
+export const exportGames = (): string => JSON.stringify({ app: "mancala", version: 1, games: loadGames() }, null, 1);
+
+const looksLikeGame = (g: unknown): g is SavedGame => {
+  const x = g as SavedGame;
+  return !!x && typeof x.at === "string" && !!x.seats && Array.isArray(x.score) && Array.isArray(x.moves) &&
+    typeof x.rated === "boolean";
+};
+
+/**
+ * Merges games from a backup into the saved ones (a game already saved isn't added twice) and
+ * returns how many were new. Throws if the file isn't a Mancala backup.
+ */
+export function importGames(text: string): number {
+  const data = JSON.parse(text);
+  const incoming: unknown[] = Array.isArray(data) ? data : data?.games;
+  if (!Array.isArray(incoming)) throw new Error("not a Mancala backup");
+  const games = loadGames();
+  const seen = new Set(games.map((g) => g.at));
+  const fresh = incoming.filter(looksLikeGame).filter((g) => !seen.has(g.at));
+  saveGames([...games, ...fresh].sort((a, b) => a.at.localeCompare(b.at)));
+  return fresh.length;
+}
+
 export function clearGames(): void {
   try {
     localStorage.removeItem(KEY);

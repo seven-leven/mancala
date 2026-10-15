@@ -132,10 +132,14 @@
       <table class="stats-table" id="statsVs"></table>
       <ol class="stats-games" id="statsGames"></ol>
       <p class="turn__note">
-        Saved in this browser only. A game is rated when it's you against one bot, played to the end under the
+        Saved in this browser (use Save a copy to keep a backup; Safari can clear sites you haven't visited for a
+        week). A game is rated when it's you against one bot, played to the end under the
         standard rules, without Undo or Hint. Each game keeps the bot's rating from the day you played it.
       </p>
       <form method="dialog" class="dialog__actions">
+        <button class="btn btn--ghost" type="button" id="exportHistory">Save a copy</button>
+        <button class="btn btn--ghost" type="button" id="loadCopy">Load a copy</button>
+        <input type="file" id="importHistory" accept="application/json,.json" hidden>
         <button class="btn btn--ghost" type="button" id="clearHistory">Clear history</button>
         <button class="btn btn--primary">Done</button>
       </form>
