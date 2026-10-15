@@ -19,9 +19,13 @@ export interface BotResponse {
 }
 export type BotAnswer = Omit<BotResponse, "id">;
 
+/** The build stamp (tools/build.ts), so the worker is always the one built with this page. */
+declare const __BUILD__: string;
+const build = typeof __BUILD__ === "string" ? __BUILD__ : "dev";
+
 let worker: Worker | null = null;
 try {
-  worker = new Worker(new URL("./worker.js", import.meta.url), { type: "module" });
+  worker = new Worker(new URL(`./worker.js?v=${build}`, import.meta.url), { type: "module" });
 } catch {
   worker = null;
 }

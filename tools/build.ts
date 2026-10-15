@@ -19,6 +19,29 @@ const WASM_CACHE = join(ROOT, ".cache", `esbuild-${ESBUILD}.wasm`);
 
 const version: string = JSON.parse(await Deno.readTextFile(join(ROOT, "deno.json"))).version;
 
+/**
+ * A short hash of everything the site is built from (src/, public/ and the version). The page
+ * asks for app.js, style.css and worker.js with it (`app.js?v=…`), so a browser holding an old
+ * copy of one file (GitHub Pages lets them keep files for 10 minutes) can never pair a new page
+ * with an old script: any change gives new URLs, and an old page still finds its own files.
+ */
+async function buildStamp(): Promise<string> {
+  const parts: string[] = [version];
+  const walk = async (dir: string) => {
+    const entries = [];
+    for await (const e of Deno.readDir(dir)) entries.push(e);
+    for (const e of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+      const path = join(dir, e.name);
+      if (e.isDirectory) await walk(path);
+      else parts.push(relative(ROOT, path), await Deno.readTextFile(path));
+    }
+  };
+  await walk(join(ROOT, "src"));
+  await walk(join(ROOT, "public"));
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(parts.join("\0")));
+  return [...new Uint8Array(digest).slice(0, 4)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 async function esbuildWasm(): Promise<WebAssembly.Module> {
   let bytes: Uint8Array<ArrayBuffer>;
   try {
@@ -65,9 +88,14 @@ export async function build(): Promise<void> {
   const started = performance.now();
   await Deno.remove(DIST, { recursive: true }).catch(() => {});
   await copyDir(join(ROOT, "public"), DIST);
-  // The version from deno.json goes into the page itself, so the footer shows it before any script runs.
+  // The version from deno.json goes into the page itself, so the footer shows it before any script
+  // runs; the build stamp goes on the page's script and stylesheet (see buildStamp).
+  const stamp = await buildStamp();
   const page = join(DIST, "index.html");
-  await Deno.writeTextFile(page, (await Deno.readTextFile(page)).replace(/\{\{\s*version\s*\}\}/g, version));
+  await Deno.writeTextFile(
+    page,
+    (await Deno.readTextFile(page)).replace(/\{\{\s*version\s*\}\}/g, version).replace(/\{\{\s*build\s*\}\}/g, stamp),
+  );
   const result = await esbuild.build({
     plugins: [sources],
     entryPoints: { app: "src/main.ts", worker: "src/bots/worker.ts" },
@@ -78,7 +106,7 @@ export async function build(): Promise<void> {
     minify: true,
     sourcemap: "linked",
     write: false,
-    define: { __VERSION__: JSON.stringify(version) },
+    define: { __VERSION__: JSON.stringify(version), __BUILD__: JSON.stringify(stamp) },
     logLevel: "warning",
   });
   for (const file of result.outputFiles) {
@@ -87,7 +115,7 @@ export async function build(): Promise<void> {
   }
   const kb = result.outputFiles.filter((f) => f.path.endsWith(".js"))
     .map((f) => `${f.path.split(/[\\/]/).pop()} ${(f.contents.length / 1024).toFixed(1)} kB`).join(", ");
-  console.log(`Built dist/ v${version} (${kb}) in ${Math.round(performance.now() - started)} ms`);
+  console.log(`Built dist/ v${version}, build ${stamp} (${kb}) in ${Math.round(performance.now() - started)} ms`);
 }
 
 if (import.meta.main) {
