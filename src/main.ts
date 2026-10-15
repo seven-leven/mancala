@@ -6,6 +6,7 @@ import { applyTheme, loadSettings, saveSettings, type Settings } from "./app/set
 import { BoardView } from "./ui/board.ts";
 import { setSound } from "./ui/sound.ts";
 import { renderStats } from "./ui/stats.ts";
+import { Picker, type PickerGroup } from "./ui/picker.ts";
 import { clearGames, exportGames, importGames, loadGames, playerStats } from "./app/history.ts";
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
@@ -45,12 +46,34 @@ const botLabel = (id: BotId) => {
 const option = (value: string, label: string) =>
   Object.assign(document.createElement("option"), { value, textContent: label });
 
-/** The quick opponent menu sets Player 2. */
-const opponent = $<HTMLSelectElement>("opponent");
-opponent.append(
-  ...bots.map(([id]) => option(id, botLabel(id))),
-  option("human", "A friend, same screen"),
-);
+/** Strength bands for the opponent picker, by Elo. Named so they never clash with a level name. */
+const BANDS = [
+  { label: "Strong", range: "1600+", min: 1600 },
+  { label: "Club", range: "1250–1600", min: 1250 },
+  { label: "Learner", range: "900–1250", min: 900 },
+  { label: "Starter", range: "under 900", min: -Infinity },
+];
+const ranked = bots.map(([id]) => id).sort((a, b) => (RATINGS[b]?.elo ?? 0) - (RATINGS[a]?.elo ?? 0));
+const groups: PickerGroup[] = [
+  { items: [{ value: "human", title: "A friend", detail: "same screen", note: "2 players" }] },
+  ...BANDS.map((band, i) => ({
+    label: band.label,
+    range: band.range,
+    items: ranked
+      .filter((id) => {
+        const elo = RATINGS[id]?.elo ?? 0;
+        return elo >= band.min && (i === 0 || elo < BANDS[i - 1].min);
+      })
+      .map((id) => ({ value: id, title: BOTS[id].level, detail: BOTS[id].label, elo: RATINGS[id]?.elo })),
+  })).filter((g) => g.items.length),
+];
+
+/** The quick opponent picker sets Player 2. */
+const opponent = new Picker($("opponent"), "Opponent", groups, (v) => {
+  setSeat(2, v === "human" || isBotId(v) ? v : "minimax");
+  // A new opponent once moves are on the board means a new game, so the result can be rated.
+  if (game.started) game.start();
+});
 
 const form = $<HTMLFormElement>("settingsForm");
 for (const name of ["p1", "p2"]) {
@@ -104,13 +127,6 @@ function setSeat(p: 1 | 2, seat: Seat): void {
   showSettings(settings);
   game.settingsChanged();
 }
-
-opponent.addEventListener("change", () => {
-  const v = opponent.value;
-  setSeat(2, v === "human" || isBotId(v) ? v : "minimax");
-  // A new opponent once moves are on the board means a new game, so the result can be rated.
-  if (game.started) game.start();
-});
 
 // --- Settings dialog -------------------------------------------------------------------
 
@@ -211,7 +227,7 @@ game.onGameSaved = (saved) => {
 document.addEventListener("keydown", (e) => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   if (document.querySelector("dialog[open]")) return;
-  if ((e.target as HTMLElement).closest("input, select, textarea")) return;
+  if ((e.target as HTMLElement).closest("input, select, textarea, [role=listbox]")) return;
   const key = e.key.toLowerCase();
   if (/^[1-7]$/.test(key)) game.playKey(Number(key));
   else if (key === "n") game.start();

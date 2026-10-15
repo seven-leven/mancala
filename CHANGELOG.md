@@ -5,6 +5,14 @@ release has a section here; work since the last one sits under _Unreleased_.
 
 ## Unreleased
 
+- **A new opponent picker.** The long dropdown is now a list grouped by strength (Strong, Club, Learner, Starter), each
+  bot with its level, its algorithm, its Elo and a bar for where it sits on the ladder; a friend on the same screen is
+  at the top. Keyboard and screen readers work as with a native list.
+- **Faster ratings.** The rating harness plays pairings in parallel, one per CPU core, and the Elo fit, sowing and
+  search all do less work, with the same results. A 4-game run went from 37 s to 10 s on 16 cores.
+- **Re-rated with 240 games a pairing**, four times as many, in 5 minutes. Every 90% range is now within ±25 (it was
+  ±40), and only three neighbouring pairs are too close to call. Each pairing now has its own seed, so every number
+  moved a little; the ends of the ladder spread out (Minimax 2064, Pushover 494).
 - `deno task tournament` is now `deno task rate`, so "test" means only the test harness (`deno task test`) and rating
   the bots has its own name. The test harness runs its files in parallel (`--parallel`).
 
