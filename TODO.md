@@ -46,8 +46,7 @@ opening counted for whoever had it. It now plays matched pairs.
 - [x] [#8](https://github.com/seven-leven/mancala/issues/8) Re-run `deno task rate --write`, and update the README table
       and its "how the ratings are made" paragraph. Rated with all twelve bots (see v2.3).
 
-Later, if runs get long: pair bots mainly with their neighbours on the ladder (games near 50% tell the most) instead of
-everyone with everyone.
+Later: give close pairings more games than lopsided ones. Now planned as adaptive allocation, in v2.5.
 
 ## [v2.3 · Bots in the gap](https://github.com/seven-leven/mancala/milestone/2)
 
@@ -129,6 +128,14 @@ ratings 18% of that short run (a fixed ~2 s). Ordered by what each should save. 
 - [x] **A truthful ETA.** It counts rounds, not games: the median of the last five round times, plus what's left of this
       round weighted by each pairing's last time. Pairings also run slowest first, so a round no longer ends with one
       long Minimax pairing while the other cores wait. Same results.
+- [ ] **Adaptive allocation** (`--adaptive`). Lopsided pairings carry almost no information (a game is worth p(1−p),
+      close to 0 at 98–100%), and the slow searchers at the top make them the costliest games. Give each pairing
+      `max(10, round(G × 4p(1−p)))` games, p from the current ratings. Rules: fix the allocation before the run (from
+      `ratings.ts` or a short pilot), never from results as they come in, which would bias the fit and the ranges; keep
+      the floor of 10 so a non-transitive bot still shows; keep every bot well linked to Random. Play it as one queue,
+      slowest pairing first, with no round boundaries, and checkpoint every so many finished pairs. Show games played in
+      the Won and head-to-head tables, and add it to RATING.md. Keep it only if it gives today's ±25 ranges in clearly
+      less time than a plain 240-game run, with ratings inside those ranges.
 - [ ] **Pushover: prune or cap.** It's 7% of the time because a search that wants to lose can't prune. A smaller depth
       or a time cap would do; it's the weakest bot either way.
 - [ ] **Grandmaster, dormant until it pays.** Depth 10 gained 7 Elo over Minimax's depth 6 for 5× the time, and some
