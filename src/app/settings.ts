@@ -19,7 +19,7 @@ export interface Settings {
 const KEY = "mancala.settings.v2";
 
 export const DEFAULTS: Settings = {
-  seats: { 1: "human", 2: "lookahead" },
+  seats: { 1: "human", 2: "random" },
   speed: "normal",
   theme: "system",
   first: "random",

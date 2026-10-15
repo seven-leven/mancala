@@ -101,7 +101,15 @@ Scale (rem): label 0.76 · caption 0.82 · small 0.9 · body 1 · lead 1.08 · h
 
 One column, at most 1100px wide, with a 16px gutter on phones:
 
-1. **Header:** the eyebrow ("Ohvalhugondi · the Maldivian mancala"), the title, and the controls as a row of pills.
+1. **Header:** the eyebrow ("Ohvalhugondi · the Maldivian mancala"), the title, and the controls in three groups, set
+   further apart than the buttons inside them:
+   - **Game:** New game (the one primary pill, in words) and the opponent picker, which names the bot ("Easy Random")
+     and keeps the Elo for its list;
+   - **This game:** Undo, Hint, and Skip, which Replay takes the place of once a game is over: icon buttons;
+   - **Site:** Sound (off until pressed, and remembered), Your games, Settings and How to play: icon buttons.
+
+   Every icon button has an `aria-label` and a tooltip with its key ("Undo (U)"). On a phone the Game group takes the
+   first row and the other two share the second.
 2. **Turn line:** whose turn it is, in their colour.
 3. **Board:** stores at the ends, two rows of seven pits.
 4. **Status:** both scores and the seeds in hand.
@@ -114,7 +122,7 @@ usable size. Pits must stay at least 40px across, the smallest comfortable tap t
 ## Components
 
 - **Buttons:** folio pills. Primary is ink on paper (paper on ink in the dark theme), and turns terracotta on hover.
-  Ghost has a `--rule-strong` border. An icon is 16px, and a button with only an icon needs an `aria-label`.
+  Ghost has a `--rule-strong` border. Icons follow the Icons section below.
 - **Selects** look like ghost pills.
 - **Turn line:** a dot in the player's colour, a label ("Your turn" / "Expert bot is thinking"), and nothing else. At
   game over it shows the result in serif, for example "Player 1 wins, 52–46".
@@ -131,13 +139,60 @@ usable size. Pits must stay at least 40px across, the smallest comfortable tap t
 - **Toast:** one line of text, under the board, in an `aria-live="polite"` region. It never covers the board.
 - **Move log:** a mono list, newest first, with each player's moves marked in their colour. A search bot's move says
   what it saw ("saw 9 moves ahead, +12").
-- **Replay:** a ghost pill that appears only when a game is over, and replays it with the turn note "replay".
+- **Replay:** an icon button in Skip's place, shown only when a game is over; it replays the game with the turn note
+  "replay".
 - **Your games** (the stats dialog): the rating in serif, its trend as a single 1.5px line in `--accent`, then a table
   against each bot and the recent games in mono. Rating changes are ink for a gain and muted for a loss, never in a
   player's colour, which belongs to the players.
 - **Sound:** off by default. Short, quiet and wooden: a tock per seed, a two-note chime for a capture, a rising pair for
   a free turn. Never the only signal of anything.
 - **Links:** the folio's arrow link ("Source on GitHub →"), underlined in `currentColor`.
+
+## Icons
+
+One outline set, kept in one file: [public/svg/icons.svg](../public/svg/icons.svg), a sprite of `<symbol>`s. Nothing is
+pasted into the page: HTML writes
+`<svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#name"/></svg>` (the build stamps the URL,
+like the scripts), and scripts call `icon("name")` from `src/ui/icons.ts`.
+
+- **Grid and line:** a 24px grid, outline only, a 2px line with round caps and joins, no fills. The `.icon` style sets
+  the line, so a symbol holds only shapes, and every icon draws alike. A dot is a zero-length line (`M12 12h.01`).
+- **Colour:** `currentColor`, so an icon takes its text's colour. The one exception is the rule cards' icons in How to
+  play, which are `--accent`.
+- **Sizes:** 16px in buttons and pickers, 14px in arrow links, 18px in cards, 20px for a dialog's close button.
+- **Words:** an icon is decoration (`aria-hidden`). A button with only an icon needs an `aria-label` that says what it
+  does ("Your games and rating"), and a key if it has one (`aria-keyshortcuts`). A button that toggles, like Sound,
+  keeps one label and says whether it's on with `aria-pressed`.
+- **Adding one:** draw it to these rules, add a `<symbol>` to the sprite and its name to `IconName` in
+  `src/ui/icons.ts`, add it to the table below, and run `deno task icon-sheet`.
+
+![Every icon at 32, 20 and 16px, light and dark](icons.png)
+
+`deno task icon-sheet` redraws that sheet from the sprite.
+
+| Icon                    | Used for                                               |
+| ----------------------- | ------------------------------------------------------ |
+| `sound-off`, `sound-on` | The sound button: off (the default) or on              |
+| `stats`                 | Your games and rating                                  |
+| `settings`              | Settings                                               |
+| `help`                  | How to play                                            |
+| `close`                 | Closing a dialog                                       |
+| `chevron-down`          | Selects and the opponent picker (turns over when open) |
+| `arrow-right`           | Arrow links ("Source on GitHub →")                     |
+| `undo`                  | Undo                                                   |
+| `skip`                  | Skip the animation                                     |
+| `replay`                | Replay a finished game                                 |
+| `relay`                 | The Relay rule card                                    |
+| `free-turn`             | The Free turn rule card                                |
+| `capture`               | The Capture rule card                                  |
+| `tip`                   | Hint, and A word of strategy                           |
+
+**Site icons.** The site's mark is `public/svg/favicon.svg`. `deno task icon-sheet` also renders it to `public/png/`: a
+32px PNG favicon for browsers that don't take SVG, and a 180px Apple touch icon on paper (iOS shows transparency as
+black). The page links all three.
+
+The favicon sits beside the sprite, in `public/svg/`: the site's SVGs all live there. Diagrams for the README and
+RATING.md stay in `docs/`, since they aren't part of the site.
 
 ## Voice
 

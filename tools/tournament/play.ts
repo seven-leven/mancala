@@ -29,6 +29,10 @@ export interface PairResult {
   firstWon: number;
   decided: number;
   games: string[];
+  /** Time each bot (i, then j) spent choosing, in ms, and how many moves it chose: for Elo against
+   * time per move. Wall-clock, so it varies from run to run; results don't. */
+  thinkMs: [number, number];
+  moves: [number, number];
 }
 
 /** Each pairing's seed, from the round and the two bots: the same however the work is split up. */
@@ -52,7 +56,20 @@ export function game(a: Bot, b: Bot, start: GameState): { winner: Player | null;
 
 export function playPair(job: PairJob): PairResult {
   const rng = seeded(pairSeed(job.round, job.i, job.j));
-  const bots = [createBot(job.a, { rng, mode: "rate" }), createBot(job.b, { rng, mode: "rate" })];
+  const thinkMs: [number, number] = [0, 0], chosen: [number, number] = [0, 0];
+  // Each bot, timed as it chooses (timing changes nothing it plays).
+  const bots = [job.a, job.b].map((id, k): Bot => {
+    const bot = createBot(id, { rng, mode: "rate" });
+    return {
+      choose(state) {
+        const started = performance.now();
+        const move = bot.choose(state);
+        thinkMs[k] += performance.now() - started;
+        chosen[k]++;
+        return move;
+      },
+    };
+  });
   // Alternate who moves first from round to round; within a pair, the seats swap.
   const first = job.round % 2 ? P2 : P1;
   const start = opening(job.opening, first, rng);
@@ -76,5 +93,5 @@ export function playPair(job: PairJob): PairResult {
       if (winner === first) firstWon++;
     }
   }
-  return { i: job.i, j: job.j, results: [results[0], results[1]], firstWon, decided, games };
+  return { i: job.i, j: job.j, results: [results[0], results[1]], firstWon, decided, games, thinkMs, moves: chosen };
 }

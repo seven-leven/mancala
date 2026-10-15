@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 544" width="720" height="544" role="img"
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 600" width="720" height="600" role="img"
   aria-labelledby="t d">
   <title id="t">The bots' Elo ladder</title>
   <desc
-    id="d">Minimax 2043 (2020–2070), DFS 1980 (1955–2008), Shrewd 1908 (1885–1935), Lookahead 1739 (1720–1768), Planner 1685 (1667–1712), Chainer 1477 (1459–1502), Spoiler 1466 (1448–1488), Greedy 1320 (1303–1340), Turtle 1307 (1290–1329), Sometimes greedy 1183 (1165–1204), Striker 1152 (1134–1172), Random 1000 (1000–1000), Hoarder 943 (922–967), Sometimes generous 757 (738–778), Generous 585 (561–610), Pushover 516 (491–543)</desc>
+    id="d">Minimax 2048 (2028–2070), DFS 1970 (1948–1994), Shrewd 1911 (1890–1933), Lookahead 1725 (1706–1744), Planner 1696 (1679–1716), Sometimes planner 1566 (1548–1587), Chainer 1482 (1465–1501), Spoiler 1460 (1442–1480), Greedy 1311 (1296–1331), Turtle 1298 (1282–1315), Sometimes greedy 1197 (1179–1214), Striker 1139 (1123–1157), Random 1000 (1000–1000), Hoarder 926 (907–946), Fickle 831 (812–849), Sometimes generous 742 (722–761), Generous 570 (548–594), Pushover 502 (481–522)</desc>
   <style>
   svg {
     --ink: #161514;
@@ -62,120 +62,132 @@
     fill: var(--accent);
   }
   </style>
-  <rect class="bg" width="720" height="544" rx="12" />
+  <rect class="bg" width="720" height="600" rx="12" />
   <text class="title" x="24" y="30">The bots, by Elo</text>
   <text class="note" x="696" y="30"
-    text-anchor="end">Dot: rating · bar: 90% range · <tspan class="accent">red: too close to call</tspan></text>
-  <line class="grid" x1="230" x2="230" y1="36" y2="500" />
-  <text class="tick" x="230" y="516" text-anchor="middle">250</text>
-  <line class="grid" x1="282.5" x2="282.5" y1="36" y2="500" />
-  <text class="tick" x="282.5" y="516" text-anchor="middle">500</text>
-  <line class="grid" x1="335" x2="335" y1="36" y2="500" />
-  <text class="tick" x="335" y="516" text-anchor="middle">750</text>
-  <line class="grid" x1="387.5" x2="387.5" y1="36" y2="500" />
-  <text class="tick" x="387.5" y="516" text-anchor="middle">1000</text>
-  <line class="grid" x1="440" x2="440" y1="36" y2="500" />
-  <text class="tick" x="440" y="516" text-anchor="middle">1250</text>
-  <line class="grid" x1="492.5" x2="492.5" y1="36" y2="500" />
-  <text class="tick" x="492.5" y="516" text-anchor="middle">1500</text>
-  <line class="grid" x1="545" x2="545" y1="36" y2="500" />
-  <text class="tick" x="545" y="516" text-anchor="middle">1750</text>
-  <line class="grid" x1="597.5" x2="597.5" y1="36" y2="500" />
-  <text class="tick" x="597.5" y="516" text-anchor="middle">2000</text>
-  <line class="grid" x1="650" x2="650" y1="36" y2="500" />
-  <text class="tick" x="650" y="516" text-anchor="middle">2250</text>
+    text-anchor="end">Dot: rating · bar: 90% range · <tspan class="accent">red: order under 90% sure</tspan></text>
+  <line class="grid" x1="230" x2="230" y1="36" y2="556" />
+  <text class="tick" x="230" y="572" text-anchor="middle">250</text>
+  <line class="grid" x1="282.5" x2="282.5" y1="36" y2="556" />
+  <text class="tick" x="282.5" y="572" text-anchor="middle">500</text>
+  <line class="grid" x1="335" x2="335" y1="36" y2="556" />
+  <text class="tick" x="335" y="572" text-anchor="middle">750</text>
+  <line class="grid" x1="387.5" x2="387.5" y1="36" y2="556" />
+  <text class="tick" x="387.5" y="572" text-anchor="middle">1000</text>
+  <line class="grid" x1="440" x2="440" y1="36" y2="556" />
+  <text class="tick" x="440" y="572" text-anchor="middle">1250</text>
+  <line class="grid" x1="492.5" x2="492.5" y1="36" y2="556" />
+  <text class="tick" x="492.5" y="572" text-anchor="middle">1500</text>
+  <line class="grid" x1="545" x2="545" y1="36" y2="556" />
+  <text class="tick" x="545" y="572" text-anchor="middle">1750</text>
+  <line class="grid" x1="597.5" x2="597.5" y1="36" y2="556" />
+  <text class="tick" x="597.5" y="572" text-anchor="middle">2000</text>
+  <line class="grid" x1="650" x2="650" y1="36" y2="556" />
+  <text class="tick" x="650" y="572" text-anchor="middle">2250</text>
   <text class="name" x="216" y="62" text-anchor="end">Expert <tspan class="muted">· Minimax</tspan></text>
-  <line class="mark" x1="601.7" x2="612.2" y1="58" y2="58" />
-  <line class="mark" x1="601.7" x2="601.7" y1="53" y2="63" />
+  <line class="mark" x1="603.38" x2="612.2" y1="58" y2="58" />
+  <line class="mark" x1="603.38" x2="603.38" y1="53" y2="63" />
   <line class="mark" x1="612.2" x2="612.2" y1="53" y2="63" />
-  <circle class="dot" cx="606.53" cy="58" r="5" />
-  <text class="value" x="622.2" y="62">2043</text>
+  <circle class="dot" cx="607.5799999999999" cy="58" r="5" />
+  <text class="value" x="622.2" y="62">2048</text>
   <text class="name" x="216" y="90" text-anchor="end">Hard <tspan class="muted">· DFS</tspan></text>
-  <line class="mark" x1="588.05" x2="599.1800000000001" y1="86" y2="86" />
-  <line class="mark" x1="588.05" x2="588.05" y1="81" y2="91" />
-  <line class="mark" x1="599.1800000000001" x2="599.1800000000001" y1="81" y2="91" />
-  <circle class="dot" cx="593.3" cy="86" r="5" />
-  <text class="value" x="609.1800000000001" y="90">1980</text>
+  <line class="mark" x1="586.5799999999999" x2="596.24" y1="86" y2="86" />
+  <line class="mark" x1="586.5799999999999" x2="586.5799999999999" y1="81" y2="91" />
+  <line class="mark" x1="596.24" x2="596.24" y1="81" y2="91" />
+  <circle class="dot" cx="591.2" cy="86" r="5" />
+  <text class="value" x="606.24" y="90">1970</text>
   <text class="name" x="216" y="118" text-anchor="end">Sharp <tspan class="muted">· Shrewd</tspan></text>
-  <line class="mark" x1="573.35" x2="583.85" y1="114" y2="114" />
-  <line class="mark" x1="573.35" x2="573.35" y1="109" y2="119" />
-  <line class="mark" x1="583.85" x2="583.85" y1="109" y2="119" />
-  <circle class="dot" cx="578.1800000000001" cy="114" r="5" />
-  <text class="value" x="593.85" y="118">1908</text>
+  <line class="mark" x1="574.4" x2="583.4300000000001" y1="114" y2="114" />
+  <line class="mark" x1="574.4" x2="574.4" y1="109" y2="119" />
+  <line class="mark" x1="583.4300000000001" x2="583.4300000000001" y1="109" y2="119" />
+  <circle class="dot" cx="578.81" cy="114" r="5" />
+  <text class="value" x="593.4300000000001" y="118">1911</text>
   <text class="name" x="216" y="146" text-anchor="end">Tricky <tspan class="muted">· Lookahead</tspan></text>
-  <line class="mark" x1="538.7" x2="548.78" y1="142" y2="142" />
-  <line class="mark" x1="538.7" x2="538.7" y1="137" y2="147" />
-  <line class="mark" x1="548.78" x2="548.78" y1="137" y2="147" />
-  <circle class="dot" cx="542.69" cy="142" r="5" />
-  <text class="value" x="558.78" y="146">1739</text>
+  <line class="mark" x1="535.76" x2="543.74" y1="142" y2="142" />
+  <line class="mark" x1="535.76" x2="535.76" y1="137" y2="147" />
+  <line class="mark" x1="543.74" x2="543.74" y1="137" y2="147" />
+  <circle class="dot" cx="539.75" cy="142" r="5" />
+  <text class="value" x="553.74" y="146">1725</text>
   <text class="name" x="216" y="174" text-anchor="end">Thoughtful <tspan class="muted">· Planner</tspan></text>
-  <line class="mark" x1="527.5699999999999" x2="537.02" y1="170" y2="170" />
-  <line class="mark" x1="527.5699999999999" x2="527.5699999999999" y1="165" y2="175" />
-  <line class="mark" x1="537.02" x2="537.02" y1="165" y2="175" />
-  <circle class="dot" cx="531.35" cy="170" r="5" />
-  <text class="value" x="547.02" y="174">1685</text>
-  <text class="name" x="216" y="202" text-anchor="end">Keen <tspan class="muted">· Chainer</tspan></text>
-  <line class="mark overlap" x1="483.89" x2="492.92" y1="198" y2="198" />
-  <line class="mark overlap" x1="483.89" x2="483.89" y1="193" y2="203" />
-  <line class="mark overlap" x1="492.92" x2="492.92" y1="193" y2="203" />
-  <circle class="dot overlap" cx="487.67" cy="198" r="5" />
-  <text class="value" x="502.92" y="202">1477</text>
-  <text class="name" x="216" y="230" text-anchor="end">Crafty <tspan class="muted">· Spoiler</tspan></text>
-  <line class="mark overlap" x1="481.58" x2="489.98" y1="226" y2="226" />
-  <line class="mark overlap" x1="481.58" x2="481.58" y1="221" y2="231" />
-  <line class="mark overlap" x1="489.98" x2="489.98" y1="221" y2="231" />
-  <circle class="dot overlap" cx="485.36" cy="226" r="5" />
-  <text class="value" x="499.98" y="230">1466</text>
-  <text class="name" x="216" y="258" text-anchor="end">Average <tspan class="muted">· Greedy</tspan></text>
-  <line class="mark overlap" x1="451.13" x2="458.9" y1="254" y2="254" />
-  <line class="mark overlap" x1="451.13" x2="451.13" y1="249" y2="259" />
-  <line class="mark overlap" x1="458.9" x2="458.9" y1="249" y2="259" />
-  <circle class="dot overlap" cx="454.70000000000005" cy="254" r="5" />
-  <text class="value" x="468.9" y="258">1320</text>
-  <text class="name" x="216" y="286" text-anchor="end">Careful <tspan class="muted">· Turtle</tspan></text>
-  <line class="mark overlap" x1="448.4" x2="456.59000000000003" y1="282" y2="282" />
-  <line class="mark overlap" x1="448.4" x2="448.4" y1="277" y2="287" />
-  <line class="mark overlap" x1="456.59000000000003" x2="456.59000000000003" y1="277" y2="287" />
-  <circle class="dot overlap" cx="451.97" cy="282" r="5" />
-  <text class="value" x="466.59000000000003" y="286">1307</text>
-  <text class="name" x="216" y="314" text-anchor="end">Relaxed <tspan class="muted">· Sometimes greedy</tspan></text>
-  <line class="mark" x1="422.15" x2="430.34000000000003" y1="310" y2="310" />
-  <line class="mark" x1="422.15" x2="422.15" y1="305" y2="315" />
-  <line class="mark" x1="430.34000000000003" x2="430.34000000000003" y1="305" y2="315" />
-  <circle class="dot" cx="425.93" cy="310" r="5" />
-  <text class="value" x="440.34000000000003" y="314">1183</text>
-  <text class="name" x="216" y="342" text-anchor="end">Bold <tspan class="muted">· Striker</tspan></text>
-  <line class="mark" x1="415.64" x2="423.62" y1="338" y2="338" />
-  <line class="mark" x1="415.64" x2="415.64" y1="333" y2="343" />
-  <line class="mark" x1="423.62" x2="423.62" y1="333" y2="343" />
-  <circle class="dot" cx="419.42" cy="338" r="5" />
-  <text class="value" x="433.62" y="342">1152</text>
-  <text class="name" x="216" y="370" text-anchor="end">Easy <tspan class="muted">· Random</tspan></text>
-  <circle class="dot" cx="387.5" cy="366" r="5" />
-  <text class="value" x="397.5" y="370">1000 (anchor)</text>
-  <text class="name" x="216" y="398" text-anchor="end">Thrifty <tspan class="muted">· Hoarder</tspan></text>
-  <line class="mark" x1="371.12" x2="380.57" y1="394" y2="394" />
-  <line class="mark" x1="371.12" x2="371.12" y1="389" y2="399" />
-  <line class="mark" x1="380.57" x2="380.57" y1="389" y2="399" />
-  <circle class="dot" cx="375.53" cy="394" r="5" />
-  <text class="value" x="390.57" y="398">943</text>
-  <text class="name" x="216" y="426" text-anchor="end">Gentle <tspan class="muted">· Sometimes generous</tspan></text>
-  <line class="mark" x1="332.48" x2="340.88" y1="422" y2="422" />
-  <line class="mark" x1="332.48" x2="332.48" y1="417" y2="427" />
-  <line class="mark" x1="340.88" x2="340.88" y1="417" y2="427" />
-  <circle class="dot" cx="336.47" cy="422" r="5" />
-  <text class="value" x="350.88" y="426">757</text>
-  <text class="name" x="216" y="454" text-anchor="end">Very easy <tspan class="muted">· Generous</tspan></text>
-  <line class="mark" x1="295.31" x2="305.6" y1="450" y2="450" />
-  <line class="mark" x1="295.31" x2="295.31" y1="445" y2="455" />
-  <line class="mark" x1="305.6" x2="305.6" y1="445" y2="455" />
-  <circle class="dot" cx="300.35" cy="450" r="5" />
-  <text class="value" x="315.6" y="454">585</text>
-  <text class="name" x="216" y="482" text-anchor="end">Hopeless <tspan class="muted">· Pushover</tspan></text>
-  <line class="mark" x1="280.61" x2="291.53" y1="478" y2="478" />
-  <line class="mark" x1="280.61" x2="280.61" y1="473" y2="483" />
-  <line class="mark" x1="291.53" x2="291.53" y1="473" y2="483" />
-  <circle class="dot" cx="285.86" cy="478" r="5" />
-  <text class="value" x="301.53" y="482">516</text>
-  <text class="note" x="24" y="534">Random is pinned at 1000. Ratings from deno task rate, 2026-10-15.</text>
+  <line class="mark" x1="530.09" x2="537.86" y1="170" y2="170" />
+  <line class="mark" x1="530.09" x2="530.09" y1="165" y2="175" />
+  <line class="mark" x1="537.86" x2="537.86" y1="165" y2="175" />
+  <circle class="dot" cx="533.66" cy="170" r="5" />
+  <text class="value" x="547.86" y="174">1696</text>
+  <text class="name" x="216" y="202" text-anchor="end">Clever <tspan class="muted">· Sometimes planner</tspan></text>
+  <line class="mark" x1="502.58" x2="510.77" y1="198" y2="198" />
+  <line class="mark" x1="502.58" x2="502.58" y1="193" y2="203" />
+  <line class="mark" x1="510.77" x2="510.77" y1="193" y2="203" />
+  <circle class="dot" cx="506.36" cy="198" r="5" />
+  <text class="value" x="520.77" y="202">1566</text>
+  <text class="name" x="216" y="230" text-anchor="end">Keen <tspan class="muted">· Chainer</tspan></text>
+  <line class="mark" x1="485.15" x2="492.71" y1="226" y2="226" />
+  <line class="mark" x1="485.15" x2="485.15" y1="221" y2="231" />
+  <line class="mark" x1="492.71" x2="492.71" y1="221" y2="231" />
+  <circle class="dot" cx="488.71999999999997" cy="226" r="5" />
+  <text class="value" x="502.71" y="230">1482</text>
+  <text class="name" x="216" y="258" text-anchor="end">Crafty <tspan class="muted">· Spoiler</tspan></text>
+  <line class="mark" x1="480.32" x2="488.3" y1="254" y2="254" />
+  <line class="mark" x1="480.32" x2="480.32" y1="249" y2="259" />
+  <line class="mark" x1="488.3" x2="488.3" y1="249" y2="259" />
+  <circle class="dot" cx="484.1" cy="254" r="5" />
+  <text class="value" x="498.3" y="258">1460</text>
+  <text class="name" x="216" y="286" text-anchor="end">Average <tspan class="muted">· Greedy</tspan></text>
+  <line class="mark" x1="449.65999999999997" x2="457.01" y1="282" y2="282" />
+  <line class="mark" x1="449.65999999999997" x2="449.65999999999997" y1="277" y2="287" />
+  <line class="mark" x1="457.01" x2="457.01" y1="277" y2="287" />
+  <circle class="dot" cx="452.81" cy="282" r="5" />
+  <text class="value" x="467.01" y="286">1311</text>
+  <text class="name" x="216" y="314" text-anchor="end">Careful <tspan class="muted">· Turtle</tspan></text>
+  <line class="mark" x1="446.72" x2="453.65" y1="310" y2="310" />
+  <line class="mark" x1="446.72" x2="446.72" y1="305" y2="315" />
+  <line class="mark" x1="453.65" x2="453.65" y1="305" y2="315" />
+  <circle class="dot" cx="450.08000000000004" cy="310" r="5" />
+  <text class="value" x="463.65" y="314">1298</text>
+  <text class="name" x="216" y="342" text-anchor="end">Relaxed <tspan class="muted">· Sometimes greedy</tspan></text>
+  <line class="mark" x1="425.09000000000003" x2="432.44" y1="338" y2="338" />
+  <line class="mark" x1="425.09000000000003" x2="425.09000000000003" y1="333" y2="343" />
+  <line class="mark" x1="432.44" x2="432.44" y1="333" y2="343" />
+  <circle class="dot" cx="428.87" cy="338" r="5" />
+  <text class="value" x="442.44" y="342">1197</text>
+  <text class="name" x="216" y="370" text-anchor="end">Bold <tspan class="muted">· Striker</tspan></text>
+  <line class="mark" x1="413.33000000000004" x2="420.47" y1="366" y2="366" />
+  <line class="mark" x1="413.33000000000004" x2="413.33000000000004" y1="361" y2="371" />
+  <line class="mark" x1="420.47" x2="420.47" y1="361" y2="371" />
+  <circle class="dot" cx="416.69" cy="366" r="5" />
+  <text class="value" x="430.47" y="370">1139</text>
+  <text class="name" x="216" y="398" text-anchor="end">Easy <tspan class="muted">· Random</tspan></text>
+  <circle class="dot" cx="387.5" cy="394" r="5" />
+  <text class="value" x="397.5" y="398">1000 (anchor)</text>
+  <text class="name" x="216" y="426" text-anchor="end">Thrifty <tspan class="muted">· Hoarder</tspan></text>
+  <line class="mark" x1="367.97" x2="376.15999999999997" y1="422" y2="422" />
+  <line class="mark" x1="367.97" x2="367.97" y1="417" y2="427" />
+  <line class="mark" x1="376.15999999999997" x2="376.15999999999997" y1="417" y2="427" />
+  <circle class="dot" cx="371.96000000000004" cy="422" r="5" />
+  <text class="value" x="386.15999999999997" y="426">926</text>
+  <text class="name" x="216" y="454" text-anchor="end">Mild <tspan class="muted">· Fickle</tspan></text>
+  <line class="mark" x1="348.02" x2="355.78999999999996" y1="450" y2="450" />
+  <line class="mark" x1="348.02" x2="348.02" y1="445" y2="455" />
+  <line class="mark" x1="355.78999999999996" x2="355.78999999999996" y1="445" y2="455" />
+  <circle class="dot" cx="352.01" cy="450" r="5" />
+  <text class="value" x="365.78999999999996" y="454">831</text>
+  <text class="name" x="216" y="482" text-anchor="end">Gentle <tspan class="muted">· Sometimes generous</tspan></text>
+  <line class="mark" x1="329.12" x2="337.31" y1="478" y2="478" />
+  <line class="mark" x1="329.12" x2="329.12" y1="473" y2="483" />
+  <line class="mark" x1="337.31" x2="337.31" y1="473" y2="483" />
+  <circle class="dot" cx="333.32" cy="478" r="5" />
+  <text class="value" x="347.31" y="482">742</text>
+  <text class="name" x="216" y="510" text-anchor="end">Very easy <tspan class="muted">· Generous</tspan></text>
+  <line class="mark" x1="292.58" x2="302.24" y1="506" y2="506" />
+  <line class="mark" x1="292.58" x2="292.58" y1="501" y2="511" />
+  <line class="mark" x1="302.24" x2="302.24" y1="501" y2="511" />
+  <circle class="dot" cx="297.2" cy="506" r="5" />
+  <text class="value" x="312.24" y="510">570</text>
+  <text class="name" x="216" y="538" text-anchor="end">Hopeless <tspan class="muted">· Pushover</tspan></text>
+  <line class="mark" x1="278.51" x2="287.12" y1="534" y2="534" />
+  <line class="mark" x1="278.51" x2="278.51" y1="529" y2="539" />
+  <line class="mark" x1="287.12" x2="287.12" y1="529" y2="539" />
+  <circle class="dot" cx="282.92" cy="534" r="5" />
+  <text class="value" x="297.12" y="538">502</text>
+  <text class="note" x="24" y="590">Random is pinned at 1000. Ratings from deno task rate, 2026-10-15.</text>
 </svg>

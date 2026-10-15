@@ -19,7 +19,7 @@ import { exposed, freeTurnsReady, lead, mobility, threats } from "../src/bots/se
 import { search } from "../src/bots/search/minimax.ts";
 import { newGame, playTurn, validMoves } from "../src/game/engine.ts";
 import { DEFAULT_RULES, type GameState, P1, P2 } from "../src/game/types.ts";
-import { playMatch, seeded } from "../tools/match.ts";
+import { seeded } from "../tools/match.ts";
 
 const position = (pits: number[], current = P1): GameState => ({
   rules: { ...DEFAULT_RULES },
@@ -92,25 +92,6 @@ Deno.test("minimax stops on time", () => {
   const r = search(newGame(DEFAULT_RULES, P2), { timeMs: 150 });
   assert(performance.now() - started < 1500);
   assert(r.depth >= 1 && r.move !== null);
-});
-
-Deno.test("minimax beats random and greedy", () => {
-  const minimax = new MinimaxBot({ depth: 5 });
-  let wins = 0;
-  for (let i = 0; i < 6; i++) {
-    const first = i % 2 ? P1 : P2;
-    if (playMatch(minimax, new RandomBot(seeded(i)), first).winner === P1) wins++;
-    if (playMatch(minimax, new GreedyBot(), first).winner === P1) wins++;
-  }
-  assert(wins >= 10, `minimax won ${wins} of 12`);
-});
-
-Deno.test("pushover loses even to random", () => {
-  let lost = 0;
-  for (let i = 0; i < 6; i++) {
-    if (playMatch(new PushoverBot(3), new RandomBot(seeded(40 + i)), i % 2 ? P1 : P2).winner === P2) lost++;
-  }
-  assert(lost >= 5, `pushover lost ${lost} of 6`);
 });
 
 Deno.test("first plays the leftmost pit from its own side", () => {

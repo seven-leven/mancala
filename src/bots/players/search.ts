@@ -51,7 +51,7 @@ export class LookaheadBot implements Bot {
  * assuming you play to win. Even a careless opponent ends up winning.
  */
 export class PushoverBot implements Bot {
-  constructor(private depth = 4) {}
+  constructor(private depth = 3) {}
   choose(state: GameState): number | null {
     // Nothing prunes a search where both sides want the same result, so it follows only short
     // free-turn chains (3), which keeps a move under ~0.1 s.

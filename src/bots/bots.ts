@@ -1,6 +1,6 @@
 /**
  * The bots: the one list the game, the Web Worker, saved games and the tournament all read. Each
- * entry is a BotSpec (contracts.ts); BOTS.md has the rules every bot follows and how to add one.
+ * entry is a BotSpec (contracts.ts); docs/BOTS.md has the rules every bot follows and how to add one.
  */
 import type { Bot, BotContext, BotSpec } from "./contracts.ts";
 import { FirstBot, RandomBot } from "./players/basic.ts";
@@ -39,7 +39,8 @@ export const BOTS = {
     level: "Hopeless",
     blurb: "Searches ahead like Minimax, but to lose by as much as it can.",
     family: "search",
-    create: () => new PushoverBot(4),
+    // Depth 3: as hopeless as depth 4 (both lose about 99% to Random) at a fifth of the time.
+    create: () => new PushoverBot(3),
   },
   generous: {
     label: "Generous",
@@ -53,8 +54,17 @@ export const BOTS = {
     level: "Gentle",
     blurb: "Plays Generous's move most of the time and any legal pit the rest.",
     family: "mixed",
-    // q places it between Generous and Random; see BOTS.md, "Tunable on purpose".
+    // q places it between Generous and Random; see docs/BOTS.md, "Tunable on purpose".
     create: ({ rng }) => new MixedBot(new GenerousBot(rng), 0.75, rng),
+  },
+  fickle: {
+    label: "Fickle",
+    level: "Mild",
+    blurb: "Sometimes keeps its seeds at home like Hoarder; more often gives them away like Generous.",
+    family: "mixed",
+    // Hoarder's move with probability q, else Generous's: q places it between Generous and Hoarder
+    // (0.5 rates about 880; 0.4 aims for 850, between Gentle and Thrifty).
+    create: ({ rng }) => new MixedBot(new HoarderBot(0.3, rng), 0.4, rng, new GenerousBot(rng)),
   },
   hoarder: {
     label: "Hoarder",
@@ -120,6 +130,15 @@ export const BOTS = {
     // between Greedy and a full two-move chainer, which rates level with Lookahead.
     create: ({ rng }) => new MixedBot(new DfsBot(2), 0.5, rng, new GreedyBot()),
   },
+  sometimesPlanner: {
+    label: "Sometimes planner",
+    level: "Clever",
+    blurb: "Plans like Planner most of the time; otherwise plays like Greedy.",
+    family: "mixed",
+    // Planner's move with probability q, else Greedy's: 0.7 rates about 1560, 1 is Planner (1685);
+    // 0.75 aims for 1580, between Keen and Thoughtful.
+    create: ({ rng }) => new MixedBot(new TwoMoveBot(planned()), 0.75, rng, new GreedyBot()),
+  },
   planner: {
     label: "Planner",
     level: "Thoughtful",
@@ -162,7 +181,7 @@ export const BOTS = {
 /**
  * Dormant bots: kept in the code, out of the menus and the default tournament. Their ids are
  * reserved. The tournament still rates one when it's named: `deno task rate --bots ...`.
- * See BOTS.md, "Dormant bots".
+ * See docs/BOTS.md, "Dormant bots".
  */
 export const DORMANT = {
   // Rated level with Random (999 against 1000 over 240 games, too close to call), so it adds no

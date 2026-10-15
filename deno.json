@@ -1,5 +1,5 @@
 {
-  "version": "2.2.3",
+  "version": "2.3.0",
   "imports": {
     "@std/assert": "jsr:@std/assert@^1",
     "@std/http": "jsr:@std/http@^1",
@@ -10,13 +10,15 @@
   "tasks": {
     "dev": "deno run -A tools/build.ts --watch --serve",
     "build": "deno run -A tools/build.ts",
-    "test": "deno test --parallel",
+    "test": "deno test --parallel --allow-read",
+    "coverage": "deno test --allow-read --coverage=data/coverage && deno coverage data/coverage",
     "check": "deno check src tools tests",
     "rate": "deno run --allow-read=src,tools,data --allow-write=src/bots/ratings.ts,tools/tournament,data tools/tournament/main.ts",
     "positions": "deno run --allow-read tools/positions.ts",
     "ladder": "deno run --allow-write=docs/ladder.svg tools/ladder.ts",
     "profile": "deno run --allow-read=src,tools,data --allow-write=tools/tournament,data --cpu-prof-dir=data/profile --cpu-prof-md --cpu-prof-flamegraph tools/tournament/main.ts 2",
     "design-sheet": "deno run -A tools/design-sheet.ts",
+    "icon-sheet": "deno run -A tools/icon-sheet.ts",
     "release": "deno run --allow-read --allow-run=git,gh,deno tools/release.ts",
     "bench": "deno run tools/bench.ts"
   },

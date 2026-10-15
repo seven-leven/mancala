@@ -5,15 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mancala · ohvalhugondi</title>
     <meta name="description"
-      content="Ohvalhugondi, the Maldivian mancala: seven pits, seven seeds, relay sowing. Play a friend or one of seventeen bots, from Pushover to an alpha-beta Minimax.">
+      content="Ohvalhugondi, the Maldivian mancala: seven pits, seven seeds, relay sowing. Play a friend or one of eighteen bots, from Pushover to an alpha-beta Minimax.">
     <meta property="og:title" content="Mancala · ohvalhugondi">
     <meta property="og:description"
-      content="The Maldivian mancala in the browser: play a friend or one of seventeen bots.">
+      content="The Maldivian mancala in the browser: play a friend or one of eighteen bots.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://seven-leven.github.io/mancala/">
     <meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#161514" media="(prefers-color-scheme: dark)">
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="svg/favicon.svg?v={{ build }}" type="image/svg+xml">
+    <link rel="icon" href="png/favicon-32.png?v={{ build }}" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="png/apple-touch-icon.png?v={{ build }}">
     <script>
     // Apply a saved theme before the first paint
     try {
@@ -35,34 +37,63 @@
           <h1 class="serif">Mancala</h1>
         </div>
         <div class="controls">
-          <button class="btn btn--primary" id="newGame" type="button">New game</button>
-          <button class="btn btn--ghost" id="replay" type="button" hidden>Replay</button>
-          <div id="opponent"></div>
-          <button class="btn btn--ghost" id="undo" type="button" aria-keyshortcuts="U">Undo</button>
-          <button class="btn btn--ghost" id="hint" type="button" aria-keyshortcuts="H">Hint</button>
-          <button class="btn btn--ghost" id="skip" type="button" aria-keyshortcuts="S">Skip</button>
-          <button class="btn btn--ghost btn--icon" id="openStats" type="button" aria-label="Your games and rating">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round" aria-hidden="true">
-              <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
-            </svg>
-          </button>
-          <button class="btn btn--ghost btn--icon" id="openSettings" type="button" aria-label="Settings">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round" aria-hidden="true">
-              <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
-              <circle cx="16" cy="7" r="2" />
-              <circle cx="10" cy="17" r="2" />
-            </svg>
-          </button>
-          <button class="btn btn--ghost btn--icon" id="openRules" type="button" aria-label="How to play"
-            aria-keyshortcuts="?">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" />
-              <path d="M9.6 9.2a2.5 2.5 0 0 1 4.8.8c0 1.7-2.4 2.2-2.4 3.7M12 17h.01" />
-            </svg>
-          </button>
+          <!-- Three groups: start a game, help during it, and the site (DESIGN.md, Layout) -->
+          <div class="controls__group" role="group" aria-label="Game">
+            <button class="btn btn--primary" id="newGame" type="button" aria-keyshortcuts="N">New game</button>
+            <div id="opponent"></div>
+          </div>
+          <div class="controls__group" role="group" aria-label="This game">
+            <button class="btn btn--ghost btn--icon" id="undo" type="button" aria-label="Undo" aria-keyshortcuts="U"
+              title="Undo (U)">
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v={{ build }}#undo" />
+              </svg>
+            </button>
+            <button class="btn btn--ghost btn--icon" id="hint" type="button" aria-label="Hint" aria-keyshortcuts="H"
+              title="Hint (H)">
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v={{ build }}#tip" />
+              </svg>
+            </button>
+            <button class="btn btn--ghost btn--icon" id="skip" type="button" aria-label="Skip the animation"
+              aria-keyshortcuts="S" title="Skip the animation (S)">
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v={{ build }}#skip" />
+              </svg>
+            </button>
+            <button class="btn btn--ghost btn--icon" id="replay" type="button" aria-label="Replay the game"
+              title="Replay the game" hidden>
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v={{ build }}#replay" />
+              </svg>
+            </button>
+          </div>
+          <div class="controls__group" role="group" aria-label="Site">
+            <button class="btn btn--ghost btn--icon" id="toggleSound" type="button" aria-label="Sound"
+              aria-pressed="false" title="Sound: off">
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v={{ build }}#sound-off" />
+              </svg>
+            </button>
+            <button class="btn btn--ghost btn--icon" id="openStats" type="button" aria-label="Your games and rating"
+              title="Your games and rating">
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v={{ build }}#stats" />
+              </svg>
+            </button>
+            <button class="btn btn--ghost btn--icon" id="openSettings" type="button" aria-label="Settings"
+              title="Settings">
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v={{ build }}#settings" />
+              </svg>
+            </button>
+            <button class="btn btn--ghost btn--icon" id="openRules" type="button" aria-label="How to play"
+              aria-keyshortcuts="?" title="How to play (?)">
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v={{ build }}#help" />
+              </svg>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -91,7 +122,7 @@
         <span>Keys <kbd>1</kbd>–<kbd>7</kbd> <kbd>N</kbd> <kbd>U</kbd> <kbd>H</kbd> <kbd>?</kbd></span>
         <span class="footer__end">
           <a class="link-arrow"
-            href="https://github.com/seven-leven/mancala">Source on GitHub <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            href="https://github.com/seven-leven/mancala">Source on GitHub <svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#arrow-right"/></svg></a>
           <!-- The build writes the version from deno.json here -->
           <a class="footer__version" href="https://github.com/seven-leven/mancala/blob/main/CHANGELOG.md"
             title="What changed in each version">v{{ version }}</a>
@@ -101,7 +132,7 @@
 
     <dialog id="rules" class="intro" aria-labelledby="rulesTitle">
       <form method="dialog" class="intro__close"><button class="icon-btn" aria-label="Close">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M5.636 5.636a1 1 0 0 1 1.414 0l4.95 4.95 4.95-4.95a1 1 0 0 1 1.414 1.414L13.414 12l4.95 4.95a1 1 0 0 1-1.414 1.414L12 13.414l-4.95 4.95a1 1 0 0 1-1.414-1.414l4.95-4.95-4.95-4.95a1 1 0 0 1 0-1.414Z"/></svg>
+          <svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#close"/></svg>
         </button></form>
       <p class="label eyebrow">How to play</p>
       <h2 id="rulesTitle">Think ahead.<br><span class="intro__accent">Bank more.</span></h2>
@@ -128,17 +159,17 @@
       <div class="intro__rules">
         <div class="intro__card">
           <p
-            class="intro__card-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3.07 10.88C3.62 6.44 7.41 3 12 3c2.28 0 4.4.85 6.01 2.25V4a1 1 0 1 1 2 0v4a1 1 0 0 1-1 1H15a1 1 0 1 1 0-2h1.96A7 7 0 0 0 5.05 11.12a1 1 0 0 1-1.98-.24Zm16.99 1.13a1 1 0 0 1 .87 1.11C20.38 17.56 16.59 21 12 21c-2.28 0-4.39-.85-6-2.24V20a1 1 0 1 1-2 0v-4a1 1 0 0 1 1-1h4a1 1 0 1 1 0 2H7.04A7 7 0 0 0 18.95 12.88a1 1 0 0 1 1.11-.87Z"/></svg>Relay</p>
+            class="intro__card-title"><svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#relay"/></svg>Relay</p>
           <p>Last seed lands in a pit that already had seeds? Pick them all up and keep sowing.</p>
         </div>
         <div class="intro__card">
           <p
-            class="intro__card-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M2.56 12a9.5 9.5 0 0 1 16-6.93V3.5a1 1 0 1 1 2 0v4.5a1 1 0 0 1-1 1h-4.5a1 1 0 1 1 0-2h2.59a7.5 7.5 0 1 0 1.86 5.88 1 1 0 1 1 1.98.23A9.5 9.5 0 0 1 2.56 12Z"/></svg>Free turn</p>
+            class="intro__card-title"><svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#free-turn"/></svg>Free turn</p>
           <p>Last seed lands in your own store? Play again.</p>
         </div>
         <div class="intro__card">
           <p
-            class="intro__card-title"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/></svg>Capture</p>
+            class="intro__card-title"><svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#capture"/></svg>Capture</p>
           <p
             id="captureRule">Last seed lands in an empty pit on your side? Bank the seeds in the pit opposite. Your last
             seed stays where it landed.</p>
@@ -147,7 +178,7 @@
 
       <div class="intro__tip">
         <p
-          class="intro__card-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3c3.59 0 6.5 2.92 6.5 6.54A6.54 6.54 0 0 1 15.58 15H8.43A6.54 6.54 0 0 1 5.5 9.54C5.5 5.92 8.42 3 12 3Zm2.87 14v1H9.14v-1h5.73Zm-1.14 3a2 2 0 0 1-3.46 0h3.46Zm-5.6 0a4 4 0 0 0 7.74 0 1 1 0 0 0 1-1v-2.46a8.54 8.54 0 0 0 3.63-7C20.5 4.83 16.7 1 12 1S3.5 4.83 3.5 9.54a8.54 8.54 0 0 0 3.64 7V19a1 1 0 0 0 .99 1Z"/></svg>A word of strategy</p>
+          class="intro__card-title"><svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#tip"/></svg>A word of strategy</p>
         <p
           id="firstRule">Going first matters. Opening with pit 1 starts a chain of free turns that wins before the other
           side ever moves. Choose who goes first in Settings.</p>
@@ -178,6 +209,8 @@
       <form method="dialog" class="dialog__actions">
         <button class="btn btn--ghost" type="button" id="exportHistory">Save a copy</button>
         <button class="btn btn--ghost" type="button" id="loadCopy">Load a copy</button>
+        <button class="btn btn--ghost" type="button" id="exportMgn"
+          title="Your games in MGN, a text notation (like chess's PGN)">Save as MGN</button>
         <input type="file" id="importHistory" accept="application/json,.json" hidden>
         <button class="btn btn--ghost" type="button" id="clearHistory">Clear history</button>
         <button class="btn btn--primary">Done</button>
@@ -190,9 +223,9 @@
       <form method="dialog" id="settingsForm">
         <div class="field-row">
           <label
-            class="field"><span class="label">Player 1 · bottom</span><span class="select"><select name="p1"></select></span></label>
+            class="field"><span class="label">Player 1 · bottom</span><span class="select"><select name="p1"></select><svg class="icon select__chevron" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#chevron-down"/></svg></span></label>
           <label
-            class="field"><span class="label">Player 2 · top</span><span class="select"><select name="p2"></select></span></label>
+            class="field"><span class="label">Player 2 · top</span><span class="select"><select name="p2"></select><svg class="icon select__chevron" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#chevron-down"/></svg></span></label>
         </div>
         <fieldset class="field">
           <legend class="label">Who goes first</legend>
@@ -210,7 +243,6 @@
             <label><input type="radio" name="speed" value="fast"><span>Fast</span></label>
           </div>
         </fieldset>
-        <label class="check" style="margin-bottom: var(--space-4)"><input type="checkbox" name="sound"> Sound</label>
         <fieldset class="field">
           <legend class="label">Theme</legend>
           <div class="segmented">

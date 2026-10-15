@@ -7,7 +7,7 @@ Two harnesses, two words. The **test harness** (`deno task test`, `tests/`) chec
 push. The **rating harness** (`deno task rate`, `tools/tournament/`) plays the bots against each other to set their Elo,
 and runs by hand. A test run, a rating run.
 
-![A rating session in five steps: decide, place, rate, read, publish](docs/rating-session.svg)
+![A rating session in five steps: decide, place, rate, read, publish](rating-session.svg)
 
 ## Commands
 
@@ -17,7 +17,7 @@ and runs by hand. A test run, a rating run.
 | `deno task rate 240 --write \| tee data/ratings-240.md` | The full rating for the menus, kept as a table in `data/` (git-ignored)    |
 | `deno task rate 40 --bots random,greedy,newBot`         | A placement run: only these bots. Random is always needed: it's the anchor |
 | `deno task rate 240 --write --resume`                   | Carries on after Ctrl+C or `--time`: repeat the run's own games and flags  |
-| `deno task ladder`                                      | Redraws [docs/ladder.svg](docs/ladder.svg) from `src/bots/ratings.ts`      |
+| `deno task ladder`                                      | Redraws [docs/ladder.svg](ladder.svg) from `src/bots/ratings.ts`           |
 | `deno task profile`                                     | Where a short rating run spends its time (`data/profile/`)                 |
 
 Flags:
@@ -56,6 +56,33 @@ Ranges shrink with the square root of the games, so four times the games halves 
 
 Minimax pairings are most of the time. A placement run with only a few bots is much quicker.
 
+### Adaptive allocation
+
+`deno task rate 240 --adaptive` spends the games where they tell you something. A game between bots that win p and 1 − p
+of the time carries p(1 − p) of information: a quarter at 50/50, almost nothing at 99/1. So each pairing gets max(10,
+round(240 × 4p(1 − p))) games, p from the ratings in `src/bots/ratings.ts`: 240 for an even pairing, a few dozen for a
+clear one, and the floor of 10 for a mismatch, which keeps every bot linked to Random and still shows a bot that isn't
+transitive. The lopsided games are mostly the slow searchers', so they're the costliest to skip playing.
+
+Rules it keeps:
+
+- **The plan is fixed before the run**, from the last ratings, never from results as they come in, which would bias the
+  fit and its ranges. A bot with no rating yet plays every pairing in full.
+- **One queue, no rounds.** Every planned pair goes on one queue, the costliest pairings first; a checkpoint every 50
+  pairs, so `--resume` and `--time` work as before. Results are put back in plan order, so a run repeats exactly.
+- **Counts in the tables:** "Won" shows the games each bot played, and each head-to-head cell its game count.
+- **The virtual draw scales with the games.** The fit's virtual draw per pairing (which keeps a 100% pairing finite) is
+  weighted by the pairing's share of the most games any pairing played. A whole draw on a 10-game pairing pulled the
+  ends of the ladder about 50 Elo toward the middle; scaled, the ends sit where a plain run puts them. A plain run,
+  where every pairing plays the same, fits exactly as before.
+
+**How it compares** (18 bots, 16 cores, October 2026): the plain 240-game run took 220 s for 36,720 games. Adaptive from
+240 took 28 s (12,516 games), ranges up to ±38 at the ends; adaptive from 480 took 49 s (24,610 games), ranges up to
+±27. Both put 16 of 18 bots inside the plain run's ranges; DFS and Lookahead came out 5–30 Elo higher, consistent with
+the one pairing the plain run's model check flags (Striker scores 5% against DFS where the ratings say 1%), which
+adaptive plays only 10 times. So: `--adaptive` for a quick re-rate after a change (about a minute), a plain run for the
+ratings in the menus.
+
 ## How a run works
 
 **Matched pairs.** Each opening is set up once, then played twice, the bots swapping seats. A board that favours the
@@ -92,7 +119,7 @@ replacement, a matched pair at a time. The range runs from the 5th to the 95th p
 
 ## Reading the results
 
-![Three ways two ratings can sit, and what a game is worth by the Elo gap](docs/rating-reading.svg)
+![Three ways two ratings can sit, and what a game is worth by the Elo gap](rating-reading.svg)
 
 The run prints a table (Elo, 90% range, the share of all its games each bot won), then a head-to-head table: each bot's
 win rate against each other bot.
@@ -159,7 +186,7 @@ What it taught:
   at the same 40 games) took a third off. From 12 to 17 bots took a little more off, beyond what the extra games
   explain. From 60 to 240 games roughly halved them.
 - **With seventeen bots, games are the cheaper lever.** Four times the games did more in 5 minutes than five more bots
-  would. Giving the games to close pairings (adaptive allocation, in [TODO.md](TODO.md)) should do better still.
+  would. Giving the games to close pairings (adaptive allocation, in [TODO.md](../TODO.md)) should do better still.
 
 ### The ladder's shape, sixteen bots without First
 
@@ -219,7 +246,7 @@ beats j). Relative to an even game that's 4p(1 − p):
 
 **Why √games.** A rating's uncertainty goes as 1 / √(Σ n · p(1 − p)) over its pairings. Four times the games gives half
 the range; the same games moved to closer pairings give a narrower range for free. That is the case for adaptive
-allocation in [TODO.md](TODO.md).
+allocation in [TODO.md](../TODO.md).
 
 **The first-move edge.** The first player wins about 53% of decided games in a rating run. Matched pairs cancel it: each
 bot plays every opening from both seats, so the edge adds the same to both sides of every pair.
@@ -244,3 +271,15 @@ w ≥ n/2 + 3.1 · √n / 2
 That's the one-sided 0.1% line under "the two bots are equal": 30 of 40, 54 of 80. Tests are seeded, so they don't
 flicker from run to run; the rule is there so a broken bot can't pass on a lucky seed, and so changing the seed doesn't
 break a sound test. Pick pairings at least 400 Elo apart (about 90% or more): they clear the line with a wide margin.
+
+**Is A stronger than B?** The 300 resampled fits that give the ranges also give a probability: the share of them in
+which A rates above B. The results table's "Above next" column is that share for each bot against the next one down, and
+`--write` saves it as `above` in `src/bots/ratings.ts`. The ladder chart marks a pair red when it's under 90%. Two
+ranges can overlap while the order is still fairly sure (say 85%), so this says more than the overlap alone.
+
+**Does the model fit?** For each pairing, A's score against B is set beside what the ratings predict, 1 / (1 + 10^((R_B
+− R_A)/400)), and flagged when they're more than 3 standard errors apart, the error counted over matched pairs (the two
+legs of a pair go together), with p(1 − p) floored at 1% so a 100% pairing still has one. A bot that isn't transitive,
+that beats strong bots and loses to weak ones, shows up as a flagged pairing. The output ends with "Model check": either
+"every pairing's score is within chance", or the pairings that aren't. With 120 pairings, a 3-error limit should flag
+none by chance about 3 times in 4.

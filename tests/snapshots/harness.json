@@ -1,0 +1,22 @@
+[
+  "random-greedy: 0 0",
+  "random-generous: 1 1",
+  "random-hoarder: 1 0",
+  "random-striker: 0 0.5",
+  "greedy-generous: 1 1",
+  "greedy-hoarder: 1 1",
+  "greedy-striker: 1 0",
+  "generous-hoarder: 0 0",
+  "generous-striker: 0 0",
+  "hoarder-striker: 0 0",
+  "random-greedy: 0 0",
+  "random-generous: 1 1",
+  "random-hoarder: 0 1",
+  "random-striker: 1 1",
+  "greedy-generous: 1 1",
+  "greedy-hoarder: 0 1",
+  "greedy-striker: 0.5 1",
+  "generous-hoarder: 0 0",
+  "generous-striker: 0 0",
+  "hoarder-striker: 0 0"
+]

@@ -39,7 +39,7 @@ opening counted for whoever had it. It now plays matched pairs.
       (git-ignored) saved after every round of pairs, so a long run can stop and resume without losing games. `--resume`
       replays exactly what a straight run would.
 - [x] [#6](https://github.com/seven-leven/mancala/issues/6) A live progress line: elapsed, games, games a second, ETA.
-- [ ] [#7](https://github.com/seven-leven/mancala/issues/7) Strength checks in the test harness, in their own file
+- [x] [#7](https://github.com/seven-leven/mancala/issues/7) Strength checks in the test harness, in their own file
       (`tests/strength_test.ts`, so `--parallel` runs them beside the rest), kept under 20 s: Lookahead beats Random,
       Greedy beats Pushover, Minimax beats Pushover. (Minimax beats Random and Greedy is already there, in
       `tests/bots_test.ts`; move it over.)
@@ -50,8 +50,8 @@ Later: give close pairings more games than lopsided ones. Now planned as adaptiv
 
 ## [v2.3 · Bots in the gap](https://github.com/seven-leven/mancala/milestone/2)
 
-Every bot follows [BOTS.md](BOTS.md): the contract in `src/bots/contracts.ts`, one entry in `BOTS`, a family file in
-`src/bots/players/`.
+Every bot follows [BOTS.md](docs/BOTS.md): the contract in `src/bots/contracts.ts`, one entry in `BOTS`, a family file
+in `src/bots/players/`.
 
 - [x] **A bot standard.** BOTS.md, TypeScript contracts (`Bot`, `BotSpec`, `BotContext`, `Evaluator`), and the eight
       existing bots rewritten against them (they play exactly as before: the tournament repeats game for game). The
@@ -71,29 +71,29 @@ Every bot follows [BOTS.md](BOTS.md): the contract in `src/bots/contracts.ts`, o
 - [x] [#11](https://github.com/seven-leven/mancala/issues/11) Rated and kept: the widest gap went from 422 to 269 Elo,
       and every rating's 90% range is 25–35% narrower.
 - [x] [#12](https://github.com/seven-leven/mancala/issues/12) README table, CHANGELOG.
-- [x] **Game notation (MGN).** [NOTATION.md](NOTATION.md): games as text, checked against the engine both ways.
+- [x] **Game notation (MGN).** [NOTATION.md](docs/NOTATION.md): games as text, checked against the engine both ways.
       `deno task rate --record` saves every game, and `deno task positions` turns them into training data for #15.
 - [x] **Six more bots** (eighteen in all): Hoarder, Striker, Spoiler, Planner, Shrewd and Grandmaster, each placed in a
       gap with a quick rating script before the full run. Grandmaster rated level with Minimax for five times the time,
       so it's dormant (see v2.5).
 - [x] **A new How to play popup**: steps, three rule cards, a strategy tip, and the house rules kept live.
-- [ ] **Two more bots for the two widest gaps that matter** (see RATING.md, "The ladder's shape"; place each with a
+- [x] **Two more bots for the two widest gaps that matter** Done: Clever (Sometimes planner, 1566) and Mild (Fickle,
+      831), placed with a quick rating, then the full run. Was: (see RATING.md, "The ladder's shape"; place each with a
       quick rating against its neighbours, then the full run):
-  - [ ] one between Thoughtful (Planner, 1685) and Keen (Chainer, 1477), about 1580: the middle of the ladder, where
+  - [x] one between Thoughtful (Planner, 1685) and Keen (Chainer, 1477), about 1580: the middle of the ladder, where
         players climb. Say Planner mixed with Greedy, or Lookahead with a lower pick of its better moves;
-  - [ ] one between Gentle (Sometimes generous, 757) and Thrifty (Hoarder, 943), about 850: say Hoarder mixed with
+  - [x] one between Gentle (Sometimes generous, 757) and Thrifty (Hoarder, 943), about 850: say Hoarder mixed with
         Random, or Sometimes generous with a lower q.
   - Dropped: the two planned between Casual (First) and Bold (Striker). After the 240-game run that gap is 148 Elo, fine
     as it is.
-- [ ] Let players export their saved games as MGN from Your games (today the backup is JSON).
+- [x] Let players export their saved games as MGN. Done: Your games has "Save as MGN" (`gamesToMgn` in
+      `src/app/history.ts`, with a test). Was: Let players export their saved games as MGN from Your games (today the
+      backup is JSON).
 
 ## [v2.4 · A stronger Expert](https://github.com/seven-leven/mancala/milestone/3)
 
 - [ ] [#13](https://github.com/seven-leven/mancala/issues/13) Capture extension: like the free-turn extension (12 in a
       row today), keep searching past the depth limit after a capture, so the search doesn't stop just before the reply.
-- [ ] [#14](https://github.com/seven-leven/mancala/issues/14) Faster table keys: the transposition table keys positions
-      by a 17-character string; a number (Zobrist hashing) should be cheaper. Measure with `deno task bench` before
-      keeping it.
 - [ ] [#15](https://github.com/seven-leven/mancala/issues/15) Tune the evaluation weights from self-play (Texel's
       method: fit the weights so the evaluation predicts game results). Keep a weight set only if it wins a matched-pair
       match against the old one.
@@ -105,6 +105,9 @@ Every bot follows [BOTS.md](BOTS.md): the contract in `src/bots/contracts.ts`, o
 - [ ] [#17](https://github.com/seven-leven/mancala/issues/17) A **pie rule** house rule: after the first move, the
       second player may swap sides. A real answer to the first-move edge for human games, beside choosing who goes
       first.
+- [ ] [#14](https://github.com/seven-leven/mancala/issues/14) Last in v2.4 (the profile: building keys is 1.5% of the
+      time). Faster table keys: the transposition table keys positions by a 17-character string; a number (Zobrist
+      hashing) should be cheaper. Measure with `deno task bench` before keeping it.
 
 ## v2.5 · Faster
 
@@ -133,63 +136,72 @@ ratings 18% of that short run (a fixed ~2 s). Ordered by what each should save. 
 - [x] **A truthful ETA.** It counts rounds, not games: the median of the last five round times, plus what's left of this
       round weighted by each pairing's last time. Pairings also run slowest first, so a round no longer ends with one
       long Minimax pairing while the other cores wait. Same results.
-- [ ] **Adaptive allocation** (`--adaptive`). Lopsided pairings carry almost no information (a game is worth p(1−p),
-      close to 0 at 98–100%), and the slow searchers at the top make them the costliest games. Give each pairing
-      `max(10, round(G × 4p(1−p)))` games, p from the current ratings. Rules: fix the allocation before the run (from
-      `ratings.ts` or a short pilot), never from results as they come in, which would bias the fit and the ranges; keep
-      the floor of 10 so a non-transitive bot still shows; keep every bot well linked to Random. Play it as one queue,
-      slowest pairing first, with no round boundaries, and checkpoint every so many finished pairs. Show games played in
-      the Won and head-to-head tables, and add it to RATING.md. Keep it only if it gives today's ±25 ranges in clearly
-      less time than a plain 240-game run, with ratings inside those ranges.
-- [ ] **Pushover: prune or cap.** It's 7% of the time because a search that wants to lose can't prune. A smaller depth
-      or a time cap would do; it's the weakest bot either way.
+- [x] **Adaptive allocation** (`--adaptive`). Done, with the virtual draw scaled to each pairing's games: from 480, ±27
+      in 49 s against a plain 240-game run's ±22 in 220 s, 16 of 18 bots inside its ranges (docs/RATING.md, "Adaptive
+      allocation"). Kept for quick re-rates; plain runs still write the menu ratings. Was: Lopsided pairings carry
+      almost no information (a game is worth p(1−p), close to 0 at 98–100%), and the slow searchers at the top make them
+      the costliest games. Give each pairing `max(10, round(G × 4p(1−p)))` games, p from the current ratings. Rules: fix
+      the allocation before the run (from `ratings.ts` or a short pilot), never from results as they come in, which
+      would bias the fit and the ranges; keep the floor of 10 so a non-transitive bot still shows; keep every bot well
+      linked to Random. Play it as one queue, slowest pairing first, with no round boundaries, and checkpoint every so
+      many finished pairs. Show games played in the Won and head-to-head tables, and add it to RATING.md. Keep it only
+      if it gives today's ±25 ranges in clearly less time than a plain 240-game run, with ratings inside those ranges.
+- [x] **Pushover: prune or cap.** Done: depth 3, 5.5× faster (1.0 ms a move against 5.6), and just as hopeless (0.5 of
+      80 games against Random, 36 against Generous; depth 4: 1 and 38). Was: It's 7% of the time because a search that
+      wants to lose can't prune. A smaller depth or a time cap would do; it's the weakest bot either way.
 - [ ] **Grandmaster, dormant until it pays.** Depth 10 gained 7 Elo over Minimax's depth 6 for 5× the time, and some
       moves took 9 s. Bring it back with something that makes depth count (a better evaluation, #15; a capture
       extension, #13), or a time cap, and keep it only if it rates clearly above Minimax.
-- [ ] Re-rank [#14](https://github.com/seven-leven/mancala/issues/14) (Zobrist keys): building keys is only 1.5% of the
-      time, so it's the least of these.
+- [x] Re-rank [#14](https://github.com/seven-leven/mancala/issues/14) (Zobrist keys): moved to the end of v2.4.:
+      building keys is only 1.5% of the time, so it's the least of these.
 - [ ] **WebAssembly**, still parked (see Parked): every item above is cheaper and comes first.
 
 ## Test harness
 
-Alongside the releases: work these before v2.3's new bots and v2.5's adaptive allocation, which both lean on them. The
-strength checks are [#7](https://github.com/seven-leven/mancala/issues/7), under v2.2.
+All done (October 2026): see [docs/TESTING.md](docs/TESTING.md). They were worked before v2.3's new bots and v2.5's
+adaptive allocation, which both lean on them. The strength checks are
+[#7](https://github.com/seven-leven/mancala/issues/7), under v2.2.
 
-- [ ] **Random-game invariants for the engine.** Play a few thousand random games from random seeds and openings, and
+- [x] **Random-game invariants for the engine.** Play a few thousand random games from random seeds and openings, and
       check after every turn: no seed created or lost, the game always ends, the event log replays to the final
       position, `playTurn` never changes its input. Today these are checked on a handful of hand-made positions.
-- [ ] **Repeatability of the rating harness.** A tiny run (Random, Greedy, First, 4 games) prints the same table with 1
+- [x] **Repeatability of the rating harness.** A tiny run (Random, Greedy, First, 4 games) prints the same table with 1
       worker as with 4, and matches a saved snapshot. Turns "same results" from a check by hand into a test, for
       adaptive allocation and every speed-up after it.
-- [ ] **A docs link check.** Every relative link and `#anchor` in the `.md` files resolves, so RATING.md, BOTS.md and
+- [x] **A docs link check.** Every relative link and `#anchor` in the `.md` files resolves, so RATING.md, BOTS.md and
       the README can't drift apart when a heading changes.
-- [ ] **Coverage.** `deno task coverage` (`deno test --coverage`, then `deno coverage`) to see what nothing exercises.
+- [x] **Coverage.** `deno task coverage` (`deno test --coverage`, then `deno coverage`) to see what nothing exercises.
       Likely gaps: `src/app/game.ts` (undo, hint, which games are rated) and `src/ui/stats.ts`.
-- [ ] **A short testing guide**, like RATING.md but smaller: what each test file covers, the 20 s budget, slow tests in
+- [x] **A short testing guide**, like RATING.md but smaller: what each test file covers, the 20 s budget, slow tests in
       their own file so `--parallel` helps, and that strength claims belong to the rating harness.
 
 ## Rating statistics
 
 Small additions to the rating harness's output, each an hour or so. Document each in RATING.md's maths when it lands.
 
-- [ ] **"Is A stronger than B?" as a probability.** The 300 resampled fits are already there: report the share where
+- [x] **"Is A stronger than B?" as a probability.** The 300 resampled fits are already there: report the share where
       each bot ranks above its neighbour ("Chainer above Spoiler in 81% of resamples"), in place of overlapping ranges
       alone, and use it for the ladder chart's red marks.
-- [ ] **A check that the model fits.** Compare each pairing's win rate with what the ratings predict, and flag pairings
+- [x] **A check that the model fits.** Compare each pairing's win rate with what the ratings predict, and flag pairings
       that miss by more than chance: a bot that isn't transitive (beats strong bots, loses to weak ones) shows up here.
       A safeguard for adaptive allocation, which plays fewer lopsided games.
 
 ## Interface
 
-- [ ] **One icon set, written into DESIGN.md.** Today the site mixes three styles: outline icons with a 2 px stroke on
-      the masthead buttons (stats, settings, how to play), filled icons on the close button and the four rule cards in
-      How to play, and CSS-drawn chevrons with a 1.5 px line on the opponent picker and the selects. Pick one style
-      (outline, 24 px grid, one stroke width, round caps and joins, `currentColor`), redraw the odd ones out, and keep
-      them in one place (a sprite or `src/ui/icons.ts`) instead of pasted into `index.html`. Then add an Icons section
-      to DESIGN.md: the grid and stroke, sizes (16 px in buttons, larger in cards), colour, the `aria-label` rule for
-      icon-only buttons, and a sheet of every icon with its name and use, also shown on the design guide page.
-- [ ] **Site icons beyond the SVG favicon.** A PNG fallback and an Apple touch icon (180 px), in the same mark, so the
-      site looks right as a bookmark and on a phone's home screen. Add them to DESIGN.md's Icons section.
+- [x] **One icon set, written into DESIGN.md.** Done: `public/svg/icons.svg` (with the favicon in `public/svg/`),
+      `src/ui/icons.ts`, DESIGN.md's Icons section; the CSS chevrons are icons now. The sheet is docs/icons.png
+      (`deno task icon-sheet`), shown in DESIGN.md and on the design guide page. Was: Today the site mixes three styles:
+      outline icons with a 2 px stroke on the masthead buttons (stats, settings, how to play), filled icons on the close
+      button and the four rule cards in How to play, and CSS-drawn chevrons with a 1.5 px line on the opponent picker
+      and the selects. Pick one style (outline, 24 px grid, one stroke width, round caps and joins, `currentColor`),
+      redraw the odd ones out, and keep them in one place (a sprite or `src/ui/icons.ts`) instead of pasted into
+      `index.html`. Then add an Icons section to DESIGN.md: the grid and stroke, sizes (16 px in buttons, larger in
+      cards), colour, the `aria-label` rule for icon-only buttons, and a sheet of every icon with its name and use, also
+      shown on the design guide page.
+- [x] **Site icons beyond the SVG favicon.** Done: `public/png/favicon-32.png` and `apple-touch-icon.png`, rendered by
+      `deno task icon-sheet`, in DESIGN.md's Icons section. Was: A PNG fallback and an Apple touch icon (180 px), in the
+      same mark, so the site looks right as a bookmark and on a phone's home screen. Add them to DESIGN.md's Icons
+      section.
 
 ## The folio page
 

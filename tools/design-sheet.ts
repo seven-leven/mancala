@@ -1,6 +1,6 @@
 /**
  * Renders docs/design-guide.html to docs/design-guide.png with headless Chrome.
- * Run after changing DESIGN.md's tokens or public/style.css:  deno task design-sheet
+ * Run after changing docs/DESIGN.md's tokens or public/style.css:  deno task design-sheet
  *
  * Chrome is found at CHROME_PATH or the usual install locations.
  */

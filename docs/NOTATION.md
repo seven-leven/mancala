@@ -2,8 +2,8 @@
 
 One game as plain text, like chess's PGN: tags, then the moves. The tournament writes every game it plays in it, and
 `deno task positions` turns games into training data for the evaluation. The code is
-[src/game/notation.ts](src/game/notation.ts). Here is a tournament game, Random against Greedy, opening with two random
-moves:
+[src/game/notation.ts](../src/game/notation.ts). Here is a tournament game, Random against Greedy, opening with two
+random moves:
 
 ```
 [Event "Tournament"]

@@ -7,7 +7,7 @@ import { BoardView } from "./ui/board.ts";
 import { setSound } from "./ui/sound.ts";
 import { renderStats } from "./ui/stats.ts";
 import { Picker, type PickerGroup } from "./ui/picker.ts";
-import { clearGames, exportGames, importGames, loadGames, playerStats } from "./app/history.ts";
+import { clearGames, exportGames, gamesToMgn, importGames, loadGames, playerStats } from "./app/history.ts";
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
@@ -17,6 +17,22 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
 
 const settings = loadSettings();
 applyTheme(settings.theme);
+
+// --- Sound: one button in the toolbar, off until pressed (the setting is remembered) --------
+const soundButton = $<HTMLButtonElement>("toggleSound");
+function showSoundButton(): void {
+  soundButton.setAttribute("aria-pressed", String(settings.sound));
+  soundButton.title = `Sound: ${settings.sound ? "on" : "off"}`;
+  const use = soundButton.querySelector("use")!;
+  use.setAttribute("href", use.getAttribute("href")!.replace(/#.*$/, settings.sound ? "#sound-on" : "#sound-off"));
+}
+soundButton.addEventListener("click", () => {
+  settings.sound = !settings.sound;
+  saveSettings(settings);
+  setSound(settings.sound);
+  showSoundButton();
+});
+showSoundButton();
 
 const game = new Game(new BoardView($("board")), {
   turn: $("turn"),
@@ -70,7 +86,7 @@ const groups: PickerGroup[] = [
 
 /** The quick opponent picker sets Player 2. */
 const opponent = new Picker($("opponent"), "Opponent", groups, (v) => {
-  setSeat(2, v === "human" || isBotId(v) ? v : "minimax");
+  setSeat(2, v === "human" || isBotId(v) ? v : "random");
   // A new opponent once moves are on the board means a new game, so the result can be rated.
   if (game.started) game.start();
 });
@@ -96,7 +112,6 @@ function showSettings(s: Settings): void {
   showSeeds();
   (field("capture") as RadioNodeList).value = s.rules.capture;
   (form.elements.namedItem("clinch") as HTMLInputElement).checked = s.rules.clinch;
-  (form.elements.namedItem("sound") as HTMLInputElement).checked = s.sound;
   describeRules(s);
 }
 
@@ -124,6 +139,7 @@ function describeRules(s: Settings): void {
 function setSeat(p: 1 | 2, seat: Seat): void {
   settings.seats[p] = seat;
   saveSettings(settings);
+  applyTheme(settings.theme);
   showSettings(settings);
   game.settingsChanged();
 }
@@ -141,17 +157,14 @@ settingsDialog.addEventListener("close", () => {
   const before = JSON.stringify(settings.rules);
   settings.seats = { 1: seat(data.get("p1")), 2: seat(data.get("p2")) };
   settings.speed = (data.get("speed") as Settings["speed"]) ?? settings.speed;
-  settings.theme = (data.get("theme") as Settings["theme"]) ?? settings.theme;
   settings.first = (data.get("first") as Settings["first"]) ?? settings.first;
-  settings.sound = data.get("sound") === "on";
-  setSound(settings.sound);
+  settings.theme = (data.get("theme") as Settings["theme"]) ?? settings.theme;
   settings.rules = {
     seeds: Number(data.get("seeds")) || settings.rules.seeds,
     capture: data.get("capture") === "any" ? "any" : "own",
     clinch: data.get("clinch") === "on",
   };
   saveSettings(settings);
-  applyTheme(settings.theme);
   showSettings(settings);
   if (JSON.stringify(settings.rules) !== before) game.start();
   else game.settingsChanged();
@@ -182,15 +195,18 @@ const showStats = () => {
   if (!statsDialog.open) statsDialog.showModal();
 };
 $("openStats").addEventListener("click", showStats);
-$("exportHistory").addEventListener("click", () => {
-  const url = URL.createObjectURL(new Blob([exportGames()], { type: "application/json" }));
+/** Hands the player a file to save. */
+function download(text: string, type: string, extension: string): void {
+  const url = URL.createObjectURL(new Blob([text], { type }));
   const a = Object.assign(document.createElement("a"), {
     href: url,
-    download: `mancala-games-${new Date().toISOString().slice(0, 10)}.json`,
+    download: `mancala-games-${new Date().toISOString().slice(0, 10)}.${extension}`,
   });
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
-});
+}
+$("exportHistory").addEventListener("click", () => download(exportGames(), "application/json", "json"));
+$("exportMgn").addEventListener("click", () => download(gamesToMgn(loadGames()), "text/plain", "mgn"));
 $("loadCopy").addEventListener("click", () => $("importHistory").click());
 $<HTMLInputElement>("importHistory").addEventListener("change", async (e) => {
   const input = e.target as HTMLInputElement;
