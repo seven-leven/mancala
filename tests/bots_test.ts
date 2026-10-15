@@ -163,3 +163,31 @@ Deno.test("the two-move bot sees replies, so it sometimes plays differently from
   }
   assert(found, "the two-move bot should sometimes disagree with Greedy");
 });
+
+Deno.test("search bots say what they saw, for the move log", () => {
+  // Player 1 has 49 banked, and either move makes 50 of 98, a clinched majority: pit 6 sows into the
+  // store, and pit 0 lands in empty pit 1 and captures pit 8's seed.
+  //                  0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1  M2
+  const win = position([1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 49, 41]);
+  const minimax = new MinimaxBot({ depth: 3 });
+  assert([0, 6].includes(minimax.choose(win)!));
+  assertEquals(minimax.note(), "sees a forced win");
+
+  const opening = newGame(DEFAULT_RULES, P1);
+  minimax.choose(opening);
+  assert(
+    /^(saw \d+ moves? ahead, [+-]?\d+|sees a forced (win|loss))$/.test(minimax.note() ?? ""),
+    minimax.note() ?? "",
+  );
+
+  const lookahead = new LookaheadBot(2, 3, seeded(5));
+  lookahead.choose(opening);
+  assert(/^saw \d+ moves? ahead/.test(lookahead.note() ?? ""), lookahead.note() ?? "");
+
+  // One legal move: nothing to search, so nothing to say.
+  //                   0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1  M2
+  const forced = position([0, 0, 0, 0, 0, 0, 3, 5, 5, 5, 5, 5, 5, 5, 30, 30]);
+  assertEquals(minimax.choose(forced), 6);
+  assertEquals(minimax.note(), null);
+  assertEquals(new MinimaxBot().note(), null, "before any move there's no note");
+});
