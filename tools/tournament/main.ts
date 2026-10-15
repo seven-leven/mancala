@@ -3,6 +3,7 @@
  *
  *   deno task tournament [games per pairing, default 40] [--openings random-moves|symmetric|standard]
  *                        [--bots random,greedy,...] [--time 10m] [--resume] [--record games.mgn] [--write]
+ *                        [--workers N, default one per CPU core]
  *
  * --write saves the ratings to src/bots/ratings.ts, which the game's menus show.
  *
@@ -10,8 +11,9 @@
  * plays it from both seats. An opening that favours one seat then comes out even, and a bot only
  * gains by outplaying the other from the same start. The default opening is the standard board
  * after two random moves; "symmetric" deals a random board that's the same from both seats.
- * Everything is seeded, so runs repeat. Search bots use a fixed depth here, so results don't
- * depend on the machine's speed.
+ * Everything is seeded, so runs repeat: each pairing has its own seed (play.ts), so the pairings
+ * run in parallel on a pool of workers and the results don't depend on how many. Search bots use
+ * a fixed depth here, so results don't depend on the machine's speed either.
  *
  * The tournament plays in rounds, one pair for every pairing, and saves a checkpoint after each
  * round. --time stops it after the round that crosses the budget; Ctrl+C stops it after the game
@@ -24,23 +26,12 @@
  * Gaps like that are set by the closer pairings in between (and one virtual draw per pairing keeps
  * them finite), so each rating comes with a 90% range from re-fitting resampled pairs.
  */
-import {
-  type Bot,
-  type BotId,
-  BOTS,
-  createBot,
-  DORMANT,
-  type DormantId,
-  isBotId,
-  isDormantId,
-} from "../../src/bots/bots.ts";
-import { playTurn } from "../../src/game/engine.ts";
-import { formatGame } from "../../src/game/notation.ts";
-import { type GameState, P1, P2, type Player } from "../../src/game/types.ts";
+import { type BotId, BOTS, DORMANT, type DormantId, isBotId, isDormantId } from "../../src/bots/bots.ts";
 import { seeded } from "../match.ts";
 import { type Checkpoint, load, save } from "./checkpoint.ts";
 import { fit, ranges, sum } from "./elo.ts";
-import { isOpening, type Opening, opening, OPENINGS } from "./openings.ts";
+import { isOpening, type Opening, OPENINGS } from "./openings.ts";
+import type { PairJob, PairResult } from "./play.ts";
 
 /** A flag's value: `--name value` or `--name=value`. */
 function flag(name: string): string | undefined {
@@ -48,7 +39,7 @@ function flag(name: string): string | undefined {
   if (i < 0) return undefined;
   return Deno.args[i].includes("=") ? Deno.args[i].split("=")[1] : Deno.args[i + 1];
 }
-const VALUED = ["games", "time", "openings", "bots", "record"];
+const VALUED = ["games", "time", "openings", "bots", "record", "workers"];
 const positional = Deno.args.filter((a, i) => !a.startsWith("--") && !VALUED.includes(Deno.args[i - 1]?.slice(2)));
 
 /** "90s", "10m", "1h" (or plain seconds) in milliseconds. */
@@ -66,10 +57,6 @@ if (!isOpening(OPENING)) throw new Error(`--openings ${OPENING}: use ${OPENINGS.
 const timeFlag = flag("time");
 const BUDGET = timeFlag === undefined ? Infinity : duration(timeFlag);
 
-// One random stream for the bots and the openings, reseeded every round, so a resumed run plays
-// exactly the games a run straight through would have.
-let stream = seeded(711);
-const rng = () => stream();
 // Every bot in BOTS, or just those in --bots a,b,c (which may name dormant bots too). Random goes
 // first: it's the anchor, pinned at 1000.
 const picked = flag("bots")?.split(",") ?? Object.keys(BOTS);
@@ -80,29 +67,20 @@ const ids = ["random", ...picked.filter((id) => id !== "random")] as (BotId | Do
 if (Deno.args.includes("--write") && (ids.some(isDormantId) || ids.length < Object.keys(BOTS).length)) {
   throw new Error("--write rates exactly the bots in BOTS together; leave out --bots");
 }
-const label = (id: BotId | DormantId) => (isDormantId(id) ? DORMANT[id] : BOTS[id]).label;
-const entrants: [string, Bot][] = ids.map((id) => [label(id), createBot(id, { rng, mode: "rate" })]);
-const n = entrants.length;
+const labels = ids.map((id) => (isDormantId(id) ? DORMANT[id] : BOTS[id]).label);
+const n = ids.length;
 const names: string[] = ids;
-
-/** One game from `start`, `a` on Player 1's side and `b` on Player 2's: the winner (null for a draw) and the moves. */
-function game(a: Bot, b: Bot, start: GameState): { winner: Player | null; moves: number[] } {
-  let g = start;
-  const moves: number[] = [];
-  for (let ply = 0; !g.gameOver && ply < 1000; ply++) {
-    const move = (g.current === P1 ? a : b).choose(g);
-    if (move === null) break;
-    const r = playTurn(g, move, { record: false });
-    if (r.invalid) throw new Error("illegal move");
-    moves.push(move);
-    g = r.state;
-  }
-  const [x, y] = [g.pits[14], g.pits[15]];
-  return { winner: x === y ? null : x > y ? P1 : P2, moves };
-}
 
 // --record games.mgn: every game, in MGN (src/game/notation.ts), appended a round at a time.
 const RECORD = flag("record");
+
+// Pairings are played in parallel, one per worker (play.ts has the games themselves). Each has its
+// own seed, so the results are the same for any number of workers.
+const WORKERS = Math.max(1, Math.floor(Number(flag("workers") ?? navigator.hardwareConcurrency ?? 4)));
+const pool = Array.from(
+  { length: WORKERS },
+  () => new Worker(new URL("./worker.ts", import.meta.url), { type: "module" }),
+);
 
 let state: Checkpoint = {
   opening: OPENING,
@@ -159,48 +137,56 @@ function progress(pairsThisRound: number) {
   Deno.stderr.writeSync(new TextEncoder().encode(`\r\x1b[2K${line.slice(0, columns() - 1)}`));
 }
 
-while (state.rounds < ROUNDS && !stopping && performance.now() - startedAt < BUDGET) {
-  stream = seeded(711_000 + state.rounds);
-  const round = state.results.map((row) => row.map(() => [] as number[]));
-  let firstWon = 0, decided = 0, pairs = 0;
-  const recorded: string[] = [];
-  for (let i = 0; i < n && !stopping; i++) {
-    for (let j = i + 1; j < n && !stopping; j++) {
-      // Alternate who moves first from round to round; within a pair, the seats swap.
-      const first = state.rounds % 2 ? P2 : P1;
-      const start = opening(OPENING, first, rng);
-      for (const [p1, p2] of [[i, j], [j, i]]) {
-        const { winner: w, moves } = game(entrants[p1][1], entrants[p2][1], start.state);
-        if (RECORD) {
-          recorded.push(formatGame({
-            tags: { Event: "Tournament", Opening: OPENING, Round: String(state.rounds + 1), P1: ids[p1], P2: ids[p2] },
-            rules: start.state.rules,
-            first,
-            layout: start.layout,
-            moves: [...start.moves, ...moves],
-          }));
-        }
-        const forI = w === null ? 0.5 : (w === P1 ? p1 : p2) === i ? 1 : 0;
-        round[i][j].push(forI);
-        round[j][i].push(1 - forI);
-        if (w !== null) {
-          decided++;
-          if (w === first) firstWon++;
-        }
-      }
-      progress(++pairs);
-      // Let Ctrl+C get through between pairs.
-      await new Promise((r) => setTimeout(r, 0));
+/**
+ * Plays one round on the worker pool: every pairing once. Resolves with the results in pairing
+ * order, or null if Ctrl+C stopped it (the pairings already sent are let finish, then dropped).
+ */
+function playRound(round: number): Promise<PairResult[] | null> {
+  const jobs: PairJob[] = [];
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      jobs.push({ round, i, j, a: ids[i], b: ids[j], opening: OPENING as Opening, record: !!RECORD });
     }
   }
-  if (stopping) break;
-  round.forEach((row, i) => row.forEach((games, j) => state.results[i][j].push(...games)));
-  state.firstWon += firstWon;
-  state.decided += decided;
+  const out: PairResult[] = new Array(jobs.length);
+  let next = 0, done = 0, busy = 0;
+  return new Promise((resolve, reject) => {
+    const feed = (w: Worker) => {
+      if (stopping || next >= jobs.length) {
+        if (busy === 0) resolve(stopping ? null : out);
+        return;
+      }
+      const k = next++;
+      busy++;
+      w.onmessage = (e: MessageEvent<PairResult>) => {
+        out[k] = e.data;
+        busy--;
+        progress(++done);
+        feed(w);
+      };
+      w.onerror = (e) => reject(e.error ?? new Error(e.message));
+      w.postMessage(jobs[k]);
+    };
+    pool.forEach(feed);
+  });
+}
+
+while (state.rounds < ROUNDS && !stopping && performance.now() - startedAt < BUDGET) {
+  const round = await playRound(state.rounds);
+  if (!round) break;
+  const recorded: string[] = [];
+  for (const { i, j, results, firstWon, decided, games } of round) {
+    state.results[i][j].push(...results);
+    state.results[j][i].push(...results.map((x) => 1 - x));
+    state.firstWon += firstWon;
+    state.decided += decided;
+    recorded.push(...games);
+  }
   state.rounds++;
   if (RECORD) await Deno.writeTextFile(RECORD, recorded.join("\n") + "\n", { append: true });
   await save(state);
 }
+pool.forEach((w) => w.terminate());
 Deno.removeSignalListener("SIGINT", onInterrupt);
 if (live) Deno.stderr.writeSync(new TextEncoder().encode("\r\x1b[2K"));
 
@@ -213,20 +199,20 @@ const played = state.rounds * 2;
 const rating = fit(results).map(Math.round);
 const range = ranges(results, seeded(711), 2);
 
-const order = [...entrants.keys()].sort((a, b) => rating[b] - rating[a]);
+const order = [...ids.keys()].sort((a, b) => rating[b] - rating[a]);
 console.log("| Bot | Elo | 90% range | Won |");
 console.log("| --- | ---: | :---: | ---: |");
 for (const i of order) {
   const all = results[i].flat();
   const rng90 = i === 0 ? "anchor" : `${range[i][0]}–${range[i][1]}`;
-  console.log(`| ${entrants[i][0]} | ${rating[i]} | ${rng90} | ${Math.round((sum(all) / all.length) * 100)}% |`);
+  console.log(`| ${labels[i]} | ${rating[i]} | ${rng90} | ${Math.round((sum(all) / all.length) * 100)}% |`);
 }
 
-console.log(`\n| Wins against → | ${order.map((i) => entrants[i][0]).join(" | ")} |`);
+console.log(`\n| Wins against → | ${order.map((i) => labels[i]).join(" | ")} |`);
 console.log(`| --- | ${order.map(() => "---:").join(" | ")} |`);
 for (const i of order) {
   const cells = order.map((j) => (i === j ? "–" : `${Math.round((sum(results[i][j]) / results[i][j].length) * 100)}%`));
-  console.log(`| **${entrants[i][0]}** | ${cells.join(" | ")} |`);
+  console.log(`| **${labels[i]}** | ${cells.join(" | ")} |`);
 }
 const describeOpening: Record<Opening, string> = {
   "random-moves": "the standard board after two random moves",

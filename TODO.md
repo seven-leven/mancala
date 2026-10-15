@@ -109,19 +109,25 @@ Inside the searches: the alpha-beta loop 31%, sowing and playing turns about 29%
 ratings 18% of that short run (a fixed ~2 s). Ordered by what each should save. Measure before and after each one with
 `deno task profile` and `deno task bench`; keep a change only if the tournament still prints the same results.
 
-- [ ] **Play pairings in parallel.** Each pairing's games are independent: hand them to Web Workers (one per CPU core)
+- [x] **Play pairings in parallel.** Each pairing's games are independent: hand them to Web Workers (one per CPU core)
       and merge the results by round, so checkpoints and seeds stay exactly as they are. The biggest win on a long run:
       roughly ×(cores) of wall-clock time.
-- [ ] **Fit the ratings once per result, not once per step.** `fit()` re-adds every pairing's results on each of its
+- [x] **Fit the ratings once per result, not once per step.** `fit()` re-adds every pairing's results on each of its
       1000 steps, and the 90% ranges call it 300 times. Sum each pairing's wins and games once, then iterate on the
       sums: the ~2 s fixed cost drops to a few ms.
-- [ ] **Sow without the Map.** `sow` looks up the next pit in a `Map` on every seed: a 16-entry array (or a little
+- [x] **Sow without the Map.** `sow` looks up the next pit in a `Map` on every seed: a 16-entry array (or a little
       arithmetic) is cheaper. Skip building the event log entirely when `record` is false, rather than calling an empty
       `log`.
-- [ ] **Copy less while searching.** Every child position is a full copy (`cloneState`, a new 16-number array), which is
+- [x] **Copy less while searching.** Every child position is a full copy (`cloneState`, a new 16-number array), which is
       most of the garbage collection. Play and undo moves on one board inside the search, or reuse a pool of boards.
-- [ ] **Order moves without sorting objects.** `children()` builds an object per move, plays each move to score it, then
+- [x] **Order moves without sorting objects.** `children()` builds an object per move, plays each move to score it, then
       sorts: keep the played positions, and use a small insertion sort on parallel arrays instead.
+- **Status, 2026-10-15 (paused):** the five above are done. Same results throughout, except that parallel pairings give
+  each pairing its own seed, so every result changes once. `deno task tournament 4`: 37 s → 10 s (16 cores); bench 1220k
+  → 1769k positions/s; rating fit 55 s → 0.7 s. Still to do: re-rate with `deno task tournament 60
+  --write` (the
+  ratings in the menus predate the per-pairing seeds), then `deno task ladder`, the README table and the CHANGELOG; then
+  Pushover below.
 - [ ] **A truthful ETA.** The progress line divides games left by the average speed so far, but pairings differ hugely
       in cost (two quick bots finish in milliseconds; anything with Minimax takes seconds), and each round plays the
       quick ones and the slow ones in a fixed order, so the ETA swings and reads far too short early on. Every round
