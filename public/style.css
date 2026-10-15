@@ -705,8 +705,14 @@ dialog ul {
   list-style: none;
   font-size: var(--fs-small);
 }
-.stats-games li > :last-child {
+.stats-games li > :nth-child(4) {
   text-align: right;
+}
+.stats-why {
+  grid-column: 2 / -1;
+  margin-top: calc(-1 * var(--space-2));
+  color: var(--text-muted);
+  font-size: var(--fs-caption);
 }
 .stats-games li {
   display: grid;

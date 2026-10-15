@@ -109,6 +109,8 @@ function setSeat(p: 1 | 2, seat: Seat): void {
 opponent.addEventListener("change", () => {
   const v = opponent.value;
   setSeat(2, v === "human" || isBotId(v) ? v : "minimax");
+  // A new opponent once moves are on the board means a new game, so the result can be rated.
+  if (game.started) game.start();
 });
 
 // --- Settings dialog -------------------------------------------------------------------

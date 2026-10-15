@@ -64,11 +64,13 @@ export function renderStats(els: StatsEls, games: SavedGame[]): void {
     const delta = s.change.get(i);
     const tag = delta !== undefined
       ? `<span class="${delta >= 0 ? "up" : "down"}">${delta >= 0 ? "+" : "−"}${Math.abs(Math.round(delta))}</span>`
-      : `<span class="muted" title="${
-        esc(g.unratedBecause ? `Unrated: ${g.unratedBecause}` : "Unrated")
-      }">unrated</span>`;
+      : `<span class="muted">unrated</span>`;
+    // Say why a game didn't count, where it can be read on a phone too
+    const why = delta === undefined && g.unratedBecause
+      ? `<small class="stats-why">Not rated: ${esc(g.unratedBecause)}</small>`
+      : "";
     return `<li><span class="mono muted">${when}</span><span>${
       esc(who)
-    }</span><span>${outcome}, ${a}–${b}</span>${tag}</li>`;
+    }</span><span>${outcome}, ${a}–${b}</span>${tag}${why}</li>`;
   }).join("");
 }

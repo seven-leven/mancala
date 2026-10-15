@@ -3,6 +3,14 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `deno.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
+## v2.1.2 · 2026-10-15
+
+- **Games against a newly picked opponent are rated again.** Choosing an opponent before the first move just switches
+  bots; choosing one after moves have been played starts a new game, instead of quietly marking the game "players
+  changed midway". (Spotted while testing: two wins came out unrated.)
+- If you change opponent while a bot is thinking, the new one takes over instead of the game stalling.
+- Your games says why a game wasn't rated, under the game, so it can be read on a phone.
+
 ## v2.1.1 · 2026-10-15
 
 - A LICENSE (all rights reserved, like the folio), and the README links the

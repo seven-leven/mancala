@@ -188,10 +188,17 @@ export class Game {
   }
 
   /** Seats or speed changed: carry on with the same game. */
+  /** Whether any move has been played in this game yet. */
+  get started(): boolean {
+    return this.moves.length > 0;
+  }
+
   settingsChanged(): void {
     const { seats } = this.settings;
     if (seats[1] !== this.seatsAtStart[1] || seats[2] !== this.seatsAtStart[2]) {
-      this.unrated ??= "the players changed midway";
+      // Before the first move it's simply a different opponent; after it, the game is a mix.
+      if (this.started) this.unrated ??= "the players changed midway";
+      else this.seatsAtStart = { ...seats };
     }
     this.render();
     if (!this.busy) void this.advance();
@@ -210,8 +217,9 @@ export class Game {
       const [{ move, note }] = await Promise.all([askBot(seat, this.state), this.skip ? 0 : wait(BOT_PAUSE_MS)]);
       if (gen !== this.gen) return;
       this.thinking = false;
-      // The seats may have changed while it thought.
-      if (move === null || this.seat(this.state.current) !== seat) break;
+      // The players may have changed while it thought: let whoever sits there now move.
+      if (this.seat(this.state.current) !== seat) continue;
+      if (move === null) break;
       await this.play(move, gen, note);
       if (gen !== this.gen) return;
     }
