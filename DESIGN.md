@@ -114,7 +114,7 @@ usable size. Pits must stay at least 40px across, the smallest comfortable tap t
 ## Components
 
 - **Buttons:** folio pills. Primary is ink on paper (paper on ink in the dark theme), and turns terracotta on hover.
-  Ghost has a `--rule-strong` border. An icon is 16px, and a button with only an icon needs an `aria-label`.
+  Ghost has a `--rule-strong` border. Icons follow the Icons section below.
 - **Selects** look like ghost pills.
 - **Turn line:** a dot in the player's colour, a label ("Your turn" / "Expert bot is thinking"), and nothing else. At
   game over it shows the result in serif, for example "Player 1 wins, 52–46".
@@ -138,6 +138,44 @@ usable size. Pits must stay at least 40px across, the smallest comfortable tap t
 - **Sound:** off by default. Short, quiet and wooden: a tock per seed, a two-note chime for a capture, a rising pair for
   a free turn. Never the only signal of anything.
 - **Links:** the folio's arrow link ("Source on GitHub →"), underlined in `currentColor`.
+
+## Icons
+
+One outline set, kept in one file: [public/svg/icons.svg](public/svg/icons.svg), a sprite of `<symbol>`s. Nothing is
+pasted into the page: HTML writes
+`<svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#name"/></svg>` (the build stamps the URL,
+like the scripts), and scripts call `icon("name")` from `src/ui/icons.ts`.
+
+- **Grid and line:** a 24px grid, outline only, a 2px line with round caps and joins, no fills. The `.icon` style sets
+  the line, so a symbol holds only shapes, and every icon draws alike. A dot is a zero-length line (`M12 12h.01`).
+- **Colour:** `currentColor`, so an icon takes its text's colour. The one exception is the rule cards' icons in How to
+  play, which are `--accent`.
+- **Sizes:** 16px in buttons and pickers, 14px in arrow links, 18px in cards, 20px for a dialog's close button.
+- **Words:** an icon is decoration (`aria-hidden`). A button with only an icon needs an `aria-label` that says what it
+  does ("Switch to the dark theme"), and a key if it has one (`aria-keyshortcuts`).
+- **Adding one:** draw it to these rules, add a `<symbol>` to the sprite and its name to `IconName` in
+  `src/ui/icons.ts`, add it to the table below, and run `deno task icon-sheet`.
+
+![Every icon at 32, 20 and 16px, light and dark](docs/icons.png)
+
+`deno task icon-sheet` redraws that sheet from the sprite.
+
+| Icon           | Used for                                               |
+| -------------- | ------------------------------------------------------ |
+| `sun`, `moon`  | The theme button: what a press switches to             |
+| `stats`        | Your games and rating                                  |
+| `settings`     | Settings                                               |
+| `help`         | How to play                                            |
+| `close`        | Closing a dialog                                       |
+| `chevron-down` | Selects and the opponent picker (turns over when open) |
+| `arrow-right`  | Arrow links ("Source on GitHub →")                     |
+| `relay`        | The Relay rule card                                    |
+| `free-turn`    | The Free turn rule card                                |
+| `capture`      | The Capture rule card                                  |
+| `tip`          | A word of strategy                                     |
+
+The favicon sits beside the sprite, in `public/svg/`: the site's SVGs all live there. Diagrams for the README and
+RATING.md stay in `docs/`, since they aren't part of the site.
 
 ## Voice
 

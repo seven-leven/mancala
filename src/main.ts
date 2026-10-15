@@ -18,6 +18,29 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
 const settings = loadSettings();
 applyTheme(settings.theme);
 
+// --- Theme: one button in the masthead -------------------------------------------------
+// Until it's pressed the page follows the device ("system"); a press picks the other of light
+// and dark and keeps it. It shows what a press does: a moon in the light theme, a sun in the dark.
+const systemDark = matchMedia("(prefers-color-scheme: dark)");
+const shownTheme = () => (settings.theme === "system" ? (systemDark.matches ? "dark" : "light") : settings.theme);
+const themeButton = $<HTMLButtonElement>("toggleTheme");
+function showThemeButton(): void {
+  const dark = shownTheme() === "dark";
+  themeButton.setAttribute("aria-label", `Switch to the ${dark ? "light" : "dark"} theme`);
+  themeButton.querySelector("use")!.setAttribute(
+    "href",
+    themeButton.querySelector("use")!.getAttribute("href")!.replace(/#.*$/, dark ? "#sun" : "#moon"),
+  );
+}
+themeButton.addEventListener("click", () => {
+  settings.theme = shownTheme() === "dark" ? "light" : "dark";
+  saveSettings(settings);
+  applyTheme(settings.theme);
+  showThemeButton();
+});
+systemDark.addEventListener("change", showThemeButton);
+showThemeButton();
+
 const game = new Game(new BoardView($("board")), {
   turn: $("turn"),
   turnText: $("turnText"),
@@ -70,7 +93,7 @@ const groups: PickerGroup[] = [
 
 /** The quick opponent picker sets Player 2. */
 const opponent = new Picker($("opponent"), "Opponent", groups, (v) => {
-  setSeat(2, v === "human" || isBotId(v) ? v : "minimax");
+  setSeat(2, v === "human" || isBotId(v) ? v : "random");
   // A new opponent once moves are on the board means a new game, so the result can be rated.
   if (game.started) game.start();
 });
@@ -90,7 +113,6 @@ function showSettings(s: Settings): void {
   (field("p1") as HTMLSelectElement).value = s.seats[1];
   (field("p2") as HTMLSelectElement).value = s.seats[2];
   (field("speed") as RadioNodeList).value = s.speed;
-  (field("theme") as RadioNodeList).value = s.theme;
   (field("first") as RadioNodeList).value = s.first;
   seedRange.value = String(s.rules.seeds);
   showSeeds();
@@ -141,7 +163,6 @@ settingsDialog.addEventListener("close", () => {
   const before = JSON.stringify(settings.rules);
   settings.seats = { 1: seat(data.get("p1")), 2: seat(data.get("p2")) };
   settings.speed = (data.get("speed") as Settings["speed"]) ?? settings.speed;
-  settings.theme = (data.get("theme") as Settings["theme"]) ?? settings.theme;
   settings.first = (data.get("first") as Settings["first"]) ?? settings.first;
   settings.sound = data.get("sound") === "on";
   setSound(settings.sound);
@@ -151,7 +172,6 @@ settingsDialog.addEventListener("close", () => {
     clinch: data.get("clinch") === "on",
   };
   saveSettings(settings);
-  applyTheme(settings.theme);
   showSettings(settings);
   if (JSON.stringify(settings.rules) !== before) game.start();
   else game.settingsChanged();

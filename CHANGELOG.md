@@ -3,6 +3,15 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `deno.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
+## Unreleased
+
+- **The theme switch is in the masthead**: a moon in the light theme, a sun in the dark. Until it's pressed the site
+  follows your device; Settings no longer has a Theme choice.
+- **A new visitor plays Random** (Easy) to start with, not Lookahead.
+- **One icon set.** Every icon is an outline on a 24px grid with a 2px line, from one sprite (`public/svg/icons.svg`,
+  beside the favicon in `public/svg/`); the filled rule-card icons and the CSS-drawn chevrons were redrawn to match.
+  DESIGN.md has an Icons section, and `deno task icon-sheet` draws them all to [docs/icons.png](docs/icons.png).
+
 ## v2.2.3 · 2026-10-15
 
 - **First is dormant.** It always played its leftmost pit, and with matched pairs it rated level with Random (999

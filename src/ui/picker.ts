@@ -4,6 +4,7 @@
  * ladder. It follows the ARIA listbox pattern: arrow keys, Home and End, type-ahead, Enter or Space
  * to choose, Escape to close.
  */
+import { icon } from "./icons.ts";
 
 export interface PickerItem {
   value: string;
@@ -141,6 +142,7 @@ export class Picker {
       el("span", "picker__title", item.title),
       ...(item.detail ? [el("span", "picker__detail", item.detail)] : []),
       ...(item.elo ? [el("span", "picker__elo mono", String(item.elo))] : []),
+      icon("chevron-down", "picker__chevron"),
     );
   }
 

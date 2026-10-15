@@ -17,6 +17,7 @@
     "ladder": "deno run --allow-write=docs/ladder.svg tools/ladder.ts",
     "profile": "deno run --allow-read=src,tools,data --allow-write=tools/tournament,data --cpu-prof-dir=data/profile --cpu-prof-md --cpu-prof-flamegraph tools/tournament/main.ts 2",
     "design-sheet": "deno run -A tools/design-sheet.ts",
+    "icon-sheet": "deno run -A tools/icon-sheet.ts",
     "release": "deno run --allow-read --allow-run=git,gh,deno tools/release.ts",
     "bench": "deno run tools/bench.ts"
   },

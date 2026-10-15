@@ -218,10 +218,17 @@ kbd {
   cursor: pointer;
   transition: transform 0.2s var(--ease), background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
-.btn svg {
+/* Icons: one outline set from public/svg/icons.svg (DESIGN.md, "Icons"). The line is set here, so
+   every icon draws the same way: 2px on a 24px grid, round caps and joins, in the text colour. */
+.icon {
   width: 16px;
   height: 16px;
   flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .btn--primary {
   background: var(--btn-bg);
@@ -273,15 +280,9 @@ kbd {
 .select select:hover:not(:disabled) {
   border-color: var(--text);
 }
-.select::after {
-  content: "";
+.select__chevron {
   position: absolute;
-  right: 0.95rem;
-  width: 0.42rem;
-  height: 0.42rem;
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
-  transform: translateY(-25%) rotate(45deg);
+  right: 0.8rem;
   pointer-events: none;
 }
 .select select option {
@@ -315,20 +316,15 @@ kbd {
 .picker__button[aria-expanded="true"] {
   border-color: var(--text);
 }
-.picker__button::after {
-  content: "";
+.picker__chevron {
   position: absolute;
-  right: 0.95rem;
+  right: 0.8rem;
   top: 50%;
-  width: 0.42rem;
-  height: 0.42rem;
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
-  transform: translateY(-70%) rotate(45deg);
+  transform: translateY(-50%);
   transition: transform 0.2s var(--ease);
 }
-.picker__button[aria-expanded="true"]::after {
-  transform: translateY(-20%) rotate(225deg);
+.picker__button[aria-expanded="true"] .picker__chevron {
+  transform: translateY(-50%) rotate(180deg);
 }
 .picker__button .picker__title {
   font-weight: 600;
@@ -441,7 +437,7 @@ kbd {
   font-weight: 600;
   text-decoration: none;
 }
-.link-arrow svg {
+.link-arrow .icon {
   width: 14px;
   height: 14px;
   transition: transform 0.25s var(--ease);
@@ -449,7 +445,7 @@ kbd {
 .link-arrow:hover {
   color: var(--accent);
 }
-.link-arrow:hover svg {
+.link-arrow:hover .icon {
   transform: translateX(3px);
 }
 
@@ -959,7 +955,7 @@ dialog.intro {
   background: var(--tint);
   color: var(--text);
 }
-.icon-btn svg {
+.icon-btn .icon {
   width: 20px;
   height: 20px;
 }
@@ -1071,10 +1067,9 @@ dialog.intro {
 .intro__tip .intro__card-title {
   color: var(--accent);
 }
-.intro__card-title svg {
+.intro__card-title .icon {
   width: 18px;
   height: 18px;
-  flex: none;
   color: var(--accent);
 }
 .intro__go {
