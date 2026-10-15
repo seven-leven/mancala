@@ -40,43 +40,30 @@ why Settings lets you choose who goes first.
 
 | Level      | Bot                |  Elo | 90% range | How it plays                                                               |
 | ---------- | ------------------ | ---: | :-------: | -------------------------------------------------------------------------- |
-| Expert     | Minimax            | 2064 | 2043–2092 | Alpha-beta search with a transposition table; follows free-turn chains     |
-| Hard       | DFS                | 1976 | 1957–2004 | Chains its own free turns as far as they go (the original 2024 bot)        |
-| Sharp      | Shrewd             | 1905 | 1884–1931 | Lookahead's method, three moves deep instead of two                        |
-| Tricky     | Lookahead          | 1750 | 1729–1776 | Two moves deep, and picks one of its better moves, not always the best     |
-| Thoughtful | Planner            | 1698 | 1680–1720 | Two moves deep, weighing free turns set up, captures threatened, open pits |
-| Keen       | Chainer            | 1494 | 1475–1515 | Usually takes a free turn or two before banking; otherwise like Greedy     |
-| Crafty     | Spoiler            | 1476 | 1459–1495 | Often plays to leave your best reply weakest; otherwise like Greedy        |
-| Average    | Greedy             | 1325 | 1310–1344 | Takes whatever banks the most seeds this turn                              |
-| Careful    | Turtle             | 1315 | 1299–1336 | Banks what it can, but won't leave a loaded pit open to capture            |
-| Relaxed    | Sometimes greedy   | 1205 | 1188–1225 | Greedy's move half the time, any legal pit the rest                        |
-| Bold       | Striker            | 1147 | 1130–1165 | Banks what it can, but would rather line up a capture for next turn        |
+| Expert     | Minimax            | 2043 | 2020–2070 | Alpha-beta search with a transposition table; follows free-turn chains     |
+| Hard       | DFS                | 1980 | 1955–2008 | Chains its own free turns as far as they go (the original 2024 bot)        |
+| Sharp      | Shrewd             | 1908 | 1885–1935 | Lookahead's method, three moves deep instead of two                        |
+| Tricky     | Lookahead          | 1739 | 1720–1768 | Two moves deep, and picks one of its better moves, not always the best     |
+| Thoughtful | Planner            | 1685 | 1667–1712 | Two moves deep, weighing free turns set up, captures threatened, open pits |
+| Keen       | Chainer            | 1477 | 1459–1502 | Usually takes a free turn or two before banking; otherwise like Greedy     |
+| Crafty     | Spoiler            | 1466 | 1448–1488 | Often plays to leave your best reply weakest; otherwise like Greedy        |
+| Average    | Greedy             | 1320 | 1303–1340 | Takes whatever banks the most seeds this turn                              |
+| Careful    | Turtle             | 1307 | 1290–1329 | Banks what it can, but won't leave a loaded pit open to capture            |
+| Relaxed    | Sometimes greedy   | 1183 | 1165–1204 | Greedy's move half the time, any legal pit the rest                        |
+| Bold       | Striker            | 1152 | 1134–1172 | Banks what it can, but would rather line up a capture for next turn        |
 | Easy       | Random             | 1000 |  anchor   | Any legal pit                                                              |
-| Casual     | First              |  999 | 984–1017  | Always plays its first pit with seeds, from its own left                   |
-| Thrifty    | Hoarder            |  920 |  905–940  | Keeps its seeds on its own side, banking only a little                     |
-| Gentle     | Sometimes generous |  730 |  709–752  | Generous's move most of the time, any legal pit the rest                   |
-| Very easy  | Generous           |  561 |  537–586  | Greedy's opposite: banks as little as it can                               |
-| Hopeless   | Pushover           |  494 |  471–518  | Searches ahead like Minimax, but to lose by as much as it can              |
+| Thrifty    | Hoarder            |  943 |  922–967  | Keeps its seeds on its own side, banking only a little                     |
+| Gentle     | Sometimes generous |  757 |  738–778  | Generous's move most of the time, any legal pit the rest                   |
+| Very easy  | Generous           |  585 |  561–610  | Greedy's opposite: banks as little as it can                               |
+| Hopeless   | Pushover           |  516 |  491–543  | Searches ahead like Minimax, but to lose by as much as it can              |
 
-The ratings come from `deno task rate`: every bot plays every other 240 times, in matched pairs. Each pair of games
-starts from the same opening (the standard board after two random moves), once with each bot in each seat, so an opening
-that favours one side comes out even. Elo is fitted to all the results at once, and Random is pinned at 1000.
+Every bot played every other 240 times, in matched pairs, with Random pinned at 1000. Read the ratings as a ladder: the
+bars are 90% ranges, and neighbours drawn in red are too close to call. [RATING.md](RATING.md) explains how they're made
+and how to read them; [BOTS.md](BOTS.md) has the standard every bot follows.
 
-Bots were added where the ladder had gaps: a game between bots close in strength tells you far more than a 100–0
-mismatch, so every new neighbour firms up the ratings around it. With seventeen bots and 240 games a pairing, every 90%
-range is within ±25. [BOTS.md](BOTS.md) has the standard every bot follows. A Grandmaster (Minimax searching deeper) is
-built but dormant: it rated level with Minimax for five times the time.
-
-**Read them as a ladder, not exact numbers.** Many pairings end 100–0, which only says one bot is much stronger, not how
-much; those gaps come from the closer pairings in between. The 90% ranges (from re-fitting resampled results) show how
-firm each number is. Three neighbouring pairs are too close to call (red in the chart): Chainer and Spoiler (Chainer won
-52% of their 240 games), Greedy and Turtle (46%), and Random and First (45%). At 60 games a pairing, Minimax and DFS and
-Lookahead and Planner were too close to call as well; 240 games separate them.
-
-**Your rating.** Finished games are saved in your browser, and your own Elo is worked out from them (everyone starts at
-1000, level with Random). A game is rated when it's you against one bot, played to the end under the standard rules,
-without Undo or Hint. Each saved game keeps the bot's rating from the day you played, so adding bots later doesn't
-rewrite your history. "Your games" shows the rating, its trend, your record against each bot, and a backup button.
+**Your rating.** Your own Elo is worked out in your browser from your finished games against the bots (everyone starts
+at 1000, level with Random); see [RATING.md](RATING.md#your-rating) for which games count. "Your games" shows the
+rating, its trend, your record against each bot, and a backup button.
 
 ## How it's built
 
@@ -115,21 +102,19 @@ deno task check        # type check
 deno task rate         # the rating harness: rate the bots (add --write to update the menus)
 deno task bench        # how deep and fast Minimax searches
 deno task ladder       # redraw docs/ladder.svg from the ratings
-deno task profile      # where a tournament round spends its time (data/profile/)
+deno task profile      # where a rating run spends its time (data/profile/)
 deno task release      # from dev: check everything, then ship to main
 ```
 
-Two words kept apart: the **test harness** (`deno task test`, `tests/`) checks the code is correct and runs on every
-push; the **rating harness** (`deno task rate`, `tools/tournament/`) plays the bots against each other to set their Elo,
-and runs by hand before a release. A test run, a rating run.
+The **test harness** (`deno task test`) checks the code is correct and runs on every push. The **rating harness**
+(`deno task rate`) sets the bots' Elo and runs by hand: see [RATING.md](RATING.md).
 
 Every push runs the same checks on GitHub. A push to `main` builds the site and publishes `dist/` to the `gh-pages`
 branch, which GitHub Pages serves. Work happens on `dev`. `main` is protected: it only takes a pull request whose checks
 passed, never a direct push or a force-push. `deno task release` opens that pull request from `dev` (or uses the open
 one), waits for its checks, merges it, and waits for the deploy.
 
-To add a bot, follow [BOTS.md](BOTS.md): write it in its family's file in `src/bots/players/`, add it to `BOTS` in
-`src/bots/bots.ts`, and run `deno task rate --write`. The tournament rates everything in `BOTS`.
+To add a bot, follow [BOTS.md](BOTS.md) to write it and [RATING.md](RATING.md) to place and rate it.
 
 ## Changes
 

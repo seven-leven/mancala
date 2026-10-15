@@ -1,5 +1,6 @@
 /**
  * Every bot plays every other bot; prints Elo ratings and a win-rate table (as in the README).
+ * RATING.md is the guide: when to run it, how many games, and how to read the results.
  *
  *   deno task rate [games per pairing, default 40] [--openings random-moves|symmetric|standard]
  *                        [--bots random,greedy,...] [--time 10m] [--resume] [--record games.mgn] [--write]
@@ -123,15 +124,30 @@ const columns = () => {
     return 80;
   }
 };
+// Every round plays the same pairings, so rounds take about as long as each other, while single
+// pairings differ a thousandfold (Random against First, or anything with Minimax). So the ETA
+// counts rounds, not games: the rounds left at the recent round time, plus what's left of this
+// round, weighted by how long each of its pairings took last time.
+const cost: number[] = []; // each pairing's last time, in ms, by its index in the round
+const roundTimes: number[] = []; // complete rounds this run, in ms
+let finished: boolean[] = []; // this round's pairings that are done
+const median = (xs: number[]) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
+function eta(elapsed: number): number | null {
+  if (!roundTimes.length) return null;
+  const round = median(roundTimes.slice(-5));
+  const total = sum(cost);
+  const unfinished = sum(cost.filter((_, k) => !finished[k]));
+  const left = (ROUNDS - state.rounds - 1) * round + (total > 0 ? round * unfinished / total : round);
+  return Math.max(0, Math.min(left, BUDGET - elapsed));
+}
 function progress(pairsThisRound: number) {
   if (!live) return;
   const elapsed = performance.now() - startedAt;
   const games = ((state.rounds - startRounds) * perRound + pairsThisRound) * 2;
   const rate = games / (elapsed / 1000);
-  const left = (ROUNDS - state.rounds) * perRound * 2 - pairsThisRound * 2;
-  const eta = Math.min(left / rate * 1000, BUDGET - elapsed);
+  const left = eta(elapsed);
   const line = `Round ${state.rounds + 1}/${ROUNDS} · ${games} games · ${rate.toFixed(1)} games/s · ` +
-    `${clock(elapsed)} elapsed · ETA ${rate > 0 && Number.isFinite(eta) ? clock(Math.max(0, eta)) : "--:--"}` +
+    `${clock(elapsed)} elapsed · ETA ${left === null ? "after round 1" : clock(left)}` +
     (stopping ? " · stopping" : "");
   // Clear the line and rewrite it, cut to the terminal's width so it never wraps.
   Deno.stderr.writeSync(new TextEncoder().encode(`\r\x1b[2K${line.slice(0, columns() - 1)}`));
@@ -149,17 +165,29 @@ function playRound(round: number): Promise<PairResult[] | null> {
     }
   }
   const out: PairResult[] = new Array(jobs.length);
+  // Slowest pairings first (by last round's times), so the round doesn't end with one long
+  // pairing running while the other workers wait. Results don't change: each pairing has its own
+  // seed and its own slot in `out`.
+  const order = jobs.map((_, k) => k).sort((a, b) => (cost[b] ?? 0) - (cost[a] ?? 0));
+  finished = jobs.map(() => false);
+  const startedRound = performance.now();
   let next = 0, done = 0, busy = 0;
   return new Promise((resolve, reject) => {
     const feed = (w: Worker) => {
       if (stopping || next >= jobs.length) {
-        if (busy === 0) resolve(stopping ? null : out);
+        if (busy === 0) {
+          if (!stopping) roundTimes.push(performance.now() - startedRound);
+          resolve(stopping ? null : out);
+        }
         return;
       }
-      const k = next++;
+      const k = order[next++];
+      const sent = performance.now();
       busy++;
       w.onmessage = (e: MessageEvent<PairResult>) => {
         out[k] = e.data;
+        cost[k] = performance.now() - sent;
+        finished[k] = true;
         busy--;
         progress(++done);
         feed(w);

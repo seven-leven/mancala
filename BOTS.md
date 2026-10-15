@@ -70,15 +70,8 @@ A new idea is a new function there, not a copy inside a bot.
 
 ## Rating
 
-`deno task rate` rates every bot in `BOTS` against every other, in matched pairs (each opening played once from each
-seat), with Random pinned at 1000. `--write` saves the ratings to `src/bots/ratings.ts`, which the menus show. Read the
-ratings as a ladder: see the README.
-
-**Where a new bot should land.** A game tells you most about two ratings when it's close to 50/50, and much less as the
-gap grows: a game across a 200 Elo gap carries 73% of the information of an even one, across 400 only 33%, across 700
-only 7%. So a bot earns its place by landing **within about 200 Elo of a neighbour, in a gap wider than that**. In a
-round robin, bots near the middle of the ladder help most, because they play close games against several bots at once
-and tie both ends to Random's anchor.
+Every bot in `BOTS` is rated against every other by the rating harness, `deno task rate`. How to run it, how many games,
+how to read the ranges and where a new bot should land: [RATING.md](RATING.md).
 
 **Tunable on purpose.** A bot meant to fill a gap should have one knob that moves its strength smoothly (a probability,
 a depth, a weight), so it can be placed where the ladder needs it. Note the knob's value in the registry.
@@ -89,8 +82,7 @@ a depth, a weight), so it can be placed where the ladder needs it. Note the knob
 2. Add it to `BOTS` with a label, a provisional level and a blurb. The order of `BOTS` is the menus' order: weakest
    first.
 3. Give it a test of its character: a position where it must make (or refuse) its typical move.
-4. `deno task rate 40` and check where it lands. Tune its knob until it fills the gap it was meant for, then `--write`.
-5. Re-check the levels against the new ratings, then update the README's bot table and the CHANGELOG.
+4. Place it and rate it: [RATING.md](RATING.md#placing-a-new-bot), then [after `--write`](RATING.md#after---write).
 
 A bot that lands on top of another adds nothing to the menu. Keep it out of `BOTS`, or retire it.
 
@@ -101,7 +93,8 @@ dormant: it moves from `BOTS` to `DORMANT` in `src/bots/bots.ts`. It's out of th
 id stays reserved, and `deno task rate --bots random,minimax,grandmaster` still rates it, so it can come back when
 something changes. Say why next to it.
 
-Dormant now: Grandmaster (Minimax searching to depth 10; level with Minimax for five times the time).
+Dormant now: Grandmaster (Minimax searching to depth 10; level with Minimax for five times the time), and First (always
+its leftmost pit; level with Random, 999 against 1000 over 240 games, so it added no step to the ladder).
 
 ## Retiring a bot
 

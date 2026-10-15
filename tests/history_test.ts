@@ -1,5 +1,5 @@
 import { assert, assertEquals } from "@std/assert";
-import { humanSide, playerStats, type SavedGame, START_RATING } from "../src/app/history.ts";
+import { humanSide, playerStats, type SavedGame, seatName, START_RATING } from "../src/app/history.ts";
 import { DEFAULT_RULES } from "../src/game/types.ts";
 
 /** A finished game: you (Player 1) against `bot` rated `elo`. */
@@ -49,6 +49,15 @@ Deno.test("each game uses the bot's rating from when it was played", () => {
   const before = playerStats([game("greedy", 1200, "win")]).rating;
   const after = playerStats([game("greedy", 1400, "win")]).rating;
   assert(after > before);
+});
+
+Deno.test("games against a bot made dormant since still count", () => {
+  // Saved games keep the id they were played against; "first" is dormant now.
+  const old = game("first" as SavedGame["seats"][2], 1012, "win");
+  const s = playerStats([old]);
+  assertEquals([s.rated, s.vs.get("first")?.w], [1, 1]);
+  assert(s.rating > START_RATING);
+  assertEquals(seatName("first"), "Casual bot");
 });
 
 Deno.test("only one person against a bot has a human side", () => {
