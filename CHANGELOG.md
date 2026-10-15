@@ -3,7 +3,7 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `deno.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
-## Unreleased
+## v2.2.3 · 2026-10-15
 
 - **First is dormant.** It always played its leftmost pit, and with matched pairs it rated level with Random (999
   against 1000), so it added no step to the ladder. It's out of the menus but kept in the code; games you played against
