@@ -10,7 +10,7 @@
  * different move orders, and every deeper pass revisits the last one), so each is searched once
  * per depth, and the best move found for it last time is tried first.
  */
-import { playTurn, storeOf, validMoves } from "../../game/engine.ts";
+import { FREE_TURN, INVALID, pitsOf, playTurn, storeOf, turn, validMoves } from "../../game/engine.ts";
 import type { GameState } from "../../game/types.ts";
 import { evaluate, WIN } from "./evaluate.ts";
 
@@ -55,6 +55,25 @@ const keyOf = (s: GameState) => String.fromCharCode(...s.pits, s.current);
 const FREE_TURN_EXTENSIONS = 12;
 class OutOfTime extends Error {}
 
+/** One ply's children: up to seven boards, their moves, scores, and the order to try them in. */
+interface Level {
+  boards: GameState[];
+  moves: Int8Array;
+  free: Uint8Array;
+  score: Float64Array;
+  order: Int8Array;
+}
+const newLevel = (like: GameState): Level => ({
+  boards: Array.from(
+    { length: 7 },
+    () => ({ rules: like.rules, pits: new Array<number>(16).fill(0), current: like.current, gameOver: false }),
+  ),
+  moves: new Int8Array(7),
+  free: new Uint8Array(7),
+  score: new Float64Array(7),
+  order: new Int8Array(7),
+});
+
 export function search(
   root: GameState,
   { timeMs = 700, depth, scoreAll = false, extensions = FREE_TURN_EXTENSIONS, aim = "win" }: SearchOptions = {},
@@ -71,22 +90,48 @@ export function search(
   let nodes = 0;
   const table = new Map<string, Entry>();
 
-  /** Children of a position, best-looking first, which makes alpha-beta prune far more. */
-  const children = (s: GameState, hashMove = -1) =>
-    validMoves(s)
-      .map((move) => {
-        const r = playTurn(s, move, { record: false });
-        const next = r.state;
-        // Last time's best move first, then free turns, then whatever grows the mover's store most.
-        const order = (move === hashMove ? 1e6 : 0) + (r.invalid ? -1e9 : 0) + (!r.invalid && r.freeTurn ? 1000 : 0) +
-          next.pits[storeOf(s.current)];
-        return { move, next, order, free: !r.invalid && r.freeTurn };
-      })
-      .sort((a, b) => b.order - a.order);
+  // Boards for the children of each ply, made once per search and reused, so the search never
+  // copies a position into a new object: each child is the parent copied into a pooled board,
+  // then played in place.
+  const levels: Level[] = [];
+  const level = (ply: number) => (levels[ply] ??= newLevel(root));
+
+  /**
+   * The children of `s`, into `level(ply)`, best-looking first, which makes alpha-beta prune far
+   * more: last time's best move, then free turns, then whatever grows the mover's store most.
+   * Returns how many there are; `at.order` lists them by index, best first.
+   */
+  const children = (s: GameState, ply: number, hashMove = -1): number => {
+    const at = level(ply);
+    const store = storeOf(s.current);
+    let n = 0;
+    for (const move of pitsOf(s.current)) {
+      if (s.gameOver || s.pits[move] === 0) continue;
+      const board = at.boards[n];
+      for (let i = 0; i < 16; i++) board.pits[i] = s.pits[i];
+      board.current = s.current;
+      board.gameOver = s.gameOver;
+      const flags = turn(board, move);
+      const free = flags !== INVALID && (flags & FREE_TURN) !== 0;
+      at.moves[n] = move;
+      at.free[n] = free ? 1 : 0;
+      at.score[n] = (move === hashMove ? 1e6 : 0) + (flags === INVALID ? -1e9 : 0) + (free ? 1000 : 0) +
+        board.pits[store];
+      // A stable insertion sort, best first: equal scores keep pit order, as Array.sort did.
+      let k = n;
+      while (k > 0 && at.score[at.order[k - 1]] < at.score[n]) {
+        at.order[k] = at.order[k - 1];
+        k--;
+      }
+      at.order[k] = n;
+      n++;
+    }
+    return n;
+  };
 
   // A free turn doesn't use up depth (the same player simply moves again), so the search follows
   // chains of free turns, which decide this game, up to FREE_TURN_EXTENSIONS extra plies.
-  const alphabeta = (s: GameState, d: number, ext: number, alpha: number, beta: number): number => {
+  const alphabeta = (s: GameState, d: number, ext: number, alpha: number, beta: number, ply: number): number => {
     if (++nodes % 2048 === 0 && performance.now() > deadline) throw new OutOfTime();
     if (d === 0 || s.gameOver) return value(s);
 
@@ -103,9 +148,13 @@ export function search(
     const maximising = aim === "lose" || s.current === me;
     let best = maximising ? -Infinity : Infinity;
     let bestMove = -1;
-    for (const { move, next, free } of children(s, hit?.best)) {
-      const extend = free && ext > 0;
-      const v = alphabeta(next, extend ? d : d - 1, extend ? ext - 1 : ext, alpha, beta);
+    const at = level(ply);
+    const count = children(s, ply, hit?.best);
+    for (let c = 0; c < count; c++) {
+      const k = at.order[c];
+      const move = at.moves[k];
+      const extend = at.free[k] === 1 && ext > 0;
+      const v = alphabeta(at.boards[k], extend ? d : d - 1, extend ? ext - 1 : ext, alpha, beta, ply + 1);
       if (maximising ? v > best : v < best) [best, bestMove] = [v, move];
       if (maximising) alpha = Math.max(alpha, v);
       else beta = Math.min(beta, v);
@@ -118,7 +167,8 @@ export function search(
   };
 
   let result: SearchResult = { move: moves[0], score: -Infinity, depth: 0, nodes: 0 };
-  let order = children(root).map((c) => c.move);
+  const first = level(0);
+  let order = Array.from({ length: children(root, 0) }, (_, c) => first.moves[first.order[c]]);
   for (let d = 1; d <= maxDepth; d++) {
     try {
       let bestMove = order[0];
@@ -136,6 +186,7 @@ export function search(
           extensions - (extend ? 1 : 0),
           scoreAll ? -Infinity : alpha,
           Infinity,
+          1,
         );
         scores.set(move, v);
         if (v > bestScore) [bestMove, bestScore] = [move, v];

@@ -3,7 +3,7 @@
  * player to move. This is what tuning the evaluation needs (Texel's method, issue #15): fit the
  * weights so the evaluation of each position predicts its result.
  *
- *   deno task tournament 40 --record data/games.mgn
+ *   deno task rate 40 --record data/games.mgn
  *   deno task positions data/games.mgn > data/positions.jsonl
  *
  * Each line: {"game":0,"ply":12,"pits":[...16],"toMove":1,"result":1,"margin":18}

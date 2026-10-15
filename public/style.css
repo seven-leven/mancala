@@ -9,6 +9,7 @@
   --bg: #f6f4ef;
   --bg-2: #eeebe4;
   --surface: #fffdf9;
+  --pop: #fffdf9;
   --text: #161514;
   --text-2: #34322f;
   --text-muted: #6b6760;
@@ -42,6 +43,7 @@
     --bg: #161514;
     --bg-2: #1e1c1a;
     --surface: rgba(246, 244, 239, 0.04);
+    --pop: #22201e;
     --text: #f6f4ef;
     --text-2: rgba(246, 244, 239, 0.75);
     --text-muted: rgba(246, 244, 239, 0.62);
@@ -69,6 +71,7 @@
   --bg: #161514;
   --bg-2: #1e1c1a;
   --surface: rgba(246, 244, 239, 0.04);
+  --pop: #22201e;
   --text: #f6f4ef;
   --text-2: rgba(246, 244, 239, 0.75);
   --text-muted: rgba(246, 244, 239, 0.62);
@@ -284,6 +287,148 @@ kbd {
 .select select option {
   background: var(--bg);
   color: var(--text);
+}
+
+/* The opponent picker: a pill that opens the bots grouped by strength (src/ui/picker.ts) */
+.picker {
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
+}
+.picker__button {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  max-width: 100%;
+  padding: 0.62rem 2.1rem 0.62rem 1.05rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font-size: var(--fs-small);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+.picker__button:hover,
+.picker__button[aria-expanded="true"] {
+  border-color: var(--text);
+}
+.picker__button::after {
+  content: "";
+  position: absolute;
+  right: 0.95rem;
+  top: 50%;
+  width: 0.42rem;
+  height: 0.42rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-70%) rotate(45deg);
+  transition: transform 0.2s var(--ease);
+}
+.picker__button[aria-expanded="true"]::after {
+  transform: translateY(-20%) rotate(225deg);
+}
+.picker__button .picker__title {
+  font-weight: 600;
+}
+.picker__button .picker__detail,
+.picker__button .picker__elo {
+  overflow: hidden;
+  color: var(--text-muted);
+  text-overflow: ellipsis;
+}
+.picker__list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  width: min(26rem, calc(100vw - 2rem));
+  max-height: min(34rem, 72vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--pop);
+  box-shadow: var(--shadow);
+  outline: none;
+  animation: picker-in 0.16s var(--ease);
+}
+@keyframes picker-in {
+  from {
+    transform: translateY(-4px);
+  }
+}
+.picker__group:first-child {
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--rule);
+}
+.picker__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: var(--space-3) var(--space-3) var(--space-1);
+  color: var(--text-muted);
+}
+.picker__head .mono {
+  font-size: var(--fs-label);
+}
+.picker__option {
+  display: grid;
+  grid-template-columns: 5.6rem minmax(0, 1fr) auto 2.6rem;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0.5rem var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-small);
+  line-height: 1.2;
+  cursor: pointer;
+}
+.picker__option--plain {
+  grid-template-columns: 5.6rem minmax(0, 1fr) auto;
+}
+.picker__option .picker__title {
+  font-weight: 600;
+}
+.picker__option .picker__detail {
+  overflow: hidden;
+  color: var(--text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.picker__elo,
+.picker__note {
+  color: var(--text-muted);
+  font-size: var(--fs-caption);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.picker__bar {
+  --bar: var(--text-muted);
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(var(--bar), var(--bar)) 0 0 / calc(var(--fill) * 100%) 100% no-repeat, var(--rule);
+}
+.picker__option.is-active {
+  background: var(--bg-2);
+}
+.picker__option[aria-selected="true"] {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.picker__option[aria-selected="true"].is-active {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.picker__option[aria-selected="true"] .picker__title {
+  color: var(--accent);
+}
+.picker__option[aria-selected="true"] .picker__bar {
+  --bar: var(--accent);
+}
+.picker__list:focus-visible .picker__option.is-active {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
 }
 
 /* The folio's arrow link */
