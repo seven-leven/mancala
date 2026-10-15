@@ -138,6 +138,40 @@ rated when it's one person against one bot, played to the end under the standard
 change of opponent. Each saved game keeps the bot's rating from the day it was played, so a re-rating never rewrites
 anyone's history.
 
+## The ladder over time
+
+Each rating so far, from `src/bots/ratings.ts` in git history. "Typical" is the middle bot's half-range.
+
+| Ratings                      | Bots | Games a pairing | Openings          | Typical 90% range | Widest |
+| ---------------------------- | ---: | --------------: | ----------------- | ----------------: | -----: |
+| First Elo ladder (v2.1)      |    8 |              40 | Each game its own |               ±75 |   ±105 |
+| Bot standard (v2.2.0)        |   12 |              40 | Matched pairs     |               ±50 |    ±63 |
+| Seventeen bots (v2.2.0)      |   17 |              60 | Matched pairs     |               ±36 |    ±41 |
+| After the speed-ups (v2.2.2) |   17 |             240 | Matched pairs     |               ±20 |    ±25 |
+
+What it taught:
+
+- **Three things narrow the ranges:** more rungs, matched pairs, and more games. From 8 to 12 bots (with matched pairs,
+  at the same 40 games) took a third off. From 12 to 17 bots took a little more off, beyond what the extra games
+  explain. From 60 to 240 games roughly halved them.
+- **With seventeen bots, games are the cheaper lever.** Four times the games did more in 5 minutes than five more bots
+  would. Giving the games to close pairings (adaptive allocation, in [TODO.md](TODO.md)) should do better still.
+
+### The ladder's shape, as of v2.2.2
+
+The ladder runs from 494 (Pushover) to 2064 (Minimax). The average step is about 100 Elo, so each bot beats the one
+below it about 64% of the time: each step up is noticeably harder, and none is a wall. Most rungs sit between 900 and
+1750, where people play.
+
+- **Same strength, different style:** Random and First (1 apart), Greedy and Turtle (10), Chainer and Spoiler (18). They
+  earn their place as styles, not as steps.
+- **The widest gaps:** Planner to Chainer (204), Hoarder to Sometimes generous (190), Sometimes generous to Generous
+  (169). A new bot does most good in the first two: Planner to Chainer is the middle of the ladder, where players climb.
+- **The ceiling:** nothing is above Minimax, so a strong player runs out of ladder. That's for a stronger Expert (v2.4),
+  not for more bots in the middle.
+
+Update this section after each full rating that changes the shape.
+
 ## The maths
 
 The formulas behind the sections above, for checking or changing `tools/tournament/elo.ts` and `src/app/history.ts`.

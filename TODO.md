@@ -6,14 +6,14 @@ Done items stay ticked for a release or two, then go.
 
 ## Roadmap
 
-| Milestone                                                                          | Goal                                                       | Done when                                                       |
-| ---------------------------------------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------- |
-| **[v2.2 · Fairer ratings](https://github.com/seven-leven/mancala/milestone/1)**    | Ratings that measure play, not the first-move edge         | The tournament plays matched pairs and can pause and resume     |
-| **[v2.3 · Bots in the gap](https://github.com/seven-leven/mancala/milestone/2)**   | Fill the Average (1383) → Tricky (1677) gap with real bots | Two or more new bots land in the gap; ranges there narrow       |
-| **[v2.4 · A stronger Expert](https://github.com/seven-leven/mancala/milestone/3)** | A better evaluation and search at the top                  | New Minimax beats v2.3's Minimax over a matched-pair tournament |
-| **v2.5 · Faster**                                                                  | Tournaments and searches that cost less time               | A 60-game rating run of every bot in BOTS runs under 3 minutes  |
-| **Research** (no release)                                                          | Questions about the game itself                            | Each answer is written up in the README or on the folio         |
-| **Parked**                                                                         | Ideas that don't pay for themselves yet                    | Revisit only when the trigger listed next to them happens       |
+| Milestone                                                                          | Goal                                                | Done when                                                      |
+| ---------------------------------------------------------------------------------- | --------------------------------------------------- | -------------------------------------------------------------- |
+| **[v2.2 · Fairer ratings](https://github.com/seven-leven/mancala/milestone/1)**    | Ratings that measure play, not the first-move edge  | The tournament plays matched pairs and can pause and resume    |
+| **[v2.3 · Bots in the gap](https://github.com/seven-leven/mancala/milestone/2)**   | Fill the two widest gaps that matter with real bots | A bot near 1600 and one near 830; no gap over 170 Elo          |
+| **[v2.4 · A stronger Expert](https://github.com/seven-leven/mancala/milestone/3)** | A better evaluation and search at the top           | New Minimax beats v2.3's Minimax in an SPRT over matched pairs |
+| **v2.5 · Faster**                                                                  | Tournaments and searches that cost less time        | A 60-game rating run of every bot in BOTS runs under 3 minutes |
+| **Research** (no release)                                                          | Questions about the game itself                     | Each answer is written up in the README or on the folio        |
+| **Parked**                                                                         | Ideas that don't pay for themselves yet             | Revisit only when the trigger listed next to them happens      |
 
 Why this order: v2.3 and v2.4 both need ratings you can trust to tell whether a change helped, so the tournament comes
 first. v2.3's bots are built from the evaluation pieces v2.4 then tunes.
@@ -77,12 +77,14 @@ Every bot follows [BOTS.md](BOTS.md): the contract in `src/bots/contracts.ts`, o
       gap with a quick rating script before the full run. Grandmaster rated level with Minimax for five times the time,
       so it's dormant (see v2.5).
 - [x] **A new How to play popup**: steps, three rule cards, a strategy tip, and the house rules kept live.
-- [ ] **Four more bots for the two widest gaps left** (place each with a quick rating against a few rated bots, then the
-      full run):
-  - [ ] two between Casual (First, 1012) and Bold (Striker, 1154), about 1060 and 1110: say Striker mixed with Random,
-        or Sometimes greedy with a lower q;
-  - [ ] two between Gentle (Sometimes generous, 776) and Thrifty (Hoarder, 951), about 830 and 890: say Hoarder mixed
-        with Random, or Sometimes generous with a lower q.
+- [ ] **Two more bots for the two widest gaps that matter** (see RATING.md, "The ladder's shape"; place each with a
+      quick rating against its neighbours, then the full run):
+  - [ ] one between Thoughtful (Planner, 1698) and Keen (Chainer, 1494), about 1600: the middle of the ladder, where
+        players climb. Say Planner mixed with Greedy, or Lookahead with a lower pick of its better moves;
+  - [ ] one between Gentle (Sometimes generous, 730) and Thrifty (Hoarder, 920), about 830: say Hoarder mixed with
+        Random, or Sometimes generous with a lower q.
+  - Dropped: the two planned between Casual (First) and Bold (Striker). After the 240-game run that gap is 148 Elo, fine
+    as it is.
 - [ ] Let players export their saved games as MGN from Your games (today the backup is JSON).
 
 ## [v2.4 · A stronger Expert](https://github.com/seven-leven/mancala/milestone/3)
@@ -97,6 +99,9 @@ Every bot follows [BOTS.md](BOTS.md): the contract in `src/bots/contracts.ts`, o
       match against the old one.
 - [ ] [#16](https://github.com/seven-leven/mancala/issues/16) Try an MCTS bot (UCB1, random playouts). If it rates above
       Minimax, it becomes the new top level.
+- [ ] **A sequential test (SPRT) for "does the new version beat the old one?"** For #15 and #16: play matched pairs
+      until the evidence is strong enough either way, then stop, as chess engines are tested. A clear yes or no in the
+      fewest games, instead of guessing that 240 is enough. Its formulas go in RATING.md's maths.
 - [ ] [#17](https://github.com/seven-leven/mancala/issues/17) A **pie rule** house rule: after the first move, the
       second player may swap sides. A real answer to the first-move edge for human games, beside choosing who goes
       first.
@@ -163,6 +168,17 @@ strength checks are [#7](https://github.com/seven-leven/mancala/issues/7), under
 - [ ] **A short testing guide**, like RATING.md but smaller: what each test file covers, the 20 s budget, slow tests in
       their own file so `--parallel` helps, and that strength claims belong to the rating harness.
 
+## Rating statistics
+
+Small additions to the rating harness's output, each an hour or so. Document each in RATING.md's maths when it lands.
+
+- [ ] **"Is A stronger than B?" as a probability.** The 300 resampled fits are already there: report the share where
+      each bot ranks above its neighbour ("Chainer above Spoiler in 81% of resamples"), in place of overlapping ranges
+      alone, and use it for the ladder chart's red marks.
+- [ ] **A check that the model fits.** Compare each pairing's win rate with what the ratings predict, and flag pairings
+      that miss by more than chance: a bot that isn't transitive (beats strong bots, loses to weak ones) shows up here.
+      A safeguard for adaptive allocation, which plays fewer lopsided games.
+
 ## Research
 
 None of these ship in the game; each ends as a note in the README or on the folio.
@@ -186,6 +202,12 @@ None of these ship in the game; each ends as a note in the README or on the foli
 - **A new directory layout and npm scripts.** The project is Deno with `deno task`; the layout in the README stays.
 - **Cycle detection in relays.** Not needed: every lap banks a seed, `engine.ts` stops after 100,000 drops anyway, and
   the tournament stops a game at 1,000 moves.
+
+- **Glicko-2 for the player's rating.** It would track an uncertainty per player ("1240 ± 180 after 5 games") in place
+  of K = 32's swings. Revisit when the stats dialog gets attention; it doesn't help the bots.
+- **Fitting on score margins, or Bayesian and multi-dimensional rating models.** More information per game, but they
+  change what Elo means, and they're more than 17 bots need. Revisit only if the model-fit check finds bots Elo can't
+  place.
 
 ## Decided
 
