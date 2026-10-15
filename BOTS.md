@@ -43,19 +43,19 @@ The menus, the Web Worker, saved games and the tournament all read it.
 6. **Fixed strength when rated.** In `"rate"` mode a bot uses no clock: search bots search to a fixed depth. In `"play"`
    mode they stop on `ctx.timeMs` (700 ms in the game), so a move never takes much longer than that.
 7. **Cheap enough for a phone.** Bots run in a Web Worker, but a move should still take well under a second on a slow
-   phone.
+   phone. (Dormant Grandmaster takes twice Minimax's time, one reason it's dormant.)
 
 ## Families and files
 
-| Family     | How it decides                                         | File                           | Bots                                 |
-| ---------- | ------------------------------------------------------ | ------------------------------ | ------------------------------------ |
-| `basic`    | Doesn't look at what a move does                       | `src/bots/players/basic.ts`    | Random, First                        |
-| `one-move` | Plays each pit once and scores the position after      | `src/bots/players/one-move.ts` | Greedy, Generous, Turtle             |
-| `chain`    | Follows its own free turns, ignores replies            | `src/bots/players/chain.ts`    | DFS, Chainer (mixed with Greedy)     |
-| `search`   | Minimax search, planning for the opponent's replies    | `src/bots/players/search.ts`   | Minimax, Lookahead, Pushover         |
-| `mixed`    | Another bot's move some of the time, else a random one | `src/bots/players/mixed.ts`    | Sometimes greedy, Sometimes generous |
+| Family     | How it decides                                         | File                           | Bots                                                                         |
+| ---------- | ------------------------------------------------------ | ------------------------------ | ---------------------------------------------------------------------------- |
+| `basic`    | Doesn't look at what a move does                       | `src/bots/players/basic.ts`    | Random, First                                                                |
+| `one-move` | Plays each pit once and scores the position after      | `src/bots/players/one-move.ts` | Greedy, Generous, Turtle, Hoarder, Striker                                   |
+| `chain`    | Follows its own free turns, ignores replies            | `src/bots/players/chain.ts`    | DFS, Chainer (mixed with Greedy)                                             |
+| `search`   | Looks at the opponent's replies                        | `src/bots/players/search.ts`   | Minimax, Lookahead, Shrewd, Pushover; Planner and Spoiler (the two-move bot) |
+| `mixed`    | Another bot's move some of the time, else a random one | `src/bots/players/mixed.ts`    | Sometimes greedy, Sometimes generous                                         |
 
-Scoring pieces (store lead, seeds on your side, exposure) live in
+Scoring pieces (store lead, seeds on your side, exposure, threats, free turns set up, mobility) live in
 [src/bots/search/evaluate.ts](src/bots/search/evaluate.ts) as `Evaluator`s, so one-move bots and the search share them.
 A new idea is a new function there, not a copy inside a bot.
 
@@ -94,6 +94,15 @@ a depth, a weight), so it can be placed where the ladder needs it. Note the knob
 5. Re-check the levels against the new ratings, then update the README's bot table and the CHANGELOG.
 
 A bot that lands on top of another adds nothing to the menu. Keep it out of `BOTS`, or retire it.
+
+## Dormant bots
+
+A bot that works but doesn't earn its place yet (it rates on top of another, or costs far more than it adds) can go
+dormant: it moves from `BOTS` to `DORMANT` in `src/bots/bots.ts`. It's out of the menus and the default tournament, its
+id stays reserved, and `deno task tournament --bots random,minimax,grandmaster` still rates it, so it can come back when
+something changes. Say why next to it.
+
+Dormant now: Grandmaster (Minimax searching to depth 10; level with Minimax for five times the time).
 
 ## Retiring a bot
 

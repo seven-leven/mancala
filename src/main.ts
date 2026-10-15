@@ -83,14 +83,14 @@ function describeRules(s: Settings): void {
   $("rulesSummary").textContent = `${seeds} seeds a pit · capture from ${
     capture === "own" ? "your own side" : "either side"
   } · ${clinch ? "ends on a clinched majority" : "played to the last seed"}`;
-  $("captureRule").innerHTML = `<strong>Capture:</strong> if the last seed lands in an empty pit ${
+  $("captureRule").textContent = `Last seed lands in an empty pit ${
     capture === "own" ? "on your side" : "on either side"
-  }, bank everything in the pit opposite. The seed that landed stays put.`;
+  }? Bank the seeds in the pit opposite. Your last seed stays where it landed.`;
   // Minimax proves this for the standard rules (either capture side): see the README.
   const standard = seeds === 7 && clinch;
-  $("firstRule").innerHTML = `<strong>Going first matters.</strong> ${
+  $("firstRule").textContent = `Going first matters. ${
     standard
-      ? "With these rules, opening with pit 1 starts a chain of free turns that wins before the other side ever moves."
+      ? "Opening with pit 1 starts a chain of free turns that wins before the other side ever moves."
       : "The first player has a real edge."
   } Choose who goes first in Settings.`;
   $("endRule").textContent = `The game ends when a side runs out of seeds${

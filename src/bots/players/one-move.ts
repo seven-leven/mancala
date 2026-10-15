@@ -2,7 +2,7 @@
 import { playTurn, validMoves } from "../../game/engine.ts";
 import type { GameState } from "../../game/types.ts";
 import type { Bot, Evaluator, Rng } from "../contracts.ts";
-import { banked, exposed } from "../search/evaluate.ts";
+import { banked, exposed, onSide, threats } from "../search/evaluate.ts";
 
 export interface OneMoveOptions {
   /** Play the move that scores best (the default), or the worst. */
@@ -56,5 +56,25 @@ export class GenerousBot extends OneMoveBot {
 export class TurtleBot extends OneMoveBot {
   constructor(caution = 0.5, rng: Rng = Math.random) {
     super((s, me) => banked(s, me) - caution * exposed(s, me), { ties: "random" }, rng);
+  }
+}
+
+/**
+ * Keeps its seeds at home: the move that leaves the most seeds on its own side, plus `thrift` for
+ * each seed it banks. It rarely gives seeds away, but it rarely takes any either.
+ */
+export class HoarderBot extends OneMoveBot {
+  constructor(thrift = 0.3, rng: Rng = Math.random) {
+    super((s, me) => onSide(s, me) + thrift * banked(s, me), { ties: "random" }, rng);
+  }
+}
+
+/**
+ * Banks what it can and lines up captures: `aggression` for every seed sitting in a pit that faces
+ * one of its empty pits, ready to be taken next turn.
+ */
+export class StrikerBot extends OneMoveBot {
+  constructor(aggression = 0.5, rng: Rng = Math.random) {
+    super((s, me) => banked(s, me) + aggression * threats(s, me), { ties: "random" }, rng);
   }
 }

@@ -24,7 +24,16 @@
  * Gaps like that are set by the closer pairings in between (and one virtual draw per pairing keeps
  * them finite), so each rating comes with a 90% range from re-fitting resampled pairs.
  */
-import { type Bot, type BotId, BOTS, createBot, isBotId } from "../../src/bots/bots.ts";
+import {
+  type Bot,
+  type BotId,
+  BOTS,
+  createBot,
+  DORMANT,
+  type DormantId,
+  isBotId,
+  isDormantId,
+} from "../../src/bots/bots.ts";
 import { playTurn } from "../../src/game/engine.ts";
 import { formatGame } from "../../src/game/notation.ts";
 import { type GameState, P1, P2, type Player } from "../../src/game/types.ts";
@@ -61,16 +70,18 @@ const BUDGET = timeFlag === undefined ? Infinity : duration(timeFlag);
 // exactly the games a run straight through would have.
 let stream = seeded(711);
 const rng = () => stream();
-// Every bot in BOTS, or just those in --bots a,b,c. Random goes first: it's the anchor, pinned at 1000.
+// Every bot in BOTS, or just those in --bots a,b,c (which may name dormant bots too). Random goes
+// first: it's the anchor, pinned at 1000.
 const picked = flag("bots")?.split(",") ?? Object.keys(BOTS);
-const unknown = picked.filter((id) => !isBotId(id));
+const unknown = picked.filter((id) => !isBotId(id) && !isDormantId(id));
 if (unknown.length) throw new Error(`--bots: no bot called ${unknown.join(", ")}; try ${Object.keys(BOTS).join(",")}`);
 if (!picked.includes("random")) throw new Error("--bots must include random, the anchor");
-const ids = ["random", ...picked.filter((id) => id !== "random")] as BotId[];
-if (Deno.args.includes("--write") && ids.length < Object.keys(BOTS).length) {
-  throw new Error("--write rates every bot in BOTS together; leave out --bots");
+const ids = ["random", ...picked.filter((id) => id !== "random")] as (BotId | DormantId)[];
+if (Deno.args.includes("--write") && (ids.some(isDormantId) || ids.length < Object.keys(BOTS).length)) {
+  throw new Error("--write rates exactly the bots in BOTS together; leave out --bots");
 }
-const entrants: [string, Bot][] = ids.map((id) => [BOTS[id].label, createBot(id, { rng, mode: "rate" })]);
+const label = (id: BotId | DormantId) => (isDormantId(id) ? DORMANT[id] : BOTS[id]).label;
+const entrants: [string, Bot][] = ids.map((id) => [label(id), createBot(id, { rng, mode: "rate" })]);
 const n = entrants.length;
 const names: string[] = ids;
 
@@ -127,6 +138,13 @@ const clock = (ms: number) => {
   const s = Math.round(ms / 1000);
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 };
+const columns = () => {
+  try {
+    return Deno.consoleSize().columns;
+  } catch {
+    return 80;
+  }
+};
 function progress(pairsThisRound: number) {
   if (!live) return;
   const elapsed = performance.now() - startedAt;
@@ -137,7 +155,8 @@ function progress(pairsThisRound: number) {
   const line = `Round ${state.rounds + 1}/${ROUNDS} · ${games} games · ${rate.toFixed(1)} games/s · ` +
     `${clock(elapsed)} elapsed · ETA ${rate > 0 && Number.isFinite(eta) ? clock(Math.max(0, eta)) : "--:--"}` +
     (stopping ? " · stopping" : "");
-  Deno.stderr.writeSync(new TextEncoder().encode(`\r${line.padEnd(90)}`));
+  // Clear the line and rewrite it, cut to the terminal's width so it never wraps.
+  Deno.stderr.writeSync(new TextEncoder().encode(`\r\x1b[2K${line.slice(0, columns() - 1)}`));
 }
 
 while (state.rounds < ROUNDS && !stopping && performance.now() - startedAt < BUDGET) {
@@ -183,7 +202,7 @@ while (state.rounds < ROUNDS && !stopping && performance.now() - startedAt < BUD
   await save(state);
 }
 Deno.removeSignalListener("SIGINT", onInterrupt);
-if (live) Deno.stderr.writeSync(new TextEncoder().encode(`\r${" ".repeat(90)}\r`));
+if (live) Deno.stderr.writeSync(new TextEncoder().encode("\r\x1b[2K"));
 
 if (state.rounds === 0) {
   console.log("No complete rounds yet, so no ratings.");

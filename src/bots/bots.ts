@@ -6,8 +6,9 @@ import type { Bot, BotContext, BotSpec } from "./contracts.ts";
 import { FirstBot, RandomBot } from "./players/basic.ts";
 import { DfsBot } from "./players/chain.ts";
 import { MixedBot } from "./players/mixed.ts";
-import { GenerousBot, GreedyBot, OneMoveBot, TurtleBot } from "./players/one-move.ts";
-import { LookaheadBot, MinimaxBot, PushoverBot } from "./players/search.ts";
+import { GenerousBot, GreedyBot, HoarderBot, OneMoveBot, StrikerBot, TurtleBot } from "./players/one-move.ts";
+import { LookaheadBot, MinimaxBot, PushoverBot, TwoMoveBot } from "./players/search.ts";
+import { lead, planned } from "./search/evaluate.ts";
 
 export type { Bot, BotContext, BotSpec };
 export {
@@ -15,13 +16,16 @@ export {
   FirstBot,
   GenerousBot,
   GreedyBot,
+  HoarderBot,
   LookaheadBot,
   MinimaxBot,
   MixedBot,
   OneMoveBot,
   PushoverBot,
   RandomBot,
+  StrikerBot,
   TurtleBot,
+  TwoMoveBot,
 };
 
 /**
@@ -52,6 +56,14 @@ export const BOTS = {
     // q places it between Generous and Random; see BOTS.md, "Tunable on purpose".
     create: ({ rng }) => new MixedBot(new GenerousBot(rng), 0.75, rng),
   },
+  hoarder: {
+    label: "Hoarder",
+    level: "Thrifty",
+    blurb: "Keeps its seeds on its own side, banking only a little.",
+    family: "one-move",
+    // thrift: what a banked seed is worth against one kept at home.
+    create: ({ rng }) => new HoarderBot(0.3, rng),
+  },
   random: {
     label: "Random",
     level: "Easy",
@@ -65,6 +77,15 @@ export const BOTS = {
     blurb: "Always plays its first pit with seeds, from its own left.",
     family: "basic",
     create: () => new FirstBot(),
+  },
+  striker: {
+    label: "Striker",
+    level: "Bold",
+    blurb: "Banks what it can, but would rather line up a capture for next turn.",
+    family: "one-move",
+    // aggression: what a seed it threatens to capture is worth against one banked. The keener it
+    // is, the weaker it plays: 0.5 rates level with Greedy, 1.0 about 100 below.
+    create: ({ rng }) => new StrikerBot(1.0, rng),
   },
   sometimesGreedy: {
     label: "Sometimes greedy",
@@ -89,6 +110,14 @@ export const BOTS = {
     family: "one-move",
     create: () => new GreedyBot(),
   },
+  spoiler: {
+    label: "Spoiler",
+    level: "Crafty",
+    blurb: "Often plays the move that leaves your best reply weakest; otherwise plays like Greedy.",
+    family: "search",
+    // The two-move search (alone it rates level with Lookahead) with probability q, else Greedy.
+    create: ({ rng }) => new MixedBot(new TwoMoveBot(lead), 0.5, rng, new GreedyBot()),
+  },
   chainer: {
     label: "Chainer",
     level: "Keen",
@@ -98,12 +127,27 @@ export const BOTS = {
     // between Greedy and a full two-move chainer, which rates level with Lookahead.
     create: ({ rng }) => new MixedBot(new DfsBot(2), 0.5, rng, new GreedyBot()),
   },
+  planner: {
+    label: "Planner",
+    level: "Thoughtful",
+    blurb: "Looks at your best reply, and weighs everything: free turns set up, captures threatened, pits left open.",
+    family: "search",
+    create: () => new TwoMoveBot(planned()),
+  },
   lookahead: {
     label: "Lookahead",
     level: "Tricky",
     blurb: "Looks two moves ahead and plays one of its better moves, not always the best.",
     family: "search",
     create: ({ rng }) => new LookaheadBot(2, 3, rng),
+  },
+  shrewd: {
+    label: "Shrewd",
+    level: "Sharp",
+    blurb: "Lookahead's method, three moves deep instead of two.",
+    family: "search",
+    // depth and slack, as for Lookahead (2, 3).
+    create: ({ rng }) => new LookaheadBot(3, 2, rng),
   },
   dfs: {
     label: "DFS",
@@ -122,6 +166,27 @@ export const BOTS = {
   },
 } as const satisfies Record<string, BotSpec>;
 
+/**
+ * Dormant bots: kept in the code, out of the menus and the default tournament. Their ids are
+ * reserved. The tournament still rates one when it's named: `deno task tournament --bots ...`.
+ * See BOTS.md, "Dormant bots".
+ */
+export const DORMANT = {
+  // Rated level with Minimax (1992 against 1985 over 60 games) for five times the search time:
+  // depth 10 adds almost nothing to depth 6 here. Waits for a better evaluation (v2.4) or a
+  // capture extension (#13) to make deeper search pay. See TODO.md, v2.5.
+  grandmaster: {
+    label: "Grandmaster",
+    level: "Master",
+    blurb: "Minimax with more time: it searches deeper before it moves.",
+    family: "search",
+    // Rated at depth 10 (Minimax: 6); in the game, twice Minimax's time.
+    create: ({ mode, timeMs }) => new MinimaxBot(mode === "rate" ? { depth: 10 } : { timeMs: 2 * timeMs }),
+  },
+} as const satisfies Record<string, BotSpec>;
+export type DormantId = keyof typeof DORMANT;
+export const isDormantId = (x: unknown): x is DormantId => typeof x === "string" && Object.hasOwn(DORMANT, x);
+
 export type BotId = keyof typeof BOTS;
 /** Who sits on a side: a person, or one of the bots. */
 export type Seat = "human" | BotId;
@@ -129,8 +194,9 @@ export type Seat = "human" | BotId;
 export const isBotId = (x: unknown): x is BotId => typeof x === "string" && Object.hasOwn(BOTS, x);
 
 /** A bot ready to play. In the game: Math.random and a 700 ms budget unless told otherwise. */
-export function createBot(id: BotId, ctx: Partial<BotContext> = {}): Bot {
-  return (BOTS[id] as BotSpec).create({
+export function createBot(id: BotId | DormantId, ctx: Partial<BotContext> = {}): Bot {
+  const spec: BotSpec = isDormantId(id) ? DORMANT[id] : BOTS[id];
+  return spec.create({
     rng: ctx.rng ?? Math.random,
     mode: ctx.mode ?? "play",
     timeMs: ctx.timeMs ?? 700,

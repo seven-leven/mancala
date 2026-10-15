@@ -22,6 +22,23 @@ export const onSide: Evaluator = (s, me) => pitsOf(me).reduce((n, i) => n + s.pi
 export const exposed: Evaluator = (s, me) =>
   pitsOf(me).reduce((n, i) => n + (s.pits[oppositeOf(i)] === 0 ? s.pits[i] : 0), 0);
 
+/** Moves from a pit to its owner's store: Player 1's pit 0 is 7 away; Player 2's pit 7 is 1 away. */
+const toStore = (pit: number): number => (pit <= 6 ? 7 - pit : pit - 6);
+
+/**
+ * Free turns `me` has set up: pits whose seeds would end exactly in their store. A lap that skips
+ * the opponent's store is 15 drops, so 15 more seeds land in the same place.
+ */
+export const freeTurnsReady: Evaluator = (s, me) =>
+  pitsOf(me).filter((i) => s.pits[i] > 0 && s.pits[i] % 15 === toStore(i) % 15).length;
+
+/** Seeds `me` could capture: in the opponent's pits that face one of `me`'s empty pits. */
+export const threats: Evaluator = (s, me) =>
+  pitsOf(me).reduce((n, i) => n + (s.pits[i] === 0 ? s.pits[oppositeOf(i)] : 0), 0);
+
+/** How many pits `me` could play: few left means little choice and a side about to run dry. */
+export const mobility: Evaluator = (s, me) => pitsOf(me).filter((i) => s.pits[i] > 0).length;
+
 /** How good `s` looks for `me`, as Minimax sees it. */
 export function evaluate(s: GameState, me: Player): number {
   const lead = banked(s, me) - banked(s, other(me));
@@ -29,3 +46,18 @@ export function evaluate(s: GameState, me: Player): number {
   // Seeds still on your side are yours if the game ends now, so they count for a little.
   return lead + 0.25 * (onSide(s, me) - onSide(s, other(me)));
 }
+
+/** `me`'s store lead. */
+export const lead: Evaluator = (s, me) => banked(s, me) - banked(s, other(me));
+
+/** What Planner weighs, per unit of each scoring piece. */
+export const PLANNER_WEIGHTS = { lead: 1, freeTurns: 1.5, threats: 0.3, exposed: -0.5, mobility: 0.2 };
+
+/**
+ * Every piece at once, as Planner scores a position: the store lead, free turns set up, captures
+ * threatened, seeds left exposed, and pits still playable. Worth about 75 Elo over the lead alone
+ * in the same two-move search.
+ */
+export const planned = (w = PLANNER_WEIGHTS): Evaluator => (s, me) =>
+  w.lead * lead(s, me) + w.freeTurns * freeTurnsReady(s, me) + w.threats * threats(s, me) +
+  w.exposed * exposed(s, me) + w.mobility * mobility(s, me);
