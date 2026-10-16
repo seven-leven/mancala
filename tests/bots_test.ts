@@ -66,13 +66,13 @@ test("bots return null when there's no move", () => {
 });
 
 test("generous turns the capture down", () => {
-  //                  0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1 M2
+  //                  0  1  2  3  4  5  6  7  8  9 10 11 12 13 M1 M2
   const s = position([1, 0, 0, 0, 0, 0, 3, 1, 9, 1, 1, 1, 1, 1, 0, 0]);
   assertEquals(new GenerousBot().choose(s), 6); // pit 0 would capture 9; pit 6 banks only 1
 });
 
 test("greedy takes the capture", () => {
-  //               0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1 M2
+  //                  0  1  2  3  4  5  6  7  8  9 10 11 12 13 M1 M2
   const s = position([1, 0, 0, 0, 0, 0, 3, 1, 9, 1, 1, 1, 1, 1, 0, 0]);
   assertEquals(new GreedyBot().choose(s), 0); // lands in empty pit 1, takes pit 8's 9 seeds
 });
@@ -80,7 +80,7 @@ test("greedy takes the capture", () => {
 test("DFS chains a free turn into a capture; greedy grabs the capture now", () => {
   // Pit 0 captures pit 9 straight away (3 seeds). Pit 6 banks 1 and earns a free turn, after
   // which pit 0 still captures: 4 in all. Greedy sees only this turn; DFS follows the chain.
-  //                  0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1 M2
+  //                  0  1  2  3  4  5  6  7  8  9 10 11 12 13 M1 M2
   const s = position([2, 0, 0, 0, 0, 0, 1, 3, 3, 3, 3, 3, 3, 3, 0, 0]);
   assertEquals(new GreedyBot().choose(s), 0);
   assertEquals(new DfsBot().choose(s), 6);
@@ -98,12 +98,13 @@ test("minimax searches no deeper than it's told", () => {
 test("minimax stops on time", () => {
   const started = performance.now();
   const r = search(newGame(DEFAULT_RULES, P2), { timeMs: 150 });
+  // Loosely: it stopped, with a legal move. How deep it got depends on the machine (and on coverage).
   assert(performance.now() - started < 1500);
-  assert(r.depth >= 1 && r.move !== null);
+  assert(validMoves(newGame(DEFAULT_RULES, P2)).includes(r.move!));
 });
 
 test("first plays the leftmost pit from its own side", () => {
-  //                  0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1 M2
+  //                  0  1  2  3  4  5  6  7  8  9 10 11 12 13 M1 M2
   const s = position([0, 0, 4, 1, 0, 0, 0, 2, 0, 3, 0, 0, 5, 0, 0, 0]);
   assertEquals(new FirstBot().choose(s), 2); // Player 1: lowest index
   assertEquals(new FirstBot().choose({ ...s, current: P2 }), 12); // Player 2: their left is pit 13
@@ -126,7 +127,7 @@ test("every bot in BOTS plays legal pits, in both modes, from either side", () =
 });
 
 test("exposed counts seeds in pits facing an empty pit", () => {
-  //                  0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1 M2
+  //                  0  1  2  3  4  5  6  7  8  9 10 11 12 13 M1 M2
   const s = position([4, 2, 0, 5, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0]);
   assertEquals(exposed(s, P1), 4); // pit 0 faces empty pit 7; pit 3 faces pit 10, which has a seed
   assertEquals(exposed(s, P2), 3); // pits 9, 11 and 12 (a seed each) face empty pits 2, 4 and 5
@@ -149,7 +150,7 @@ test("mixed: q = 1 is its main bot; q = 0 is random", () => {
 });
 
 test("scoring pieces: free turns set up, threats, mobility", () => {
-  //                  0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1 M2
+  //                  0  1  2  3  4  5  6  7  8  9 10 11 12 13 M1 M2
   const s = position([7, 0, 0, 0, 0, 0, 1, 1, 4, 0, 0, 0, 0, 2, 0, 0]);
   assertEquals(freeTurnsReady(s, P1), 2); // pit 0 (7 seeds, 7 from the store) and pit 6 (1 seed, 1 away)
   assertEquals(freeTurnsReady(s, P2), 1); // pit 7: 1 seed, 1 away; pit 13 needs 7
@@ -175,7 +176,7 @@ test("the two-move bot sees replies, so it sometimes plays differently from Gree
 test("search bots say what they saw, for the move log", () => {
   // Player 1 has 49 banked, and either move makes 50 of 98, a clinched majority: pit 6 sows into the
   // store, and pit 0 lands in empty pit 1 and captures pit 8's seed.
-  //                  0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1  M2
+  //                    0  1  2  3  4  5  6  7  8  9 10 11 12 13  M1  M2
   const win = position([1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 49, 41]);
   const minimax = new MinimaxBot({ depth: 3 });
   assert([0, 6].includes(minimax.choose(win)!));
@@ -193,20 +194,18 @@ test("search bots say what they saw, for the move log", () => {
   assert(/^saw \d+ moves? ahead/.test(lookahead.note() ?? ""), lookahead.note() ?? "");
 
   // One legal move: nothing to search, so nothing to say.
-  //                   0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1  M2
+  //                       0  1  2  3  4  5  6  7  8  9 10 11 12 13  M1  M2
   const forced = position([0, 0, 0, 0, 0, 0, 3, 5, 5, 5, 5, 5, 5, 5, 30, 30]);
   assertEquals(minimax.choose(forced), 6);
   assertEquals(minimax.note(), null);
   assertEquals(new MinimaxBot().note(), null, "before any move there's no note");
 
-  // Player 2 to move with 96 seeds against 2, but six moves deep it sees Player 1 win whatever it does.
-  //                                        0  1  2  3  4  5  6   7   8   9  10  11  12  13
-  const lost = newGame(DEFAULT_RULES, P2, [1, 1, 0, 0, 0, 0, 0, 14, 14, 14, 14, 14, 13, 13]);
-  const deep = new MinimaxBot({ depth: 6 });
-  deep.choose(lost);
-  assertEquals(deep.note(), "sees a forced loss");
+  // The winning board with Player 2 to move: whatever it plays, Player 1 still reaches 50.
+  minimax.choose({ ...win, current: P2 });
+  assertEquals(minimax.note(), "sees a forced loss");
 
   // One move ahead, and behind: "move", not "moves", and no plus sign.
+  //                                         0  1  2  3  4  5  6   7   8   9  10  11  12  13
   const behind = newGame(DEFAULT_RULES, P1, [2, 2, 2, 2, 2, 2, 2, 12, 12, 12, 12, 12, 12, 12]);
   const shallow = new LookaheadBot(1, 0, () => 0);
   shallow.choose(behind);

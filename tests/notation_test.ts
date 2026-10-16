@@ -50,6 +50,7 @@ test("a pit 1 opening: free turn, written 1+", () => {
 });
 
 test("a start board other than the standard one is kept", () => {
+  //              0  1  2  3  4   5   6   7   8  9 10 11 12 13
   const layout = [3, 4, 5, 6, 7, 10, 14, 14, 10, 7, 6, 5, 4, 3];
   const game = played(P2, 5, layout);
   const text = formatGame(game);

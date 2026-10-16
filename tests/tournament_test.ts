@@ -11,6 +11,7 @@ import type { Bot } from "../src/bots/bots.ts";
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
 
 test("a game can start from a layout, with empty stores", () => {
+  //              0  1  2  3  4   5   6   7   8  9 10 11 12 13
   const layout = [3, 4, 5, 6, 7, 10, 14, 14, 10, 7, 6, 5, 4, 3];
   const g = newGame(DEFAULT_RULES, P2, layout);
   assertEquals(g.pits.slice(0, 14), layout);

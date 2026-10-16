@@ -40,8 +40,9 @@ jobs:
       - name: Type check
         run: npm run check
 
-      - name: Tests (rules, bots, harness, docs)
-        run: npm test
+      # The tests run once, under coverage: a failing test or any figure under 100% fails the check.
+      - name: Tests, with coverage (100% or fail)
+        run: npm run coverage
 
       - name: Build
         run: npm run build

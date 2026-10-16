@@ -40,7 +40,7 @@ opening counted for whoever had it. It now plays matched pairs.
       replays exactly what a straight run would.
 - [x] [#6](https://github.com/seven-leven/mancala/issues/6) A live progress line: elapsed, games, games a second, ETA.
 - [x] [#7](https://github.com/seven-leven/mancala/issues/7) Strength checks in the test harness, in their own file
-      (`tests/strength_test.ts`, so `--parallel` runs them beside the rest), kept under 20 s: Lookahead beats Random,
+      (`tests/strength_test.ts`, so the runner runs them beside the rest), kept under 20 s: Lookahead beats Random,
       Greedy beats Pushover, Minimax beats Pushover. (Minimax beats Random and Greedy is already there, in
       `tests/bots_test.ts`; move it over.)
 - [x] [#8](https://github.com/seven-leven/mancala/issues/8) Re-run `npm run rate -- --write`, and update the README
@@ -158,8 +158,8 @@ profile` and `npm run bench`; keep a change only if the tournament still prints 
 
 ## Test harness
 
-All done (October 2026): see [docs/TESTING.md](docs/TESTING.md). They were worked before v2.3's new bots and v2.5's
-adaptive allocation, which both lean on them. The strength checks are
+Done (October 2026) but for the page tests: see [docs/TESTING.md](docs/TESTING.md). They were worked before v2.3's new
+bots and v2.5's adaptive allocation, which both lean on them. The strength checks are
 [#7](https://github.com/seven-leven/mancala/issues/7), under v2.2.
 
 - [x] **Random-game invariants for the engine.** Play a few thousand random games from random seeds and openings, and
@@ -170,10 +170,14 @@ adaptive allocation, which both lean on them. The strength checks are
       adaptive allocation and every speed-up after it.
 - [x] **A docs link check.** Every relative link and `#anchor` in the `.md` files resolves, so RATING.md, BOTS.md and
       the README can't drift apart when a heading changes.
-- [x] **Coverage.** `npm run coverage` (Node's test runner with `--experimental-test-coverage`) to see what nothing
-      exercises. Likely gaps: `src/app/game.ts` (undo, hint, which games are rated) and `src/ui/stats.ts`.
-- [x] **A short testing guide**, like RATING.md but smaller: what each test file covers, the 20 s budget, slow tests in
-      their own file so `--parallel` helps, and that strength claims belong to the rating harness.
+- [x] **Coverage, at 100%.** `npm run coverage` runs the tests under c8: a table, a page per file in
+      `coverage/index.html`, and a failure under 100% of lines, branches or functions. CI runs the tests this way, so a
+      PR that leaves new code untested fails. Five guards that can't run are marked `/* c8 ignore */` with the reason.
+- [x] **A testing guide** ([docs/TESTING.md](docs/TESTING.md)): running the tests and the checks to run before a push,
+      what each file covers, the conventions for writing a test, and the coverage rule.
+- [ ] **Tests for the page.** `src/main.ts`, `src/app/game.ts` (undo, hint, which games are rated), `src/ui/` and
+      `src/bots/client.ts` need a DOM, so nothing tests them and coverage doesn't count them. A DOM for the tests (such
+      as happy-dom) would bring them in; start with `game.ts`, which decides which games are rated.
 
 ## Rating statistics
 
@@ -238,7 +242,7 @@ None of these ship in the game; each ends as a note in the README or on the foli
   more playouts than the CPU gives.
 - **Numeric bot IDs (`TT.DD.HH`) and a registry/factory.** Eight to a dozen bots fit in `BOTS` with readable names.
   Revisit past about twenty.
-- **A new directory layout.** The layout in the README stays (the move to Node in v2.4 kept it).
+- **A new directory layout.** The layout in the README stays (the move to Node kept it).
 - **Cycle detection in relays.** Not needed: every lap banks a seed, `engine.ts` stops after 100,000 drops anyway, and
   the tournament stops a game at 1,000 moves.
 
@@ -259,33 +263,3 @@ None of these ship in the game; each ends as a note in the README or on the foli
   the speed-up WASM would have (see `npm run bench`).
 - **Elo, read with care.** 100% pairings don't say how much stronger a bot is, so the tournament reports 90% ranges and
   the README says to read the ratings as a ladder.
-
-## Done in v2.1.1
-
-- [x] A LICENSE: all rights reserved, like the folio.
-- [x] The folio's story page for this project: seven-leven.github.io/folio/code-mancala.html (a Coding entry page, with
-      the bots' Elo ladder and the first-move result).
-
-## Done in v2.1.0
-
-- [x] Rewrite the README (now README.md), and add a CHANGELOG.md written from the git history.
-- [x] Seed spacing scales with the count; fresh full-page screenshots, light and dark; the design sheet re-rendered.
-- [x] deno.lock trimmed (Deno dropped the folio's packages itself).
-- [x] Weaker levels so Expert isn't the only search bot: Lookahead (Tricky), plus Generous, Pushover and First.
-- [x] The first-move edge, in the rules dialog and the README.
-- [x] A stronger Minimax: a transposition table (21 → 25 of 30 benchmark positions solved in 300 ms).
-- [x] Elo for the bots (`npm run rate`, with ranges), and for you, from games saved in the browser.
-- [x] The bots' thinking in the move log; Replay; sound (off by default).
-- [x] Everyday level names for the bots (Hopeless … Expert).
-- [x] Saved games survive: the browser is asked to keep its storage, and Your games can save and load a backup.
-- [x] Repo description, website and topics on GitHub; CI caches Deno modules and esbuild.
-
-## Done in v2.0.1
-
-- [x] Captures bank only the pit opposite; the landing seed stays put.
-
-## The folio (done alongside v2.1.0, in the folio repo)
-
-- [x] Link the Aug 2024 entry to the game and the repo.
-- [x] The folio's mancala animation follows the game's rules.
-- [x] The entry mentions the TypeScript rewrite.

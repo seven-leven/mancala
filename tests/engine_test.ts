@@ -30,7 +30,9 @@ test("you can't play the other side, an empty pit, or after the game", () => {
   const g = newGame(DEFAULT_RULES, P1);
   assert(playTurn(g, 7).invalid);
   assert(playTurn(g, M1).invalid);
-  assert(playTurn(position([0, 1, ...new Array(12).fill(1), 0, 0]), 0).invalid);
+  // Pit 0 is empty.
+  //                        0  1  2  3  4  5  6  7  8  9 10 11 12 13 M1 M2
+  assert(playTurn(position([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0]), 0).invalid);
   assert(playTurn({ ...g, gameOver: true }, 0).invalid);
 });
 
@@ -51,7 +53,7 @@ test("seeds are never created or lost", () => {
 });
 
 test("last seed in your own store: a free turn", () => {
-  //               0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1 M2
+  //                  0  1  2  3  4  5  6  7  8  9 10 11 12 13 M1 M2
   const s = position([2, 0, 0, 0, 0, 0, 1, 3, 3, 3, 3, 3, 3, 3, 0, 0]);
   const r = played(s, 6);
   assert(r.freeTurn);
@@ -61,6 +63,7 @@ test("last seed in your own store: a free turn", () => {
 
 test("sowing skips the opponent's store", () => {
   // Player 2 sows 9 seeds from pit 8: 7, M2, 0..6 — and Player 1's store is never touched.
+  //                  0  1  2  3  4  5  6  7  8  9 10 11 12 13 M1 M2
   const s = position([0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 1, 0, 0], P2);
   const r = played(s, 8);
   assertEquals(r.state.pits[M1], 0);
@@ -70,6 +73,7 @@ test("sowing skips the opponent's store", () => {
 test("last seed in a pit that had seeds: pick them up and keep sowing (relay)", () => {
   // Pit 0's single seed lands in pit 1 (2 seeds), so those 3 are sown on to 2, 3, 4. (Pit 11,
   // opposite pit 4, is empty, so the last seed doesn't capture.)
+  //                  0  1  2  3  4  5  6  7  8  9 10 11 12 13 M1 M2
   const s = position([1, 2, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0]);
   const r = played(s, 0);
   assertEquals(r.relays, 1);
@@ -79,6 +83,7 @@ test("last seed in a pit that had seeds: pick them up and keep sowing (relay)", 
 test("last seed in your own empty pit captures only the pit opposite", () => {
   // Pit 0's seed lands in empty pit 1; pit 8 faces it with 5 seeds. The 5 are banked, and the
   // seed that landed stays in pit 1.
+  //                  0  1  2  3  4  5  6  7  8  9 10 11 12 13 M1 M2
   const s = position([1, 0, 0, 0, 0, 0, 3, 1, 5, 1, 1, 1, 1, 1, 0, 0]);
   const r = played(s, 0);
   assertEquals(r.captured, 5);
@@ -89,6 +94,7 @@ test("last seed in your own empty pit captures only the pit opposite", () => {
 
 test("capture rule: own side by default, either side when the rules say so", () => {
   // Player 2 sows pit 8's three seeds into pit 7, their store, and empty pit 0 on Player 1's side.
+  //            0  1  2  3  4  5  6  7  8  9 10 11 12 13 M1 M2
   const pits = [0, 1, 1, 1, 1, 1, 1, 9, 3, 1, 1, 1, 1, 1, 0, 0];
   const own = played(position(pits, P2), 8);
   assertEquals(own.captured, 0);
@@ -98,6 +104,7 @@ test("capture rule: own side by default, either side when the rules say so", () 
 });
 
 test("an empty side ends the game and each side banks its own seeds", () => {
+  //                  0  1  2  3  4  5  6  7  8  9 10 11 12 13  M1  M2
   const s = position([0, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 30, 20]);
   const r = played(s, 6);
   assert(r.gameOver);
@@ -108,6 +115,7 @@ test("an empty side ends the game and each side banks its own seeds", () => {
 
 test("a clinched majority ends the game early, unless the rules turn it off", () => {
   // Player 1 has 49 banked; one more seed makes 50 of 98, a lead that can't be caught.
+  //            0  1  2  3  4  5  6  7  8  9 10 11 12 13  M1 M2
   const pits = [1, 0, 0, 0, 0, 0, 1, 7, 7, 7, 7, 7, 1, 2, 49, 0];
   assert(played(position(pits), 6).gameOver);
   assert(!played(position(pits, P1, { clinch: false }), 6).gameOver);
