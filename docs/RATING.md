@@ -7,18 +7,18 @@ Two harnesses, two words. The **test harness** (`npm test`, `tests/`) checks the
 The **rating harness** (`npm run rate`, `tools/tournament/`) plays the bots against each other to set their Elo, and
 runs by hand. A test run, a rating run.
 
-![A rating session in five steps: decide, place, rate, read, publish](rating-session.svg)
+![A rating session in five steps: decide, place, rate, read, publish](images/rating-session.svg)
 
 ## Commands
 
-| Command                                                           | What it does                                                               |
-| ----------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `npm run rate`                                                    | Every bot in `BOTS`, 40 games a pairing. Prints the ratings, doesn't save  |
-| `npm run --silent rate -- 240 --write \| tee data/ratings-240.md` | The full rating for the menus, kept as a table in `data/` (git-ignored)    |
-| `npm run rate -- 40 --bots random,greedy,newBot`                  | A placement run: only these bots. Random is always needed: it's the anchor |
-| `npm run rate -- 240 --write --resume`                            | Carries on after Ctrl+C or `--time`: repeat the run's own games and flags  |
-| `npm run ladder`                                                  | Redraws [docs/ladder.svg](ladder.svg) from `src/bots/ratings.ts`           |
-| `npm run profile`                                                 | Where a short rating run spends its time (`data/profile/`)                 |
+| Command                                                           | What it does                                                                   |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `npm run rate`                                                    | Every bot in `BOTS`, 40 games a pairing. Prints the ratings, doesn't save      |
+| `npm run --silent rate -- 240 --write \| tee data/ratings-240.md` | The full rating for the menus, kept as a table in `data/` (git-ignored)        |
+| `npm run rate -- 40 --bots random,greedy,newBot`                  | A placement run: only these bots. Random is always needed: it's the anchor     |
+| `npm run rate -- 240 --write --resume`                            | Carries on after Ctrl+C or `--time`: repeat the run's own games and flags      |
+| `npm run ladder`                                                  | Redraws [docs/images/ladder.svg](images/ladder.svg) from `src/bots/ratings.ts` |
+| `npm run profile`                                                 | Where a short rating run spends its time (`data/profile/`)                     |
 
 Flags:
 
@@ -119,7 +119,7 @@ replacement, a matched pair at a time. The range runs from the 5th to the 95th p
 
 ## Reading the results
 
-![Three ways two ratings can sit, and what a game is worth by the Elo gap](rating-reading.svg)
+![Three ways two ratings can sit, and what a game is worth by the Elo gap](images/rating-reading.svg)
 
 The run prints a table (Elo, 90% range, the share of all its games each bot won), then a head-to-head table: each bot's
 win rate against each other bot.
@@ -155,7 +155,7 @@ If it lands on top of another bot instead, see [BOTS.md](BOTS.md#dormant-bots).
    900) follow the ratings by themselves.
 3. Update the README's bot table and its line on which pairs are too close to call.
 4. Add a CHANGELOG line: what changed, the games a pairing, the widest range.
-5. `npm test`, then commit `src/bots/ratings.ts`, `docs/ladder.svg`, the README and the CHANGELOG together.
+5. `npm test`, then commit `src/bots/ratings.ts`, `docs/images/ladder.svg`, the README and the CHANGELOG together.
 
 ## Your rating
 

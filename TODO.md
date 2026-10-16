@@ -189,15 +189,15 @@ Small additions to the rating harness's output, each an hour or so. Document eac
 ## Interface
 
 - [x] **One icon set, written into DESIGN.md.** Done: `public/svg/icons.svg` (with the favicon in `public/svg/`),
-      `src/ui/icons.ts`, DESIGN.md's Icons section; the CSS chevrons are icons now. The sheet is docs/icons.png (`npm
-      run icon-sheet`), shown in DESIGN.md and on the design guide page. Was: Today the site mixes three styles: outline
-      icons with a 2 px stroke on the masthead buttons (stats, settings, how to play), filled icons on the close button
-      and the four rule cards in How to play, and CSS-drawn chevrons with a 1.5 px line on the opponent picker and the
-      selects. Pick one style (outline, 24 px grid, one stroke width, round caps and joins, `currentColor`), redraw the
-      odd ones out, and keep them in one place (a sprite or `src/ui/icons.ts`) instead of pasted into `index.html`. Then
-      add an Icons section to DESIGN.md: the grid and stroke, sizes (16 px in buttons, larger in cards), colour, the
-      `aria-label` rule for icon-only buttons, and a sheet of every icon with its name and use, also shown on the design
-      guide page.
+      `src/ui/icons.ts`, DESIGN.md's Icons section; the CSS chevrons are icons now. The sheet is docs/images/icons.png
+      (`npm run icon-sheet`), shown in DESIGN.md and on the design guide page. Was: Today the site mixes three styles:
+      outline icons with a 2 px stroke on the masthead buttons (stats, settings, how to play), filled icons on the close
+      button and the four rule cards in How to play, and CSS-drawn chevrons with a 1.5 px line on the opponent picker
+      and the selects. Pick one style (outline, 24 px grid, one stroke width, round caps and joins, `currentColor`),
+      redraw the odd ones out, and keep them in one place (a sprite or `src/ui/icons.ts`) instead of pasted into
+      `index.html`. Then add an Icons section to DESIGN.md: the grid and stroke, sizes (16 px in buttons, larger in
+      cards), colour, the `aria-label` rule for icon-only buttons, and a sheet of every icon with its name and use, also
+      shown on the design guide page.
 - [x] **Site icons beyond the SVG favicon.** Done: `public/png/favicon-32.png` and `apple-touch-icon.png`, rendered by
       `npm run icon-sheet`, in DESIGN.md's Icons section. Was: A PNG fallback and an Apple touch icon (180 px), in the
       same mark, so the site looks right as a bookmark and on a phone's home screen. Add them to DESIGN.md's Icons
@@ -210,10 +210,10 @@ repo. It still describes v2.1: eight bots, 40 games a pairing, the first Elo lad
 
 - [ ] **Bring it up to date.** Status and version; the number of bots, Hopeless to Expert; "every bot played every other
       240 times, in matched pairs" and today's ladder with its ranges (from `src/bots/ratings.ts`, or the
-      [ladder chart](docs/ladder.svg)). Expert and Hard no longer overlap (Minimax won 57% of 240). Fix "a bot that
-      always plays its leftmost pit beats one that plays at random three times in four": with matched pairs First and
-      Random came out level (999 against 1000), and First is now dormant. Mention the new opponent picker and the faster
-      rating harness, in a sentence each.
+      [ladder chart](docs/images/ladder.svg)). Expert and Hard no longer overlap (Minimax won 57% of 240). Fix "a bot
+      that always plays its leftmost pit beats one that plays at random three times in four": with matched pairs First
+      and Random came out level (999 against 1000), and First is now dormant. Mention the new opponent picker and the
+      faster rating harness, in a sentence each.
 - [ ] **A short section on the bots.** One line each, in the folio's voice, grouped as the picker groups them (Strong,
       Club, Learner, Starter): what each one does and roughly how strong it is, from the `blurb` in `src/bots/bots.ts`.
       End with the dormant ones (Grandmaster, First) and why they're resting.

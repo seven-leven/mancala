@@ -5,7 +5,7 @@ a friend on the same screen, or one of eighteen bots from Hopeless to Expert, an
 
 **Play: [seven-leven.github.io/mancala](https://seven-leven.github.io/mancala/)**
 
-![The game in its paper theme, a few moves in](docs/screenshot-light.png)
+![The game in its paper theme, a few moves in](docs/images/screenshot-light.png)
 
 I started this in December 2022 to build a bot that could beat my grandmother at ohvalhugondi. The command-line game
 came first; the bot (the DFS one below) came in August 2024; the web version in 2025; and this TypeScript rewrite in
@@ -36,7 +36,7 @@ why Settings lets you choose who goes first.
 
 ## The bots
 
-![The bots' Elo ladder, each with its 90% range](docs/ladder.svg)
+![The bots' Elo ladder, each with its 90% range](docs/images/ladder.svg)
 
 | Level      | Bot                |  Elo | 90% range | How it plays                                                               |
 | ---------- | ------------------ | ---: | :-------: | -------------------------------------------------------------------------- |
@@ -93,9 +93,9 @@ move; the animation only replays that log, so what you see is what the engine di
 search never freezes the page.
 
 **The design** follows [DESIGN.md](docs/DESIGN.md), which borrows the folio's paper, ink, type and pills so the two read
-as one body of work. Here it is on one sheet ([docs/design-guide.png](docs/design-guide.png)):
+as one body of work. Here it is on one sheet ([docs/images/design-guide.png](docs/images/design-guide.png)):
 
-![The design guide as one sheet](docs/design-guide.png)
+![The design guide as one sheet](docs/images/design-guide.png)
 
 ### Working on it
 
@@ -106,7 +106,7 @@ npm test                       # the test harness: rules, bots and ratings, file
 npm run check                  # type check (also: npm run lint, npm run fmt)
 npm run rate -- 240 --write    # the rating harness: rate the bots and update the menus
 npm run bench                  # how deep and fast Minimax searches
-npm run ladder                 # redraw docs/ladder.svg from the ratings
+npm run ladder                 # redraw docs/images/ladder.svg from the ratings
 npm run profile                # where a rating run spends its time (data/profile/)
 npm run release                # from dev: check everything, then ship to main
 ```
@@ -120,6 +120,9 @@ passed, never a direct push or a force-push. `npm run release` opens that pull r
 one), waits for its checks, merges it, and waits for the deploy.
 
 To add a bot, follow [BOTS.md](docs/BOTS.md) to write it and [RATING.md](docs/RATING.md) to place and rate it.
+
+The guides are in [docs/](docs/README.md), grouped by what you're about to do: change the look, add or rate a bot, or
+change the code.
 
 ## Changes
 

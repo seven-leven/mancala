@@ -164,7 +164,7 @@ pasted into the page: HTML writes `<svg class="icon" aria-hidden="true"><use hre
 - **Adding one:** draw it to these rules, add a `<symbol>` to the sprite and its name to `IconName` in
   `src/ui/icons.ts`, add it to the table below, and run `npm run icon-sheet`.
 
-![Every icon at 32, 20 and 16px, light and dark](icons.png)
+![Every icon at 32, 20 and 16px, light and dark](images/icons.png)
 
 `npm run icon-sheet` redraws that sheet from the sprite.
 

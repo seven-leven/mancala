@@ -1,5 +1,5 @@
 /**
- * Renders docs/design-guide.html to docs/design-guide.png with headless Chrome.
+ * Renders docs/design-guide.html to docs/images/design-guide.png with headless Chrome.
  * Run after changing docs/DESIGN.md's tokens or public/style.css:  npm run design-sheet
  *
  * Chrome is found at CHROME_PATH or the usual install locations.
@@ -24,7 +24,7 @@ const chrome = process.env.CHROME_PATH ?? CANDIDATES.find((p) => {
 if (!chrome) throw new Error("Chrome not found. Set CHROME_PATH.");
 
 const page = new URL("../docs/design-guide.html", import.meta.url);
-const out = new URL("../docs/design-guide.png", import.meta.url);
+const out = new URL("../docs/images/design-guide.png", import.meta.url);
 
 const browser = await puppeteer.launch({ executablePath: chrome, headless: true, args: ["--hide-scrollbars"] });
 try {

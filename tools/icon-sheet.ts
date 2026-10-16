@@ -1,5 +1,5 @@
 /**
- * Renders the icon set (public/svg/icons.svg) to docs/icons.png with headless Chrome: every icon,
+ * Renders the icon set (public/svg/icons.svg) to docs/images/icons.png with headless Chrome: every icon,
  * named, at its sizes, in the light and the dark theme. docs/DESIGN.md and the design guide show it.
  * Also renders the site mark (public/svg/favicon.svg) to public/png/: a 32px favicon and the
  * 180px Apple touch icon.
@@ -30,7 +30,7 @@ if (!chrome) throw new Error("Chrome not found. Set CHROME_PATH.");
 
 const sprite = await readFile(new URL("../public/svg/icons.svg", import.meta.url), "utf8");
 const names = [...sprite.matchAll(/<symbol id="([^"]+)"/g)].map((m) => m[1]);
-const out = new URL("../docs/icons.png", import.meta.url);
+const out = new URL("../docs/images/icons.png", import.meta.url);
 
 // The design guide's tokens (docs/DESIGN.md): paper and ink, the rule, the muted text.
 const themes = [
@@ -87,7 +87,7 @@ try {
   await tab.setViewport({ width: 960, height: 600, deviceScaleFactor: 2 });
   await tab.setContent(html, { waitUntil: "load" });
   await tab.screenshot({ path: decodeURIComponent(out.pathname.replace(/^\/([A-Z]:)/, "$1")), fullPage: true });
-  console.log(`Wrote docs/icons.png: ${names.length} icons, light and dark`);
+  console.log(`Wrote docs/images/icons.png: ${names.length} icons, light and dark`);
 
   // The site's mark as the PNGs browsers and phones want: a 32px favicon, and a 180px Apple touch
   // icon on paper (iOS shows transparency as black).

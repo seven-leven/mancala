@@ -40,7 +40,8 @@ release has a section here; work since the last one sits under _Unreleased_.
 - **A new visitor plays Random** (Easy) to start with, not Lookahead.
 - **One icon set.** Every icon is an outline on a 24px grid with a 2px line, from one sprite (`public/svg/icons.svg`,
   beside the favicon in `public/svg/`); the filled rule-card icons and the CSS-drawn chevrons were redrawn to match.
-  DESIGN.md has an Icons section, and `deno task icon-sheet` draws them all to [docs/icons.png](docs/icons.png).
+  DESIGN.md has an Icons section, and `deno task icon-sheet` draws them all to
+  [docs/images/icons.png](docs/images/icons.png).
 
 ## v2.2.3 · 2026-10-15
 
@@ -89,8 +90,8 @@ release has a section here; work since the last one sits under _Unreleased_.
   two-move search, they're worth about 75 Elo over the store lead alone (Planner).
 - **A new How to play popup**: the turn in three steps, the three rules as cards, a word of strategy and how to win,
   with the house rules kept live.
-- **The ladder as a chart**: `deno task ladder` draws [docs/ladder.svg](docs/ladder.svg) from the ratings, marking
-  neighbours too close to call; the README shows it.
+- **The ladder as a chart**: `deno task ladder` draws [docs/images/ladder.svg](docs/images/ladder.svg) from the ratings,
+  marking neighbours too close to call; the README shows it.
 - `deno task profile` shows where a tournament round spends its time; TODO.md's v2.5 lists what to speed up.
 - **Fairer ratings.** The tournament plays matched pairs (each opening once from each seat), can deal symmetric random
   boards (`--openings symmetric`), stops on a time budget (`--time 10m`), saves after every round and resumes
