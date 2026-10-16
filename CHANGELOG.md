@@ -1,6 +1,6 @@
 # Changelog
 
-Versions are `MAJOR.MINOR.PATCH`, set by hand in `deno.json`, and the live game shows the version in its footer. Each
+Versions are `MAJOR.MINOR.PATCH`, set by hand in `package.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
 ## Unreleased
@@ -10,6 +10,14 @@ release has a section here; work since the last one sits under _Unreleased_.
   list. Tests run on Node's test runner, the rating harness on `worker_threads`, and esbuild comes from npm (a build
   takes a tenth of a second). Formatting is dprint (what `deno fmt` was built on) and linting ESLint. The rating harness
   plays exactly the same games as before, and the game in the browser hasn't changed.
+- **Tests at 100% coverage**, of lines, branches and functions in everything the tests load (the page itself needs a
+  browser and is checked by hand). `npm run coverage` draws a page per file in `coverage/index.html`, and CI runs the
+  tests this way, so a change that leaves new code untested fails its check. The new tests cover storage that refuses to
+  write, saved-game edge cases, the dormant bots, the bots' notes, notation edge cases and the tournament's pool.
+- **A testing guide**: [docs/TESTING.md](docs/TESTING.md) now says how to run the tests, what to run before a push, and
+  how to write a test (names, assertions, positions, seeds), beside what each file covers.
+- **The docs have an index**, [docs/README.md](docs/README.md), grouped by what you're about to do, and their images
+  moved to `docs/images/`.
 
 ## v2.3.0 · 2026-10-15
 
