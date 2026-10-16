@@ -13,22 +13,22 @@ in about 5 seconds; CI runs the same on every push.
 
 ## The files
 
-| File                 | Checks                                                                                                                                                                              |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `engine_test.ts`     | The rules, on hand-made positions: sowing, relays, free turns, captures, the end, house rules                                                                                       |
-| `invariants_test.ts` | The rules over 3000 random games: no seed created or lost, the input never changed, the event log replays, every game ends                                                          |
-| `bots_test.ts`       | Each bot's character (Greedy takes the capture, Turtle won't leave a pit open…), and that every bot in `BOTS` plays legal moves                                                     |
-| `strength_test.ts`   | The wide gaps that must always hold (Lookahead beats Random, Minimax beats Greedy…), in matched pairs                                                                               |
-| `harness_test.ts`    | The rating harness repeats: 1 worker, 4 workers and any order give the same games, and a saved snapshot                                                                             |
-| `tournament_test.ts` | Openings, symmetric boards and the Elo fit                                                                                                                                          |
-| `notation_test.ts`   | MGN: a game survives formatting and parsing, and bad marks or moves are refused                                                                                                     |
-| `history_test.ts`    | Your rating from saved games, and saved games as MGN                                                                                                                                |
-| `storage_test.ts`    | What the browser keeps: saved games (rated or not and why, backup export and import, the 500-game cap, corrupt storage) and settings (defaults, bad values falling back one by one) |
-| `docs_test.ts`       | Every relative link and `#anchor` in the Markdown docs resolves                                                                                                                     |
+| File                 | Checks                                                                                                                                                                                                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `engine_test.ts`     | The rules, on hand-made positions: sowing, relays, free turns, captures, the end, house rules, and a random first player when none is given                                                                                                                         |
+| `invariants_test.ts` | The rules over 3000 random games: no seed created or lost, the input never changed, the event log replays, every game ends                                                                                                                                          |
+| `bots_test.ts`       | Each bot's character (Greedy takes the capture, Turtle won't leave a pit open…), that every bot in `BOTS` plays legal moves, the search bots' notes for the move log (a forced win or loss, how far they saw), and `createBot` for dormant bots and with no context |
+| `strength_test.ts`   | The wide gaps that must always hold (Lookahead beats Random, Minimax beats Greedy…), in matched pairs                                                                                                                                                               |
+| `harness_test.ts`    | The rating harness repeats: 1 worker, 4 workers and any order give the same games, and a saved snapshot; the pool reports each pairing and stops when told                                                                                                          |
+| `tournament_test.ts` | Openings, symmetric boards, the Elo fit and its model check, and a game that stops when a bot has no move and refuses an illegal one                                                                                                                                |
+| `notation_test.ts`   | MGN: a game survives formatting and parsing, house rules and start boards are kept, and bad marks, boards or moves are refused                                                                                                                                      |
+| `history_test.ts`    | Your rating from saved games, which games count in your record (from either seat; not two bots, not a bot that no longer exists), seat names, and saved games as MGN                                                                                                |
+| `storage_test.ts`    | What the browser keeps: saved games (rated or not and why, backup export and import, the 500-game cap, corrupt storage, storage that refuses to write) and settings (defaults, bad values falling back one by one)                                                  |
+| `docs_test.ts`       | Every relative link and `#anchor` in the Markdown docs resolves                                                                                                                                                                                                     |
 
 ## Rules of thumb
 
-- **20 seconds.** The whole suite stays well under it. A slow test goes in its own file, so `--parallel` runs it beside
+- **20 seconds.** The whole suite stays well under it. A slow test goes in its own file, so the runner runs it beside
   the rest (that's why the strength checks have one).
 - **Seeded.** Anything random takes a seeded generator (`seeded()` in `tools/match.ts`), so a failure repeats.
 - **Strength is the harness's job.** Tests check only gaps so wide they can't fail by chance. Who is 50 Elo above whom
