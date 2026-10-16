@@ -3,18 +3,21 @@
  * heading that exists (as GitHub makes anchors from headings). So a renamed heading or a moved
  * file can't leave a dead link behind.
  */
-import { assertEquals } from "@std/assert";
-import { dirname, fromFileUrl, join, relative } from "@std/path";
+import { test } from "node:test";
+import { assertEquals } from "./assert.ts";
+import { readdir, readFile, stat } from "node:fs/promises";
+import { dirname, join, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = fromFileUrl(new URL("..", import.meta.url));
+const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const SKIP = new Set([".git", ".cache", "dist", "data", "node_modules", "coverage"]);
 
 async function markdownFiles(dir: string): Promise<string[]> {
   const out: string[] = [];
-  for await (const e of Deno.readDir(dir)) {
+  for (const e of await readdir(dir, { withFileTypes: true })) {
     if (SKIP.has(e.name) || e.name.startsWith(".")) continue;
     const path = join(dir, e.name);
-    if (e.isDirectory) out.push(...await markdownFiles(path));
+    if (e.isDirectory()) out.push(...await markdownFiles(path));
     else if (e.name.endsWith(".md")) out.push(path);
   }
   return out;
@@ -35,9 +38,9 @@ function anchors(markdown: string): Set<string> {
   return out;
 }
 
-Deno.test("every relative link and #anchor in the docs resolves", async () => {
+test("every relative link and #anchor in the docs resolves", async () => {
   const files = await markdownFiles(ROOT);
-  const texts = new Map(await Promise.all(files.map(async (f) => [f, await Deno.readTextFile(f)] as const)));
+  const texts = new Map(await Promise.all(files.map(async (f) => [f, await readFile(f, "utf8")] as const)));
   const broken: string[] = [];
   for (const [file, text] of texts) {
     const body = text.replace(/```[\s\S]*?```/g, "").replace(/`[^`\n]*`/g, "");
@@ -47,13 +50,13 @@ Deno.test("every relative link and #anchor in the docs resolves", async () => {
       const resolved = path ? join(dirname(file), decodeURIComponent(path)) : file;
       const where = `${relative(ROOT, file)}: ${target}`;
       try {
-        await Deno.stat(resolved);
+        await stat(resolved);
       } catch {
         broken.push(`${where} (no such file)`);
         continue;
       }
       if (hash && resolved.endsWith(".md")) {
-        const heads = anchors(texts.get(resolved) ?? await Deno.readTextFile(resolved));
+        const heads = anchors(texts.get(resolved) ?? await readFile(resolved, "utf8"));
         if (!heads.has(hash.toLowerCase())) broken.push(`${where} (no heading #${hash})`);
       }
     }

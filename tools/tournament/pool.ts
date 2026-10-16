@@ -3,6 +3,7 @@
  * its own slot in the results, so the results don't depend on the pool's size or the order the
  * pairings are handed out in (tests/harness_test.ts checks that).
  */
+import { Worker } from "node:worker_threads";
 import type { PairJob, PairResult } from "./play.ts";
 
 export interface RunHooks {
@@ -17,7 +18,7 @@ export class Pool {
   constructor(size: number) {
     this.workers = Array.from(
       { length: Math.max(1, Math.floor(size)) },
-      () => new Worker(new URL("./worker.ts", import.meta.url), { type: "module" }),
+      () => new Worker(new URL("./worker.ts", import.meta.url)),
     );
   }
 
@@ -38,20 +39,23 @@ export class Pool {
         const k = order[next++];
         const sent = performance.now();
         busy++;
-        w.onmessage = (e: MessageEvent<PairResult>) => {
-          out[k] = e.data;
+        w.once("message", (result: PairResult) => {
+          out[k] = result;
           busy--;
-          hooks.done?.(k, performance.now() - sent, e.data);
+          hooks.done?.(k, performance.now() - sent, result);
           feed(w);
-        };
-        w.onerror = (e) => reject(e.error ?? new Error(e.message));
+        });
         w.postMessage(jobs[k]);
       };
-      this.workers.forEach(feed);
+      for (const w of this.workers) {
+        w.removeAllListeners("error");
+        w.once("error", reject);
+        feed(w);
+      }
     });
   }
 
   close(): void {
-    this.workers.forEach((w) => w.terminate());
+    for (const w of this.workers) void w.terminate();
   }
 }

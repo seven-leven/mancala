@@ -43,8 +43,8 @@ opening counted for whoever had it. It now plays matched pairs.
       (`tests/strength_test.ts`, so `--parallel` runs them beside the rest), kept under 20 s: Lookahead beats Random,
       Greedy beats Pushover, Minimax beats Pushover. (Minimax beats Random and Greedy is already there, in
       `tests/bots_test.ts`; move it over.)
-- [x] [#8](https://github.com/seven-leven/mancala/issues/8) Re-run `deno task rate --write`, and update the README table
-      and its "how the ratings are made" paragraph. Rated with all twelve bots (see v2.3).
+- [x] [#8](https://github.com/seven-leven/mancala/issues/8) Re-run `npm run rate -- --write`, and update the README
+      table and its "how the ratings are made" paragraph. Rated with all twelve bots (see v2.3).
 
 Later: give close pairings more games than lopsided ones. Now planned as adaptive allocation, in v2.5.
 
@@ -72,7 +72,7 @@ in `src/bots/players/`.
       and every rating's 90% range is 25–35% narrower.
 - [x] [#12](https://github.com/seven-leven/mancala/issues/12) README table, CHANGELOG.
 - [x] **Game notation (MGN).** [NOTATION.md](docs/NOTATION.md): games as text, checked against the engine both ways.
-      `deno task rate --record` saves every game, and `deno task positions` turns them into training data for #15.
+      `npm run rate -- --record` saves every game, and `npm run positions` turns them into training data for #15.
 - [x] **Six more bots** (eighteen in all): Hoarder, Striker, Spoiler, Planner, Shrewd and Grandmaster, each placed in a
       gap with a quick rating script before the full run. Grandmaster rated level with Minimax for five times the time,
       so it's dormant (see v2.5).
@@ -107,15 +107,15 @@ in `src/bots/players/`.
       first.
 - [ ] [#14](https://github.com/seven-leven/mancala/issues/14) Last in v2.4 (the profile: building keys is 1.5% of the
       time). Faster table keys: the transposition table keys positions by a 17-character string; a number (Zobrist
-      hashing) should be cheaper. Measure with `deno task bench` before keeping it.
+      hashing) should be cheaper. Measure with `npm run bench` before keeping it.
 
 ## v2.5 · Faster
 
-What a tournament round spends its time on, from `deno task profile` (one round of 18 bots, 306 games) and per-bot
-timing, October 2026: Grandmaster 78% of the time, Minimax 14%, Pushover 7%, the other fifteen bots under 1% together.
-Inside the searches: the alpha-beta loop 31%, sowing and playing turns about 29%, the garbage collector 9%, fitting the
-ratings 18% of that short run (a fixed ~2 s). Ordered by what each should save. Measure before and after each one with
-`deno task profile` and `deno task bench`; keep a change only if the tournament still prints the same results.
+What a tournament round spends its time on, from `npm run profile` (one round of 18 bots, 306 games) and per-bot timing,
+October 2026: Grandmaster 78% of the time, Minimax 14%, Pushover 7%, the other fifteen bots under 1% together. Inside
+the searches: the alpha-beta loop 31%, sowing and playing turns about 29%, the garbage collector 9%, fitting the ratings
+18% of that short run (a fixed ~2 s). Ordered by what each should save. Measure before and after each one with `npm run
+profile` and `npm run bench`; keep a change only if the tournament still prints the same results.
 
 - [x] **Play pairings in parallel.** Each pairing's games are independent: hand them to Web Workers (one per CPU core)
       and merge the results by round, so checkpoints and seeds stay exactly as they are. The biggest win on a long run:
@@ -131,7 +131,7 @@ ratings 18% of that short run (a fixed ~2 s). Ordered by what each should save. 
 - [x] **Order moves without sorting objects.** `children()` builds an object per move, plays each move to score it, then
       sorts: keep the played positions, and use a small insertion sort on parallel arrays instead.
 - [x] **Re-rated after the speed-ups**, with 240 games a pairing (4× as many) in 5 minutes: every 90% range within ±25
-      (was ±40), three neighbouring pairs too close to call (was five). `deno task rate 4`: 37 s → 10 s (16 cores);
+      (was ±40), three neighbouring pairs too close to call (was five). `npm run rate -- 4`: 37 s → 10 s (16 cores);
       bench 1220k → 1769k positions/s; rating fit 55 s → 0.7 s. Next: Pushover below.
 - [x] **A truthful ETA.** It counts rounds, not games: the median of the last five round times, plus what's left of this
       round weighted by each pairing's last time. Pairings also run slowest first, so a round no longer ends with one
@@ -170,8 +170,8 @@ adaptive allocation, which both lean on them. The strength checks are
       adaptive allocation and every speed-up after it.
 - [x] **A docs link check.** Every relative link and `#anchor` in the `.md` files resolves, so RATING.md, BOTS.md and
       the README can't drift apart when a heading changes.
-- [x] **Coverage.** `deno task coverage` (`deno test --coverage`, then `deno coverage`) to see what nothing exercises.
-      Likely gaps: `src/app/game.ts` (undo, hint, which games are rated) and `src/ui/stats.ts`.
+- [x] **Coverage.** `npm run coverage` (Node's test runner with `--experimental-test-coverage`) to see what nothing
+      exercises. Likely gaps: `src/app/game.ts` (undo, hint, which games are rated) and `src/ui/stats.ts`.
 - [x] **A short testing guide**, like RATING.md but smaller: what each test file covers, the 20 s budget, slow tests in
       their own file so `--parallel` helps, and that strength claims belong to the rating harness.
 
@@ -189,8 +189,8 @@ Small additions to the rating harness's output, each an hour or so. Document eac
 ## Interface
 
 - [x] **One icon set, written into DESIGN.md.** Done: `public/svg/icons.svg` (with the favicon in `public/svg/`),
-      `src/ui/icons.ts`, DESIGN.md's Icons section; the CSS chevrons are icons now. The sheet is docs/icons.png
-      (`deno task icon-sheet`), shown in DESIGN.md and on the design guide page. Was: Today the site mixes three styles:
+      `src/ui/icons.ts`, DESIGN.md's Icons section; the CSS chevrons are icons now. The sheet is docs/images/icons.png
+      (`npm run icon-sheet`), shown in DESIGN.md and on the design guide page. Was: Today the site mixes three styles:
       outline icons with a 2 px stroke on the masthead buttons (stats, settings, how to play), filled icons on the close
       button and the four rule cards in How to play, and CSS-drawn chevrons with a 1.5 px line on the opponent picker
       and the selects. Pick one style (outline, 24 px grid, one stroke width, round caps and joins, `currentColor`),
@@ -199,7 +199,7 @@ Small additions to the rating harness's output, each an hour or so. Document eac
       cards), colour, the `aria-label` rule for icon-only buttons, and a sheet of every icon with its name and use, also
       shown on the design guide page.
 - [x] **Site icons beyond the SVG favicon.** Done: `public/png/favicon-32.png` and `apple-touch-icon.png`, rendered by
-      `deno task icon-sheet`, in DESIGN.md's Icons section. Was: A PNG fallback and an Apple touch icon (180 px), in the
+      `npm run icon-sheet`, in DESIGN.md's Icons section. Was: A PNG fallback and an Apple touch icon (180 px), in the
       same mark, so the site looks right as a bookmark and on a phone's home screen. Add them to DESIGN.md's Icons
       section.
 
@@ -210,10 +210,10 @@ repo. It still describes v2.1: eight bots, 40 games a pairing, the first Elo lad
 
 - [ ] **Bring it up to date.** Status and version; the number of bots, Hopeless to Expert; "every bot played every other
       240 times, in matched pairs" and today's ladder with its ranges (from `src/bots/ratings.ts`, or the
-      [ladder chart](docs/ladder.svg)). Expert and Hard no longer overlap (Minimax won 57% of 240). Fix "a bot that
-      always plays its leftmost pit beats one that plays at random three times in four": with matched pairs First and
-      Random came out level (999 against 1000), and First is now dormant. Mention the new opponent picker and the faster
-      rating harness, in a sentence each.
+      [ladder chart](docs/images/ladder.svg)). Expert and Hard no longer overlap (Minimax won 57% of 240). Fix "a bot
+      that always plays its leftmost pit beats one that plays at random three times in four": with matched pairs First
+      and Random came out level (999 against 1000), and First is now dormant. Mention the new opponent picker and the
+      faster rating harness, in a sentence each.
 - [ ] **A short section on the bots.** One line each, in the folio's voice, grouped as the picker groups them (Strong,
       Club, Learner, Starter): what each one does and roughly how strong it is, from the `blurb` in `src/bots/bots.ts`.
       End with the dormant ones (Grandmaster, First) and why they're resting.
@@ -232,13 +232,13 @@ None of these ship in the game; each ends as a note in the README or on the foli
 
 ## Parked
 
-- **A Rust core compiled to WebAssembly.** Revisit only for the endgame table above, or if `deno task bench` shows the
+- **A Rust core compiled to WebAssembly.** Revisit only for the endgame table above, or if `npm run bench` shows the
   engine itself (not the search) is the limit.
 - **WebGPU.** Fast for many random or MCTS playouts at once, poor for alpha-beta. Revisit only if the MCTS bot needs far
   more playouts than the CPU gives.
 - **Numeric bot IDs (`TT.DD.HH`) and a registry/factory.** Eight to a dozen bots fit in `BOTS` with readable names.
   Revisit past about twenty.
-- **A new directory layout and npm scripts.** The project is Deno with `deno task`; the layout in the README stays.
+- **A new directory layout.** The layout in the README stays (the move to Node in v2.4 kept it).
 - **Cycle detection in relays.** Not needed: every lap banks a seed, `engine.ts` stops after 100,000 drops anyway, and
   the tournament stops a game at 1,000 moves.
 
@@ -251,11 +251,12 @@ None of these ship in the game; each ends as a note in the README or on the foli
 ## Decided
 
 - **Keep esbuild; not Rollup or Rolldown.** Rollup needs a plugin even to read TypeScript. Rolldown is fast and handles
-  TypeScript itself, but ships as native npm binaries, while esbuild runs here as WebAssembly with no npm at all. For a
-  21 kB app with two entry points that builds in half a second, neither would change anything you can see. Worth
-  revisiting only if the game moves to Vite, which now uses Rolldown.
+  TypeScript itself, but for a 40 kB app with two entry points that esbuild builds in a tenth of a second, neither would
+  change anything you can see. Worth revisiting only if the game moves to Vite, which now uses Rolldown.
+- **Node, not Deno** (October 2026). Node 24 runs the TypeScript directly by stripping the types, so the move kept every
+  tool and test as TypeScript with no compile step. The rating harness plays exactly the same games.
 - **No WebAssembly engine.** Minimax already solves most positions in a fraction of a second; a transposition table gave
-  the speed-up WASM would have (see `deno task bench`).
+  the speed-up WASM would have (see `npm run bench`).
 - **Elo, read with care.** 100% pairings don't say how much stronger a bot is, so the tournament reports 90% ranges and
   the README says to read the ratings as a ladder.
 
@@ -273,7 +274,7 @@ None of these ship in the game; each ends as a note in the README or on the foli
 - [x] Weaker levels so Expert isn't the only search bot: Lookahead (Tricky), plus Generous, Pushover and First.
 - [x] The first-move edge, in the rules dialog and the README.
 - [x] A stronger Minimax: a transposition table (21 → 25 of 30 benchmark positions solved in 300 ms).
-- [x] Elo for the bots (`deno task rate`, with ranges), and for you, from games saved in the browser.
+- [x] Elo for the bots (`npm run rate`, with ranges), and for you, from games saved in the browser.
 - [x] The bots' thinking in the move log; Replay; sound (off by default).
 - [x] Everyday level names for the bots (Hopeless … Expert).
 - [x] Saved games survive: the browser is asked to keep its storage, and Your games can save and load a backup.

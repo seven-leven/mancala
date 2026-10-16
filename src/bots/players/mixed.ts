@@ -9,7 +9,13 @@ import type { Bot, Rng } from "../contracts.ts";
  * `main`), so q can place it exactly where the ladder needs a bot.
  */
 export class MixedBot implements Bot {
-  constructor(private main: Bot, private q: number, private rng: Rng = Math.random, private other?: Bot) {}
+  private main: Bot;
+  private q: number;
+  private rng: Rng;
+  private other?: Bot;
+  constructor(main: Bot, q: number, rng: Rng = Math.random, other?: Bot) {
+    [this.main, this.q, this.rng, this.other] = [main, q, rng, other];
+  }
   choose(state: GameState): number | null {
     const moves = validMoves(state);
     if (!moves.length) return null;

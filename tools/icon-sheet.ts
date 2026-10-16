@@ -1,13 +1,15 @@
 /**
- * Renders the icon set (public/svg/icons.svg) to docs/icons.png with headless Chrome: every icon,
+ * Renders the icon set (public/svg/icons.svg) to docs/images/icons.png with headless Chrome: every icon,
  * named, at its sizes, in the light and the dark theme. docs/DESIGN.md and the design guide show it.
  * Also renders the site mark (public/svg/favicon.svg) to public/png/: a 32px favicon and the
  * 180px Apple touch icon.
- * Run after adding or changing an icon:  deno task icon-sheet
+ * Run after adding or changing an icon:  npm run icon-sheet
  *
  * The page is built here with the sprite inlined, so it needs no files and no server.
  * Chrome is found at CHROME_PATH or the usual install locations.
  */
+import { statSync } from "node:fs";
+import { mkdir, readFile } from "node:fs/promises";
 import puppeteer from "puppeteer-core";
 
 const CANDIDATES = [
@@ -17,18 +19,18 @@ const CANDIDATES = [
   "/usr/bin/google-chrome",
   "/usr/bin/chromium",
 ];
-const chrome = Deno.env.get("CHROME_PATH") ?? CANDIDATES.find((p) => {
+const chrome = process.env.CHROME_PATH ?? CANDIDATES.find((p) => {
   try {
-    return Deno.statSync(p).isFile;
+    return statSync(p).isFile();
   } catch {
     return false;
   }
 });
 if (!chrome) throw new Error("Chrome not found. Set CHROME_PATH.");
 
-const sprite = await Deno.readTextFile(new URL("../public/svg/icons.svg", import.meta.url));
+const sprite = await readFile(new URL("../public/svg/icons.svg", import.meta.url), "utf8");
 const names = [...sprite.matchAll(/<symbol id="([^"]+)"/g)].map((m) => m[1]);
-const out = new URL("../docs/icons.png", import.meta.url);
+const out = new URL("../docs/images/icons.png", import.meta.url);
 
 // The design guide's tokens (docs/DESIGN.md): paper and ink, the rule, the muted text.
 const themes = [
@@ -85,12 +87,12 @@ try {
   await tab.setViewport({ width: 960, height: 600, deviceScaleFactor: 2 });
   await tab.setContent(html, { waitUntil: "load" });
   await tab.screenshot({ path: decodeURIComponent(out.pathname.replace(/^\/([A-Z]:)/, "$1")), fullPage: true });
-  console.log(`Wrote docs/icons.png: ${names.length} icons, light and dark`);
+  console.log(`Wrote docs/images/icons.png: ${names.length} icons, light and dark`);
 
   // The site's mark as the PNGs browsers and phones want: a 32px favicon, and a 180px Apple touch
   // icon on paper (iOS shows transparency as black).
-  const mark = await Deno.readTextFile(new URL("../public/svg/favicon.svg", import.meta.url));
-  await Deno.mkdir(new URL("../public/png/", import.meta.url), { recursive: true });
+  const mark = await readFile(new URL("../public/svg/favicon.svg", import.meta.url), "utf8");
+  await mkdir(new URL("../public/png/", import.meta.url), { recursive: true });
   for (
     const [name, size, background, inset] of [
       ["favicon-32.png", 32, "transparent", 0],

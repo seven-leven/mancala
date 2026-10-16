@@ -17,7 +17,10 @@ function describe(r: SearchResult): string | null {
 /** Alpha-beta search that plans for the opponent's replies too. See search/minimax.ts. */
 export class MinimaxBot implements Bot {
   private last: SearchResult | null = null;
-  constructor(private opts: { timeMs?: number; depth?: number } = { timeMs: 700 }) {}
+  private opts: { timeMs?: number; depth?: number };
+  constructor(opts: { timeMs?: number; depth?: number } = { timeMs: 700 }) {
+    this.opts = opts;
+  }
   choose(state: GameState): number | null {
     this.last = search(state, this.opts);
     return this.last.move;
@@ -34,7 +37,12 @@ export class MinimaxBot implements Bot {
  */
 export class LookaheadBot implements Bot {
   private last: SearchResult | null = null;
-  constructor(private depth = 2, private slack = 3, private rng: Rng = Math.random) {}
+  private depth: number;
+  private slack: number;
+  private rng: Rng;
+  constructor(depth = 2, slack = 3, rng: Rng = Math.random) {
+    [this.depth, this.slack, this.rng] = [depth, slack, rng];
+  }
   note(): string | null {
     return this.last && describe(this.last);
   }
@@ -51,7 +59,10 @@ export class LookaheadBot implements Bot {
  * assuming you play to win. Even a careless opponent ends up winning.
  */
 export class PushoverBot implements Bot {
-  constructor(private depth = 3) {}
+  private depth: number;
+  constructor(depth = 3) {
+    this.depth = depth;
+  }
   choose(state: GameState): number | null {
     // Nothing prunes a search where both sides want the same result, so it follows only short
     // free-turn chains (3), which keeps a move under ~0.1 s.
@@ -66,7 +77,10 @@ export class PushoverBot implements Bot {
  * this with different scoring.
  */
 export class TwoMoveBot implements Bot {
-  constructor(private evaluate: Evaluator) {}
+  private evaluate: Evaluator;
+  constructor(evaluate: Evaluator) {
+    this.evaluate = evaluate;
+  }
   choose(state: GameState): number | null {
     const me = state.current;
     let best: number | null = null;

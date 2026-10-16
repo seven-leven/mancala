@@ -4,9 +4,11 @@
  * "same results" is checked by a test, not by eye.
  *
  * When a bot's play changes on purpose, refresh the snapshot:
- *   deno test --allow-read --allow-write=tests/snapshots tests/harness_test.ts -- --update
+ *   UPDATE_SNAPSHOT=1 node --test tests/harness_test.ts
  */
-import { assertEquals } from "@std/assert";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { test } from "node:test";
+import { assertEquals } from "./assert.ts";
 import type { BotId } from "../src/bots/bots.ts";
 import { type PairJob, type PairResult, playPair } from "../tools/tournament/play.ts";
 import { Pool } from "../tools/tournament/pool.ts";
@@ -28,7 +30,7 @@ for (let round = 0; round < ROUNDS; round++) {
 /** A pairing's result without its timings, which are wall-clock and vary. */
 const played = ({ thinkMs: _t, ...rest }: PairResult) => rest;
 
-Deno.test("a pairing plays the same games on 1 worker, on 4, in any order, and as the snapshot", async () => {
+test("a pairing plays the same games on 1 worker, on 4, in any order, and as the snapshot", async () => {
   const direct = jobs.map(playPair).map(played);
 
   const one = new Pool(1);
@@ -43,9 +45,9 @@ Deno.test("a pairing plays the same games on 1 worker, on 4, in any order, and a
   }
 
   const snapshot = direct.map(({ i, j, results }) => `${BOTS[i]}-${BOTS[j]}: ${results.join(" ")}`);
-  if (Deno.args.includes("--update")) {
-    await Deno.mkdir(new URL("./snapshots/", import.meta.url), { recursive: true });
-    await Deno.writeTextFile(SNAPSHOT, JSON.stringify(snapshot, null, 2) + "\n");
+  if (process.env.UPDATE_SNAPSHOT) {
+    await mkdir(new URL("./snapshots/", import.meta.url), { recursive: true });
+    await writeFile(SNAPSHOT, JSON.stringify(snapshot, null, 2) + "\n");
   }
-  assertEquals(snapshot, JSON.parse(await Deno.readTextFile(SNAPSHOT)), "results differ from the snapshot");
+  assertEquals(snapshot, JSON.parse(await readFile(SNAPSHOT, "utf8")), "results differ from the snapshot");
 });

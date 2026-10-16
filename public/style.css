@@ -405,7 +405,9 @@ kbd {
   --bar: var(--text-muted);
   height: 4px;
   border-radius: 2px;
-  background: linear-gradient(var(--bar), var(--bar)) 0 0 / calc(var(--fill) * 100%) 100% no-repeat, var(--rule);
+  background:
+    linear-gradient(var(--bar), var(--bar)) 0 0 / calc(var(--fill) * 100%) 100% no-repeat,
+    var(--rule);
 }
 .picker__option.is-active {
   background: var(--bg-2);

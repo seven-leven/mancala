@@ -1,7 +1,7 @@
 # Game notation (MGN)
 
 One game as plain text, like chess's PGN: tags, then the moves. The tournament writes every game it plays in it, and
-`deno task positions` turns games into training data for the evaluation. The code is
+`npm run positions` turns games into training data for the evaluation. The code is
 [src/game/notation.ts](../src/game/notation.ts). Here is a tournament game, Random against Greedy, opening with two
 random moves:
 
@@ -49,8 +49,8 @@ match what it actually did, is refused, so a file that parses is a real game.
 ## Training data
 
 ```sh
-deno task rate 40 --record data/games.mgn
-deno task positions data/games.mgn > data/positions.jsonl
+npm run rate -- 40 --record data/games.mgn
+npm run positions -- data/games.mgn > data/positions.jsonl
 ```
 
 Each line of `positions.jsonl` is one position before a move:

@@ -1,10 +1,5 @@
-/** A tournament worker: plays the pairings main.ts sends it, one at a time. */
-import { type PairJob, type PairResult, playPair } from "./play.ts";
+/** A tournament worker (node:worker_threads): plays the pairings pool.ts sends it, one at a time. */
+import { parentPort } from "node:worker_threads";
+import { type PairJob, playPair } from "./play.ts";
 
-// Declared here because this file's global is a worker's, not the window the DOM types describe.
-declare const self: {
-  onmessage: ((e: MessageEvent<PairJob>) => void) | null;
-  postMessage(message: PairResult): void;
-};
-
-self.onmessage = ({ data }) => self.postMessage(playPair(data));
+parentPort!.on("message", (job: PairJob) => parentPort!.postMessage(playPair(job)));

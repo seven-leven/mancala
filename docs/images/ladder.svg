@@ -1,71 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 600" width="720" height="600" role="img"
-  aria-labelledby="t d">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 600" width="720" height="600" role="img" aria-labelledby="t d">
   <title id="t">The bots' Elo ladder</title>
-  <desc
-    id="d">Minimax 2048 (2028–2070), DFS 1970 (1948–1994), Shrewd 1911 (1890–1933), Lookahead 1725 (1706–1744), Planner 1696 (1679–1716), Sometimes planner 1566 (1548–1587), Chainer 1482 (1465–1501), Spoiler 1460 (1442–1480), Greedy 1311 (1296–1331), Turtle 1298 (1282–1315), Sometimes greedy 1197 (1179–1214), Striker 1139 (1123–1157), Random 1000 (1000–1000), Hoarder 926 (907–946), Fickle 831 (812–849), Sometimes generous 742 (722–761), Generous 570 (548–594), Pushover 502 (481–522)</desc>
-  <style>
-  svg {
-    --ink: #161514;
-    --muted: #6b6760;
-    --rule: #dfdad0;
-    --accent: #a8483f;
-    --bg: #f6f4ef;
-  }
+  <desc id="d">Minimax 2048 (2028–2070), DFS 1970 (1948–1994), Shrewd 1911 (1890–1933), Lookahead 1725 (1706–1744), Planner 1696 (1679–1716), Sometimes planner 1566 (1548–1587), Chainer 1482 (1465–1501), Spoiler 1460 (1442–1480), Greedy 1311 (1296–1331), Turtle 1298 (1282–1315), Sometimes greedy 1197 (1179–1214), Striker 1139 (1123–1157), Random 1000 (1000–1000), Hoarder 926 (907–946), Fickle 831 (812–849), Sometimes generous 742 (722–761), Generous 570 (548–594), Pushover 502 (481–522)</desc>
+  <style>svg { --ink: #161514; --muted: #6b6760; --rule: #dfdad0; --accent: #a8483f; --bg: #f6f4ef; }
   @media (prefers-color-scheme: dark) {
-    svg {
-      --ink: #f6f4ef;
-      --muted: rgba(246,244,239,0.62);
-      --rule: rgba(246,244,239,0.14);
-      --accent: #e39a86;
-      --bg: #161514;
-    }
+    svg { --ink: #f6f4ef; --muted: rgba(246,244,239,0.62); --rule: rgba(246,244,239,0.14); --accent: #e39a86; --bg: #161514; }
   }
-  text {
-    font: 12px Inter, system-ui, sans-serif;
-    fill: var(--ink);
-  }
-  .muted,
-  .tick,
-  .note {
-    fill: var(--muted);
-  }
-  .tick,
-  .note {
-    font-size: 11px;
-  }
-  .title {
-    font: 400 20px "Instrument Serif", Georgia, serif;
-  }
-  .grid {
-    stroke: var(--rule);
-  }
-  .mark {
-    stroke: var(--muted);
-    stroke-width: 2;
-    stroke-linecap: round;
-  }
-  .mark.overlap {
-    stroke: var(--accent);
-  }
-  .dot {
-    fill: var(--ink);
-    stroke: var(--bg);
-    stroke-width: 2;
-  }
-  .dot.overlap {
-    fill: var(--accent);
-  }
-  .bg {
-    fill: var(--bg);
-  }
-  .accent {
-    fill: var(--accent);
-  }
-  </style>
+  text { font: 12px Inter, system-ui, sans-serif; fill: var(--ink); }
+  .muted, .tick, .note { fill: var(--muted); }
+  .tick, .note { font-size: 11px; }
+  .title { font: 400 20px "Instrument Serif", Georgia, serif; }
+  .grid { stroke: var(--rule); }
+  .mark { stroke: var(--muted); stroke-width: 2; stroke-linecap: round; }
+  .mark.overlap { stroke: var(--accent); }
+  .dot { fill: var(--ink); stroke: var(--bg); stroke-width: 2; }
+  .dot.overlap { fill: var(--accent); }
+  .bg { fill: var(--bg); }
+  .accent { fill: var(--accent); }</style>
   <rect class="bg" width="720" height="600" rx="12" />
   <text class="title" x="24" y="30">The bots, by Elo</text>
-  <text class="note" x="696" y="30"
-    text-anchor="end">Dot: rating · bar: 90% range · <tspan class="accent">red: order under 90% sure</tspan></text>
+  <text class="note" x="696" y="30" text-anchor="end">
+    Dot: rating · bar: 90% range · <tspan class="accent">red: order under 90% sure</tspan>
+  </text>
   <line class="grid" x1="230" x2="230" y1="36" y2="556" />
   <text class="tick" x="230" y="572" text-anchor="middle">250</text>
   <line class="grid" x1="282.5" x2="282.5" y1="36" y2="556" />
@@ -189,5 +144,5 @@
   <line class="mark" x1="287.12" x2="287.12" y1="529" y2="539" />
   <circle class="dot" cx="282.92" cy="534" r="5" />
   <text class="value" x="297.12" y="538">502</text>
-  <text class="note" x="24" y="590">Random is pinned at 1000. Ratings from deno task rate, 2026-10-15.</text>
+  <text class="note" x="24" y="590">Random is pinned at 1000. Ratings from npm run rate, 2026-10-15.</text>
 </svg>

@@ -31,7 +31,7 @@ export {
 /**
  * The bots, weakest first; the menus list them in this order. `level` is the everyday name players
  * see ("Hard bot"); `label` is the algorithm behind it. Levels follow the Elo ratings from
- * `deno task rate` (see the README). Keys are permanent: saved games refer to them.
+ * `npm run rate` (see the README). Keys are permanent: saved games refer to them.
  */
 export const BOTS = {
   pushover: {
@@ -180,7 +180,7 @@ export const BOTS = {
 
 /**
  * Dormant bots: kept in the code, out of the menus and the default tournament. Their ids are
- * reserved. The tournament still rates one when it's named: `deno task rate --bots ...`.
+ * reserved. The tournament still rates one when it's named: `npm run rate -- --bots ...`.
  * See docs/BOTS.md, "Dormant bots".
  */
 export const DORMANT = {

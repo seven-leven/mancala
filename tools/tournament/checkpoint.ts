@@ -2,6 +2,7 @@
  * A tournament's results so far, saved after every round, so a long run can stop (on a time
  * budget, or Ctrl+C) and carry on later with --resume. Git-ignored.
  */
+import { readFile, rename, writeFile } from "node:fs/promises";
 import type { Opening } from "./openings.ts";
 
 export interface Checkpoint {
@@ -23,9 +24,9 @@ export const CHECKPOINT = new URL("./checkpoint.json", import.meta.url);
 
 export async function load(): Promise<Checkpoint | null> {
   try {
-    return JSON.parse(await Deno.readTextFile(CHECKPOINT));
+    return JSON.parse(await readFile(CHECKPOINT, "utf8"));
   } catch (e) {
-    if (e instanceof Deno.errors.NotFound) return null;
+    if ((e as NodeJS.ErrnoException).code === "ENOENT") return null;
     throw e;
   }
 }
@@ -33,6 +34,6 @@ export async function load(): Promise<Checkpoint | null> {
 /** Writes to a temporary file first, so a crash mid-save never leaves half a checkpoint. */
 export async function save(c: Checkpoint): Promise<void> {
   const tmp = new URL("./checkpoint.json.tmp", import.meta.url);
-  await Deno.writeTextFile(tmp, JSON.stringify(c));
-  await Deno.rename(tmp, CHECKPOINT);
+  await writeFile(tmp, JSON.stringify(c));
+  await rename(tmp, CHECKPOINT);
 }

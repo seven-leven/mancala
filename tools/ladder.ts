@@ -1,14 +1,15 @@
 /**
- * Draws the bots' Elo ladder, with each 90% range, as docs/ladder.svg (shown in the README). Two
+ * Draws the bots' Elo ladder, with each 90% range, as docs/images/ladder.svg (shown in the README). Two
  * neighbours are marked when the order between them is less than 90% sure: in fewer than 90% of
  * the resampled fits does the higher one rate above the lower (`above` in ratings.ts). Ratings
  * written before `above` existed fall back to one rating inside the other's range.
  * (Ranges that merely touch are common and say little.)
  *
- *   deno task ladder        after `deno task rate --write`
+ *   npm run ladder        after `npm run rate -- 240 --write`
  *
  * The colours are the design guide's (docs/DESIGN.md), light and dark.
  */
+import { writeFile } from "node:fs/promises";
 import { type BotId, BOTS } from "../src/bots/bots.ts";
 import { RATINGS, RATINGS_VERSION } from "../src/bots/ratings.ts";
 
@@ -80,12 +81,12 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" wid
   W - 24
 }" y="30" text-anchor="end">Dot: rating · bar: 90% range · <tspan class="accent">red: order under 90% sure</tspan></text>
 ${body}
-<text class="note" x="24" y="${
-  H - 10
-}">Random is pinned at 1000. Ratings from deno task rate, ${RATINGS_VERSION}.</text>
+<text class="note" x="24" y="${H - 10}">Random is pinned at 1000. Ratings from npm run rate, ${RATINGS_VERSION}.</text>
 </svg>
 `;
-await Deno.writeTextFile(new URL("../docs/ladder.svg", import.meta.url), svg);
+await writeFile(new URL("../docs/images/ladder.svg", import.meta.url), svg);
 console.log(
-  `Wrote docs/ladder.svg: ${rows.length} bots, ${overlaps.filter(Boolean).length} too close to a neighbour to call.`,
+  `Wrote docs/images/ladder.svg: ${rows.length} bots, ${
+    overlaps.filter(Boolean).length
+  } too close to a neighbour to call.`,
 );

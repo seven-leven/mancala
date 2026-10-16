@@ -1,5 +1,5 @@
 /**
- * Adaptive allocation (`deno task rate 240 --adaptive`): close pairings get many games, lopsided
+ * Adaptive allocation (`npm run rate -- 240 --adaptive`): close pairings get many games, lopsided
  * ones few. A game between bots that win p and 1 − p of the time carries p(1 − p) of information,
  * a quarter at 50/50 and almost nothing at 99/1, and the lopsided games are the slow searchers'
  * (Minimax against Pushover), so they cost the most for the least. docs/RATING.md has the maths.

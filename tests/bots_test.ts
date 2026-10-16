@@ -1,4 +1,5 @@
-import { assert, assertEquals } from "@std/assert";
+import { test } from "node:test";
+import { assert, assertEquals } from "./assert.ts";
 import {
   BOTS,
   createBot,
@@ -28,7 +29,7 @@ const position = (pits: number[], current = P1): GameState => ({
   gameOver: false,
 });
 
-Deno.test("every bot only plays legal pits", () => {
+test("every bot only plays legal pits", () => {
   const bots = [
     new RandomBot(seeded(1)),
     new GenerousBot(seeded(3)),
@@ -48,7 +49,7 @@ Deno.test("every bot only plays legal pits", () => {
   }
 });
 
-Deno.test("bots return null when there's no move", () => {
+test("bots return null when there's no move", () => {
   const over = { ...newGame(DEFAULT_RULES, P1), gameOver: true };
   for (
     const bot of [new RandomBot(), new GreedyBot(), new LookaheadBot(), new DfsBot(), new MinimaxBot({ depth: 2 })]
@@ -57,19 +58,19 @@ Deno.test("bots return null when there's no move", () => {
   }
 });
 
-Deno.test("generous turns the capture down", () => {
+test("generous turns the capture down", () => {
   //                  0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1 M2
   const s = position([1, 0, 0, 0, 0, 0, 3, 1, 9, 1, 1, 1, 1, 1, 0, 0]);
   assertEquals(new GenerousBot().choose(s), 6); // pit 0 would capture 9; pit 6 banks only 1
 });
 
-Deno.test("greedy takes the capture", () => {
+test("greedy takes the capture", () => {
   //               0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1 M2
   const s = position([1, 0, 0, 0, 0, 0, 3, 1, 9, 1, 1, 1, 1, 1, 0, 0]);
   assertEquals(new GreedyBot().choose(s), 0); // lands in empty pit 1, takes pit 8's 9 seeds
 });
 
-Deno.test("DFS chains a free turn into a capture; greedy grabs the capture now", () => {
+test("DFS chains a free turn into a capture; greedy grabs the capture now", () => {
   // Pit 0 captures pit 9 straight away (3 seeds). Pit 6 banks 1 and earns a free turn, after
   // which pit 0 still captures: 4 in all. Greedy sees only this turn; DFS follows the chain.
   //                  0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1 M2
@@ -78,7 +79,7 @@ Deno.test("DFS chains a free turn into a capture; greedy grabs the capture now",
   assertEquals(new DfsBot().choose(s), 6);
 });
 
-Deno.test("minimax searches no deeper than it's told", () => {
+test("minimax searches no deeper than it's told", () => {
   const g = newGame(DEFAULT_RULES, P1);
   const r = search(g, { depth: 4 });
   assert(r.move !== null);
@@ -87,21 +88,21 @@ Deno.test("minimax searches no deeper than it's told", () => {
   assert(r.nodes > 0);
 });
 
-Deno.test("minimax stops on time", () => {
+test("minimax stops on time", () => {
   const started = performance.now();
   const r = search(newGame(DEFAULT_RULES, P2), { timeMs: 150 });
   assert(performance.now() - started < 1500);
   assert(r.depth >= 1 && r.move !== null);
 });
 
-Deno.test("first plays the leftmost pit from its own side", () => {
+test("first plays the leftmost pit from its own side", () => {
   //                  0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1 M2
   const s = position([0, 0, 4, 1, 0, 0, 0, 2, 0, 3, 0, 0, 5, 0, 0, 0]);
   assertEquals(new FirstBot().choose(s), 2); // Player 1: lowest index
   assertEquals(new FirstBot().choose({ ...s, current: P2 }), 12); // Player 2: their left is pit 13
 });
 
-Deno.test("every bot in BOTS plays legal pits, in both modes, from either side", () => {
+test("every bot in BOTS plays legal pits, in both modes, from either side", () => {
   for (const id of Object.keys(BOTS)) {
     if (!isBotId(id)) continue;
     for (const mode of ["play", "rate"] as const) {
@@ -117,21 +118,21 @@ Deno.test("every bot in BOTS plays legal pits, in both modes, from either side",
   }
 });
 
-Deno.test("exposed counts seeds in pits facing an empty pit", () => {
+test("exposed counts seeds in pits facing an empty pit", () => {
   //                  0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1 M2
   const s = position([4, 2, 0, 5, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0]);
   assertEquals(exposed(s, P1), 4); // pit 0 faces empty pit 7; pit 3 faces pit 10, which has a seed
   assertEquals(exposed(s, P2), 3); // pits 9, 11 and 12 (a seed each) face empty pits 2, 4 and 5
 });
 
-Deno.test("turtle gives up a seed to keep a loaded pit safe; greedy takes it", () => {
+test("turtle gives up a seed to keep a loaded pit safe; greedy takes it", () => {
   //                  0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1  M2
   const s = position([1, 6, 7, 0, 7, 1, 0, 13, 0, 3, 1, 0, 0, 2, 30, 27]);
   assertEquals(new GreedyBot().choose(s), 5); // banks 2, but leaves 14 seeds open to capture
   assertEquals(new TurtleBot(0.5, seeded(1)).choose(s), 4); // banks 1 and leaves nothing open
 });
 
-Deno.test("mixed: q = 1 is its main bot; q = 0 is random", () => {
+test("mixed: q = 1 is its main bot; q = 0 is random", () => {
   const g = newGame(DEFAULT_RULES, P1);
   assertEquals(new MixedBot(new FirstBot(), 1, seeded(1)).choose(g), 0);
   const picks = new Set<number | null>();
@@ -140,7 +141,7 @@ Deno.test("mixed: q = 1 is its main bot; q = 0 is random", () => {
   assert(picks.size > 3, `random picks: ${[...picks]}`);
 });
 
-Deno.test("scoring pieces: free turns set up, threats, mobility", () => {
+test("scoring pieces: free turns set up, threats, mobility", () => {
   //                  0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1 M2
   const s = position([7, 0, 0, 0, 0, 0, 1, 1, 4, 0, 0, 0, 0, 2, 0, 0]);
   assertEquals(freeTurnsReady(s, P1), 2); // pit 0 (7 seeds, 7 from the store) and pit 6 (1 seed, 1 away)
@@ -150,7 +151,7 @@ Deno.test("scoring pieces: free turns set up, threats, mobility", () => {
   assertEquals(mobility(s, P2), 3);
 });
 
-Deno.test("the two-move bot sees replies, so it sometimes plays differently from Greedy", () => {
+test("the two-move bot sees replies, so it sometimes plays differently from Greedy", () => {
   let found = false;
   const rng = seeded(4);
   for (let game = 0; game < 40 && !found; game++) {
@@ -164,7 +165,7 @@ Deno.test("the two-move bot sees replies, so it sometimes plays differently from
   assert(found, "the two-move bot should sometimes disagree with Greedy");
 });
 
-Deno.test("search bots say what they saw, for the move log", () => {
+test("search bots say what they saw, for the move log", () => {
   // Player 1 has 49 banked, and either move makes 50 of 98, a clinched majority: pit 6 sows into the
   // store, and pit 0 lands in empty pit 1 and captures pit 8's seed.
   //                  0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1  M2

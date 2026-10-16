@@ -1,4 +1,5 @@
-import { assert, assertEquals } from "@std/assert";
+import { test } from "node:test";
+import { assert, assertEquals } from "./assert.ts";
 import { gamesToMgn, humanSide, playerStats, type SavedGame, seatName, START_RATING } from "../src/app/history.ts";
 import { DEFAULT_RULES, P1, P2 } from "../src/game/types.ts";
 import { newGame, playTurn } from "../src/game/engine.ts";
@@ -21,40 +22,40 @@ function game(bot: SavedGame["seats"][2], elo: number, result: "win" | "loss" | 
   };
 }
 
-Deno.test("no games: the starting rating", () => {
+test("no games: the starting rating", () => {
   const s = playerStats([]);
   assertEquals([s.rating, s.rated, s.played], [START_RATING, 0, 0]);
 });
 
-Deno.test("beating a much stronger bot gains nearly the full 32", () => {
+test("beating a much stronger bot gains nearly the full 32", () => {
   const s = playerStats([game("minimax", 1908, "win")]);
   assert(s.rating > START_RATING + 30, String(s.rating));
 });
 
-Deno.test("losing to a much weaker bot costs most of the 32", () => {
+test("losing to a much weaker bot costs most of the 32", () => {
   const s = playerStats([game("pushover", 556, "loss")]);
   assert(s.rating < START_RATING - 25, String(s.rating));
 });
 
-Deno.test("an even draw changes nothing", () => {
+test("an even draw changes nothing", () => {
   assertEquals(playerStats([game("random", START_RATING, "draw")]).rating, START_RATING);
 });
 
-Deno.test("unrated games count in the record, not the rating", () => {
+test("unrated games count in the record, not the rating", () => {
   const s = playerStats([game("dfs", 1838, "win", false), game("dfs", 1838, "loss", false)]);
   assertEquals(s.rating, START_RATING);
   assertEquals(s.vs.get("dfs"), { w: 1, l: 1, d: 0 });
   assertEquals(s.rated, 0);
 });
 
-Deno.test("each game uses the bot's rating from when it was played", () => {
+test("each game uses the bot's rating from when it was played", () => {
   // The same bot, re-rated between games: the old game keeps its old number.
   const before = playerStats([game("greedy", 1200, "win")]).rating;
   const after = playerStats([game("greedy", 1400, "win")]).rating;
   assert(after > before);
 });
 
-Deno.test("games against a bot made dormant since still count", () => {
+test("games against a bot made dormant since still count", () => {
   // Saved games keep the id they were played against; "first" is dormant now.
   const old = game("first" as SavedGame["seats"][2], 1012, "win");
   const s = playerStats([old]);
@@ -63,14 +64,14 @@ Deno.test("games against a bot made dormant since still count", () => {
   assertEquals(seatName("first"), "Casual bot");
 });
 
-Deno.test("only one person against a bot has a human side", () => {
+test("only one person against a bot has a human side", () => {
   assertEquals(humanSide({ 1: "human", 2: "minimax" }), 1);
   assertEquals(humanSide({ 1: "dfs", 2: "human" }), 2);
   assertEquals(humanSide({ 1: "human", 2: "human" }), null);
   assertEquals(humanSide({ 1: "dfs", 2: "minimax" }), null);
 });
 
-Deno.test("saved games export as MGN that parses back to the same moves", () => {
+test("saved games export as MGN that parses back to the same moves", () => {
   // Two real games, played by bots, saved the way the app saves them.
   const games = [P1, P2].map((first, k) => {
     let g = newGame(DEFAULT_RULES, first);

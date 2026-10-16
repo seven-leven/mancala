@@ -5,7 +5,7 @@ a friend on the same screen, or one of eighteen bots from Hopeless to Expert, an
 
 **Play: [seven-leven.github.io/mancala](https://seven-leven.github.io/mancala/)**
 
-![The game in its paper theme, a few moves in](docs/screenshot-light.png)
+![The game in its paper theme, a few moves in](docs/images/screenshot-light.png)
 
 I started this in December 2022 to build a bot that could beat my grandmother at ohvalhugondi. The command-line game
 came first; the bot (the DFS one below) came in August 2024; the web version in 2025; and this TypeScript rewrite in
@@ -36,7 +36,7 @@ why Settings lets you choose who goes first.
 
 ## The bots
 
-![The bots' Elo ladder, each with its 90% range](docs/ladder.svg)
+![The bots' Elo ladder, each with its 90% range](docs/images/ladder.svg)
 
 | Level      | Bot                |  Elo | 90% range | How it plays                                                               |
 | ---------- | ------------------ | ---: | :-------: | -------------------------------------------------------------------------- |
@@ -70,7 +70,8 @@ rating, its trend, your record against each bot, a backup, and your games as tex
 
 ## How it's built
 
-TypeScript on [Deno](https://deno.com), bundled with esbuild, no runtime dependencies.
+TypeScript on [Node](https://nodejs.org) 24, which runs the `.ts` files directly (it strips the types; no compile step).
+esbuild bundles the game for the browser, with no runtime dependencies.
 
 ```
 src/game/    the rules: one pure engine, playTurn(), that returns the new state and an event log;
@@ -92,32 +93,36 @@ move; the animation only replays that log, so what you see is what the engine di
 search never freezes the page.
 
 **The design** follows [DESIGN.md](docs/DESIGN.md), which borrows the folio's paper, ink, type and pills so the two read
-as one body of work. Here it is on one sheet ([docs/design-guide.png](docs/design-guide.png)):
+as one body of work. Here it is on one sheet ([docs/images/design-guide.png](docs/images/design-guide.png)):
 
-![The design guide as one sheet](docs/design-guide.png)
+![The design guide as one sheet](docs/images/design-guide.png)
 
 ### Working on it
 
 ```sh
-deno task dev          # build, watch, and serve at http://localhost:8010/
-deno task test         # the test harness: rules, bots and ratings, files in parallel
-deno task check        # type check
-deno task rate         # the rating harness: rate the bots (add --write to update the menus)
-deno task bench        # how deep and fast Minimax searches
-deno task ladder       # redraw docs/ladder.svg from the ratings
-deno task profile      # where a rating run spends its time (data/profile/)
-deno task release      # from dev: check everything, then ship to main
+npm install                    # once: esbuild, TypeScript, the formatter and linter
+npm run dev                    # build, watch, and serve at http://localhost:8010/
+npm test                       # the test harness: rules, bots and ratings, files in parallel
+npm run check                  # type check (also: npm run lint, npm run fmt)
+npm run rate -- 240 --write    # the rating harness: rate the bots and update the menus
+npm run bench                  # how deep and fast Minimax searches
+npm run ladder                 # redraw docs/images/ladder.svg from the ratings
+npm run profile                # where a rating run spends its time (data/profile/)
+npm run release                # from dev: check everything, then ship to main
 ```
 
-The **test harness** (`deno task test`) checks the code is correct and runs on every push. The **rating harness**
-(`deno task rate`) sets the bots' Elo and runs by hand: see [RATING.md](docs/RATING.md).
+The **test harness** (`npm test`) checks the code is correct and runs on every push. The **rating harness** (`npm run
+rate`) sets the bots' Elo and runs by hand: see [RATING.md](docs/RATING.md).
 
 Every push runs the same checks on GitHub. A push to `main` builds the site and publishes `dist/` to the `gh-pages`
 branch, which GitHub Pages serves. Work happens on `dev`. `main` is protected: it only takes a pull request whose checks
-passed, never a direct push or a force-push. `deno task release` opens that pull request from `dev` (or uses the open
+passed, never a direct push or a force-push. `npm run release` opens that pull request from `dev` (or uses the open
 one), waits for its checks, merges it, and waits for the deploy.
 
 To add a bot, follow [BOTS.md](docs/BOTS.md) to write it and [RATING.md](docs/RATING.md) to place and rate it.
+
+The guides are in [docs/](docs/README.md), grouped by what you're about to do: change the look, add or rate a bot, or
+change the code.
 
 ## Changes
 

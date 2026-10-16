@@ -3,6 +3,14 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `deno.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
+## Unreleased
+
+- **Node instead of Deno.** Node 24 runs the TypeScript as it is (it strips the types), so nothing gained a compile
+  step. `npm install` once, then `npm run dev`, `npm test`, `npm run rate -- 240 --write` and so on; README has the
+  list. Tests run on Node's test runner, the rating harness on `worker_threads`, and esbuild comes from npm (a build
+  takes a tenth of a second). Formatting is dprint (what `deno fmt` was built on) and linting ESLint. The rating harness
+  plays exactly the same games as before, and the game in the browser hasn't changed.
+
 ## v2.3.0 · 2026-10-15
 
 - **A tidier toolbar** in three groups: New game and the opponent; Undo, Hint and Skip as icon buttons (Replay takes
@@ -32,7 +40,8 @@ release has a section here; work since the last one sits under _Unreleased_.
 - **A new visitor plays Random** (Easy) to start with, not Lookahead.
 - **One icon set.** Every icon is an outline on a 24px grid with a 2px line, from one sprite (`public/svg/icons.svg`,
   beside the favicon in `public/svg/`); the filled rule-card icons and the CSS-drawn chevrons were redrawn to match.
-  DESIGN.md has an Icons section, and `deno task icon-sheet` draws them all to [docs/icons.png](docs/icons.png).
+  DESIGN.md has an Icons section, and `deno task icon-sheet` draws them all to
+  [docs/images/icons.png](docs/images/icons.png).
 
 ## v2.2.3 · 2026-10-15
 
@@ -81,8 +90,8 @@ release has a section here; work since the last one sits under _Unreleased_.
   two-move search, they're worth about 75 Elo over the store lead alone (Planner).
 - **A new How to play popup**: the turn in three steps, the three rules as cards, a word of strategy and how to win,
   with the house rules kept live.
-- **The ladder as a chart**: `deno task ladder` draws [docs/ladder.svg](docs/ladder.svg) from the ratings, marking
-  neighbours too close to call; the README shows it.
+- **The ladder as a chart**: `deno task ladder` draws [docs/images/ladder.svg](docs/images/ladder.svg) from the ratings,
+  marking neighbours too close to call; the README shows it.
 - `deno task profile` shows where a tournament round spends its time; TODO.md's v2.5 lists what to speed up.
 - **Fairer ratings.** The tournament plays matched pairs (each opening once from each seat), can deal symmetric random
   boards (`--openings symmetric`), stops on a time budget (`--time 10m`), saves after every round and resumes
@@ -151,8 +160,8 @@ A rewrite in TypeScript.
 - A new interface built to [DESIGN.md](docs/DESIGN.md), which borrows the
   [folio](https://seven-leven.github.io/folio/)'s design language: paper and ink themes, a wooden board with drawn
   seeds, who plays each side and who goes first, undo, hint, skip, a move log, keyboard play and a phone layout.
-- Built with esbuild (as WebAssembly) by Deno; CI checks every push and deploys `main` to the `gh-pages` branch;
-  `deno task release` ships `dev` to `main`.
+- Built with esbuild (as WebAssembly) by Deno; CI checks every push and deploys `main` to the `gh-pages` branch; `deno
+  task release` ships `dev` to `main`.
 
 ## v1.1 · 2026-07-03
 

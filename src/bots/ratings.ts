@@ -1,5 +1,5 @@
 /**
- * Elo ratings from `deno task rate 240 --openings random-moves --write` (240 games per pairing,
+ * Elo ratings from `npm run rate -- 240 --openings random-moves --write` (240 games per pairing,
  * in matched pairs). Generated: don't edit. Random is pinned at 1000; low and high bound the 90% range;
  * above is the share of resampled fits in which the bot rates above the next one down.
  */

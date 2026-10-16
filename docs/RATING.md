@@ -3,22 +3,22 @@
 How the bots get their Elo, how to run a rating, and how to read what it prints. This is the one place for it: the
 README shows the ratings, [BOTS.md](BOTS.md) says how to build a bot, and this says how to rate one.
 
-Two harnesses, two words. The **test harness** (`deno task test`, `tests/`) checks the code is correct and runs on every
-push. The **rating harness** (`deno task rate`, `tools/tournament/`) plays the bots against each other to set their Elo,
-and runs by hand. A test run, a rating run.
+Two harnesses, two words. The **test harness** (`npm test`, `tests/`) checks the code is correct and runs on every push.
+The **rating harness** (`npm run rate`, `tools/tournament/`) plays the bots against each other to set their Elo, and
+runs by hand. A test run, a rating run.
 
-![A rating session in five steps: decide, place, rate, read, publish](rating-session.svg)
+![A rating session in five steps: decide, place, rate, read, publish](images/rating-session.svg)
 
 ## Commands
 
-| Command                                                 | What it does                                                               |
-| ------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `deno task rate`                                        | Every bot in `BOTS`, 40 games a pairing. Prints the ratings, doesn't save  |
-| `deno task rate 240 --write \| tee data/ratings-240.md` | The full rating for the menus, kept as a table in `data/` (git-ignored)    |
-| `deno task rate 40 --bots random,greedy,newBot`         | A placement run: only these bots. Random is always needed: it's the anchor |
-| `deno task rate 240 --write --resume`                   | Carries on after Ctrl+C or `--time`: repeat the run's own games and flags  |
-| `deno task ladder`                                      | Redraws [docs/ladder.svg](ladder.svg) from `src/bots/ratings.ts`           |
-| `deno task profile`                                     | Where a short rating run spends its time (`data/profile/`)                 |
+| Command                                                           | What it does                                                                   |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `npm run rate`                                                    | Every bot in `BOTS`, 40 games a pairing. Prints the ratings, doesn't save      |
+| `npm run --silent rate -- 240 --write \| tee data/ratings-240.md` | The full rating for the menus, kept as a table in `data/` (git-ignored)        |
+| `npm run rate -- 40 --bots random,greedy,newBot`                  | A placement run: only these bots. Random is always needed: it's the anchor     |
+| `npm run rate -- 240 --write --resume`                            | Carries on after Ctrl+C or `--time`: repeat the run's own games and flags      |
+| `npm run ladder`                                                  | Redraws [docs/images/ladder.svg](images/ladder.svg) from `src/bots/ratings.ts` |
+| `npm run profile`                                                 | Where a short rating run spends its time (`data/profile/`)                     |
 
 Flags:
 
@@ -28,7 +28,7 @@ Flags:
 - `--bots a,b,c`: rate just these. They may name dormant bots (see [BOTS.md](BOTS.md#dormant-bots)).
 - `--openings random-moves|symmetric|standard`: how each pair of games starts (below). Default `random-moves`.
 - `--time 10m` (or `90s`, `1h`): stop after the round that crosses the budget.
-- `--record games.mgn`: append every game in [MGN](NOTATION.md), for `deno task positions`.
+- `--record games.mgn`: append every game in [MGN](NOTATION.md), for `npm run positions`.
 - `--workers N`: worker threads. Default one per CPU core; results are the same for any number.
 
 ## When to re-rate
@@ -58,8 +58,8 @@ Minimax pairings are most of the time. A placement run with only a few bots is m
 
 ### Adaptive allocation
 
-`deno task rate 240 --adaptive` spends the games where they tell you something. A game between bots that win p and 1 − p
-of the time carries p(1 − p) of information: a quarter at 50/50, almost nothing at 99/1. So each pairing gets max(10,
+`npm run rate -- 240 --adaptive` spends the games where they tell you something. A game between bots that win p and 1 −
+p of the time carries p(1 − p) of information: a quarter at 50/50, almost nothing at 99/1. So each pairing gets max(10,
 round(240 × 4p(1 − p))) games, p from the ratings in `src/bots/ratings.ts`: 240 for an even pairing, a few dozen for a
 clear one, and the floor of 10 for a mismatch, which keeps every bot linked to Random and still shows a bot that isn't
 transitive. The lopsided games are mostly the slow searchers', so they're the costliest to skip playing.
@@ -119,7 +119,7 @@ replacement, a matched pair at a time. The range runs from the 5th to the 95th p
 
 ## Reading the results
 
-![Three ways two ratings can sit, and what a game is worth by the Elo gap](rating-reading.svg)
+![Three ways two ratings can sit, and what a game is worth by the Elo gap](images/rating-reading.svg)
 
 The run prints a table (Elo, 90% range, the share of all its games each bot won), then a head-to-head table: each bot's
 win rate against each other bot.
@@ -141,7 +141,7 @@ help most: they play close games against several bots at once and tie both ends 
 
 1. Give the bot one knob that moves its strength smoothly (a probability, a depth, a weight). See
    [BOTS.md](BOTS.md#adding-a-bot) for writing it.
-2. Place it: `deno task rate 40 --bots random,<neighbours>,<newBot>`, with the bots either side of the gap you're
+2. Place it: `npm run rate -- 40 --bots random,<neighbours>,<newBot>`, with the bots either side of the gap you're
    filling. Tune the knob until it lands in the gap.
 3. Rate everything with `--write` (step 3 of the session above), then publish.
 
@@ -149,13 +149,13 @@ If it lands on top of another bot instead, see [BOTS.md](BOTS.md#dormant-bots).
 
 ## After `--write`
 
-1. `deno task ladder` redraws the chart.
+1. `npm run ladder` redraws the chart.
 2. Check the **levels** still read weakest to strongest. When the ladder reorders, the level names move with it (see
    [BOTS.md](BOTS.md#names)). The opponent picker's bands (Strong 1600+, Club 1250–1600, Learner 900–1250, Starter under
    900) follow the ratings by themselves.
 3. Update the README's bot table and its line on which pairs are too close to call.
 4. Add a CHANGELOG line: what changed, the games a pairing, the widest range.
-5. `deno task test`, then commit `src/bots/ratings.ts`, `docs/ladder.svg`, the README and the CHANGELOG together.
+5. `npm test`, then commit `src/bots/ratings.ts`, `docs/images/ladder.svg`, the README and the CHANGELOG together.
 
 ## Your rating
 

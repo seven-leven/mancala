@@ -1,14 +1,18 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mancala · ohvalhugondi</title>
-    <meta name="description"
-      content="Ohvalhugondi, the Maldivian mancala: seven pits, seven seeds, relay sowing. Play a friend or one of eighteen bots, from Pushover to an alpha-beta Minimax.">
+    <meta
+      name="description"
+      content="Ohvalhugondi, the Maldivian mancala: seven pits, seven seeds, relay sowing. Play a friend or one of eighteen bots, from Pushover to an alpha-beta Minimax."
+    >
     <meta property="og:title" content="Mancala · ohvalhugondi">
-    <meta property="og:description"
-      content="The Maldivian mancala in the browser: play a friend or one of eighteen bots.">
+    <meta
+      property="og:description"
+      content="The Maldivian mancala in the browser: play a friend or one of eighteen bots."
+    >
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://seven-leven.github.io/mancala/">
     <meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
@@ -25,8 +29,10 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap">
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    >
     <link rel="stylesheet" href="style.css?v={{ build }}">
   </head>
   <body>
@@ -43,52 +49,98 @@
             <div id="opponent"></div>
           </div>
           <div class="controls__group" role="group" aria-label="This game">
-            <button class="btn btn--ghost btn--icon" id="undo" type="button" aria-label="Undo" aria-keyshortcuts="U"
-              title="Undo (U)">
+            <button
+              class="btn btn--ghost btn--icon"
+              id="undo"
+              type="button"
+              aria-label="Undo"
+              aria-keyshortcuts="U"
+              title="Undo (U)"
+            >
               <svg class="icon" aria-hidden="true">
                 <use href="svg/icons.svg?v={{ build }}#undo" />
               </svg>
             </button>
-            <button class="btn btn--ghost btn--icon" id="hint" type="button" aria-label="Hint" aria-keyshortcuts="H"
-              title="Hint (H)">
+            <button
+              class="btn btn--ghost btn--icon"
+              id="hint"
+              type="button"
+              aria-label="Hint"
+              aria-keyshortcuts="H"
+              title="Hint (H)"
+            >
               <svg class="icon" aria-hidden="true">
                 <use href="svg/icons.svg?v={{ build }}#tip" />
               </svg>
             </button>
-            <button class="btn btn--ghost btn--icon" id="skip" type="button" aria-label="Skip the animation"
-              aria-keyshortcuts="S" title="Skip the animation (S)">
+            <button
+              class="btn btn--ghost btn--icon"
+              id="skip"
+              type="button"
+              aria-label="Skip the animation"
+              aria-keyshortcuts="S"
+              title="Skip the animation (S)"
+            >
               <svg class="icon" aria-hidden="true">
                 <use href="svg/icons.svg?v={{ build }}#skip" />
               </svg>
             </button>
-            <button class="btn btn--ghost btn--icon" id="replay" type="button" aria-label="Replay the game"
-              title="Replay the game" hidden>
+            <button
+              class="btn btn--ghost btn--icon"
+              id="replay"
+              type="button"
+              aria-label="Replay the game"
+              title="Replay the game"
+              hidden
+            >
               <svg class="icon" aria-hidden="true">
                 <use href="svg/icons.svg?v={{ build }}#replay" />
               </svg>
             </button>
           </div>
           <div class="controls__group" role="group" aria-label="Site">
-            <button class="btn btn--ghost btn--icon" id="toggleSound" type="button" aria-label="Sound"
-              aria-pressed="false" title="Sound: off">
+            <button
+              class="btn btn--ghost btn--icon"
+              id="toggleSound"
+              type="button"
+              aria-label="Sound"
+              aria-pressed="false"
+              title="Sound: off"
+            >
               <svg class="icon" aria-hidden="true">
                 <use href="svg/icons.svg?v={{ build }}#sound-off" />
               </svg>
             </button>
-            <button class="btn btn--ghost btn--icon" id="openStats" type="button" aria-label="Your games and rating"
-              title="Your games and rating">
+            <button
+              class="btn btn--ghost btn--icon"
+              id="openStats"
+              type="button"
+              aria-label="Your games and rating"
+              title="Your games and rating"
+            >
               <svg class="icon" aria-hidden="true">
                 <use href="svg/icons.svg?v={{ build }}#stats" />
               </svg>
             </button>
-            <button class="btn btn--ghost btn--icon" id="openSettings" type="button" aria-label="Settings"
-              title="Settings">
+            <button
+              class="btn btn--ghost btn--icon"
+              id="openSettings"
+              type="button"
+              aria-label="Settings"
+              title="Settings"
+            >
               <svg class="icon" aria-hidden="true">
                 <use href="svg/icons.svg?v={{ build }}#settings" />
               </svg>
             </button>
-            <button class="btn btn--ghost btn--icon" id="openRules" type="button" aria-label="How to play"
-              aria-keyshortcuts="?" title="How to play (?)">
+            <button
+              class="btn btn--ghost btn--icon"
+              id="openRules"
+              type="button"
+              aria-label="How to play"
+              aria-keyshortcuts="?"
+              title="How to play (?)"
+            >
               <svg class="icon" aria-hidden="true">
                 <use href="svg/icons.svg?v={{ build }}#help" />
               </svg>
@@ -98,17 +150,22 @@
       </header>
 
       <p class="turn" id="turn" aria-live="polite">
-        <span class="turn__dot"></span><span class="turn__text" id="turnText">Setting up</span><span class="turn__note" id="turnNote"></span>
+        <span class="turn__dot"></span><span class="turn__text" id="turnText">Setting up</span><span
+          class="turn__note"
+          id="turnNote"
+        ></span>
       </p>
 
       <div class="board" id="board" role="group" aria-label="The board"></div>
 
       <div class="status">
-        <p class="score"
-          data-player="1"><span class="score__num" id="score1">0</span><span class="score__who label" id="name1">Player 1</span></p>
+        <p class="score" data-player="1">
+          <span class="score__num" id="score1">0</span><span class="score__who label" id="name1">Player 1</span>
+        </p>
         <p class="hand">In hand <b id="hand">0</b></p>
-        <p class="score"
-          data-player="2"><span class="score__who label" id="name2">Player 2</span><span class="score__num" id="score2">0</span></p>
+        <p class="score" data-player="2">
+          <span class="score__who label" id="name2">Player 2</span><span class="score__num" id="score2">0</span>
+        </p>
       </div>
       <p class="toast" id="toast" role="status" aria-live="polite"></p>
 
@@ -121,24 +178,34 @@
         <span id="rulesSummary"></span>
         <span>Keys <kbd>1</kbd>–<kbd>7</kbd> <kbd>N</kbd> <kbd>U</kbd> <kbd>H</kbd> <kbd>?</kbd></span>
         <span class="footer__end">
-          <a class="link-arrow"
-            href="https://github.com/seven-leven/mancala">Source on GitHub <svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#arrow-right"/></svg></a>
-          <!-- The build writes the version from deno.json here -->
-          <a class="footer__version" href="https://github.com/seven-leven/mancala/blob/main/CHANGELOG.md"
-            title="What changed in each version">v{{ version }}</a>
+          <a class="link-arrow" href="https://github.com/seven-leven/mancala">Source on GitHub <svg
+              class="icon"
+              aria-hidden="true"
+            >
+              <use href="svg/icons.svg?v={{ build }}#arrow-right" />
+            </svg></a>
+          <!-- The build writes the version from package.json here -->
+          <a
+            class="footer__version"
+            href="https://github.com/seven-leven/mancala/blob/main/CHANGELOG.md"
+            title="What changed in each version"
+          >v{{ version }}</a>
         </span>
       </footer>
     </main>
 
     <dialog id="rules" class="intro" aria-labelledby="rulesTitle">
-      <form method="dialog" class="intro__close"><button class="icon-btn" aria-label="Close">
-          <svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#close"/></svg>
-        </button></form>
+      <form method="dialog" class="intro__close">
+        <button class="icon-btn" aria-label="Close">
+          <svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#close" /></svg>
+        </button>
+      </form>
       <p class="label eyebrow">How to play</p>
       <h2 id="rulesTitle">Think ahead.<br><span class="intro__accent">Bank more.</span></h2>
-      <p
-        class="intro__lead">Move seeds around the board, chain extra turns, and capture your opponent's seeds. Finish with
-        the fullest store.</p>
+      <p class="intro__lead">
+        Move seeds around the board, chain extra turns, and capture your opponent's seeds. Finish with the fullest
+        store.
+      </p>
 
       <div class="intro__players">
         <p><span class="dot" data-player="1"></span><strong>Player 1</strong><span>Bottom row · right store</span></p>
@@ -148,50 +215,64 @@
       <h3>Your turn, in 3 steps</h3>
       <ol class="intro__steps">
         <li><strong>Pick a pit</strong><span>Choose any pit on your side and pick up all its seeds.</span></li>
-        <li><strong>Sow counter-clockwise</strong><span>Drop one seed into each pit after it, and into your store. Skip
-            your opponent's store.</span></li>
-        <li><strong>Follow your last seed</strong><span>Where it lands decides whether you relay, play again, or
-            capture.</span></li>
+        <li>
+          <strong>Sow counter-clockwise</strong><span>Drop one seed into each pit after it, and into your store. Skip
+            your opponent's store.</span>
+        </li>
+        <li>
+          <strong>Follow your last seed</strong><span>Where it lands decides whether you relay, play again, or
+            capture.</span>
+        </li>
       </ol>
 
       <hr>
       <h3>Three rules to remember</h3>
       <div class="intro__rules">
         <div class="intro__card">
-          <p
-            class="intro__card-title"><svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#relay"/></svg>Relay</p>
+          <p class="intro__card-title">
+            <svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#relay" /></svg>Relay
+          </p>
           <p>Last seed lands in a pit that already had seeds? Pick them all up and keep sowing.</p>
         </div>
         <div class="intro__card">
-          <p
-            class="intro__card-title"><svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#free-turn"/></svg>Free turn</p>
+          <p class="intro__card-title">
+            <svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#free-turn" /></svg>Free turn
+          </p>
           <p>Last seed lands in your own store? Play again.</p>
         </div>
         <div class="intro__card">
-          <p
-            class="intro__card-title"><svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#capture"/></svg>Capture</p>
-          <p
-            id="captureRule">Last seed lands in an empty pit on your side? Bank the seeds in the pit opposite. Your last
-            seed stays where it landed.</p>
+          <p class="intro__card-title">
+            <svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#capture" /></svg>Capture
+          </p>
+          <p id="captureRule">
+            Last seed lands in an empty pit on your side? Bank the seeds in the pit opposite. Your last seed stays where
+            it landed.
+          </p>
         </div>
       </div>
 
       <div class="intro__tip">
-        <p
-          class="intro__card-title"><svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#tip"/></svg>A word of strategy</p>
-        <p
-          id="firstRule">Going first matters. Opening with pit 1 starts a chain of free turns that wins before the other
-          side ever moves. Choose who goes first in Settings.</p>
+        <p class="intro__card-title">
+          <svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#tip" /></svg>A word of strategy
+        </p>
+        <p id="firstRule">
+          Going first matters. Opening with pit 1 starts a chain of free turns that wins before the other side ever
+          moves. Choose who goes first in Settings.
+        </p>
       </div>
 
       <h3>How to win</h3>
-      <p id="endRule">The game ends when a side runs out of seeds, or as soon as a store holds more than half of all 98.
-        Each player banks what's left on their side, and the fuller store wins.</p>
+      <p id="endRule">
+        The game ends when a side runs out of seeds, or as soon as a store holds more than half of all 98. Each player
+        banks what's left on their side, and the fuller store wins.
+      </p>
 
       <form method="dialog" class="intro__go"><button class="btn btn--primary">Let's play →</button></form>
-      <p class="intro__keys"><span><kbd>1</kbd>–<kbd>7</kbd> pits</span> · <span><kbd>N</kbd> new game</span> ·
+      <p class="intro__keys">
+        <span><kbd>1</kbd>–<kbd>7</kbd> pits</span> · <span><kbd>N</kbd> new game</span> ·
         <span><kbd>U</kbd> undo</span> · <span><kbd>H</kbd> hint</span> · <span><kbd>S</kbd> skip</span> ·
-        <span><kbd>?</kbd> help</span></p>
+        <span><kbd>?</kbd> help</span>
+      </p>
     </dialog>
 
     <dialog id="stats" aria-labelledby="statsTitle">
@@ -202,16 +283,22 @@
       <table class="stats-table" id="statsVs"></table>
       <ol class="stats-games" id="statsGames"></ol>
       <p class="turn__note">
-        Saved in this browser (use Save a copy to keep a backup; Safari can clear sites you haven't visited for a
-        week). A game is rated when it's you against one bot, played to the end under the
-        standard rules, without Undo or Hint. Each game keeps the bot's rating from the day you played it.
+        Saved in this browser (use Save a copy to keep a backup; Safari can clear sites you haven't visited for a week).
+        A game is rated when it's you against one bot, played to the end under the standard rules, without Undo or Hint.
+        Each game keeps the bot's rating from the day you played it.
       </p>
       <form method="dialog" class="dialog__actions">
         <button class="btn btn--ghost" type="button" id="exportHistory">Save a copy</button>
         <button class="btn btn--ghost" type="button" id="loadCopy">Load a copy</button>
-        <button class="btn btn--ghost" type="button" id="exportMgn"
-          title="Your games in MGN, a text notation (like chess's PGN)">Save as MGN</button>
-        <input type="file" id="importHistory" accept="application/json,.json" hidden>
+        <button
+          class="btn btn--ghost"
+          type="button"
+          id="exportMgn"
+          title="Your games in MGN, a text notation (like chess's PGN)"
+        >
+          Save as MGN
+        </button>
+        <input type="file" id="importHistory" accept="application/json, .json" hidden>
         <button class="btn btn--ghost" type="button" id="clearHistory">Clear history</button>
         <button class="btn btn--primary">Done</button>
       </form>
@@ -222,10 +309,14 @@
       <h2 id="settingsTitle">Who's playing</h2>
       <form method="dialog" id="settingsForm">
         <div class="field-row">
-          <label
-            class="field"><span class="label">Player 1 · bottom</span><span class="select"><select name="p1"></select><svg class="icon select__chevron" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#chevron-down"/></svg></span></label>
-          <label
-            class="field"><span class="label">Player 2 · top</span><span class="select"><select name="p2"></select><svg class="icon select__chevron" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#chevron-down"/></svg></span></label>
+          <label class="field"><span class="label">Player 1 · bottom</span><span class="select"><select name="p1">
+              </select><svg class="icon select__chevron" aria-hidden="true">
+                <use href="svg/icons.svg?v={{ build }}#chevron-down" />
+              </svg></span></label>
+          <label class="field"><span class="label">Player 2 · top</span><span class="select"><select name="p2">
+              </select><svg class="icon select__chevron" aria-hidden="true">
+                <use href="svg/icons.svg?v={{ build }}#chevron-down" />
+              </svg></span></label>
         </div>
         <fieldset class="field">
           <legend class="label">Who goes first</legend>
@@ -269,8 +360,8 @@
             <label><input type="radio" name="capture" value="any"><span>Any empty pit</span></label>
           </div>
         </fieldset>
-        <label
-          class="check"><input type="checkbox" name="clinch"> End early once a store holds more than half the seeds</label>
+        <label class="check"><input type="checkbox" name="clinch"> End early once a store holds more than half the
+          seeds</label>
         <div class="dialog__actions">
           <button class="btn btn--primary" value="done">Done</button>
         </div>

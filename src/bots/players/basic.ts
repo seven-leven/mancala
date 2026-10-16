@@ -5,7 +5,10 @@ import type { Bot, Rng } from "../contracts.ts";
 
 /** Plays any legal pit. */
 export class RandomBot implements Bot {
-  constructor(private rng: Rng = Math.random) {}
+  private rng: Rng;
+  constructor(rng: Rng = Math.random) {
+    this.rng = rng;
+  }
   choose(state: GameState): number | null {
     const moves = validMoves(state);
     return moves.length ? moves[Math.floor(this.rng() * moves.length)] : null;

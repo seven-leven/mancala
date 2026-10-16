@@ -10,7 +10,10 @@ import type { Bot } from "../contracts.ts";
  * takes a free turn or two and then stops looking.
  */
 export class DfsBot implements Bot {
-  constructor(private maxDepth = 8) {}
+  private maxDepth: number;
+  constructor(maxDepth = 8) {
+    this.maxDepth = maxDepth;
+  }
 
   choose(state: GameState): number | null {
     const me = state.current;

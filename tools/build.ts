@@ -1,23 +1,23 @@
 /**
  * Builds the site into dist/: copies public/ and bundles the TypeScript with esbuild.
  *
- *   deno task build     build once
- *   deno task dev       build, rebuild on changes, and serve at http://localhost:8010/
+ *   npm run build     build once
+ *   npm run dev       build, rebuild on changes, and serve at http://localhost:8010/
  *
- * src/main.ts becomes dist/app.js and src/bots/worker.ts becomes dist/worker.js. esbuild runs
- * as WebAssembly (fetched once from jsDelivr into .cache/), so the build needs nothing from npm.
+ * src/main.ts becomes dist/app.js and src/bots/worker.ts becomes dist/worker.js.
  */
 import * as esbuild from "esbuild";
-import { serveDir } from "@std/http/file-server";
-import { fromFileUrl, join, relative, SEPARATOR } from "@std/path";
+import { createHash } from "node:crypto";
+import { watch } from "node:fs";
+import { cp, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { createServer } from "node:http";
+import { extname, join, relative, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = fromFileUrl(new URL("..", import.meta.url));
+const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const DIST = join(ROOT, "dist");
-const ESBUILD = "0.25.5";
-const WASM_URL = `https://cdn.jsdelivr.net/npm/esbuild-wasm@${ESBUILD}/esbuild.wasm`;
-const WASM_CACHE = join(ROOT, ".cache", `esbuild-${ESBUILD}.wasm`);
 
-const version: string = JSON.parse(await Deno.readTextFile(join(ROOT, "deno.json"))).version;
+const version: string = JSON.parse(await readFile(join(ROOT, "package.json"), "utf8")).version;
 
 /**
  * A short hash of everything the site is built from (src/, public/ and the version). The page
@@ -28,113 +28,91 @@ const version: string = JSON.parse(await Deno.readTextFile(join(ROOT, "deno.json
 async function buildStamp(): Promise<string> {
   const parts: string[] = [version];
   const walk = async (dir: string) => {
-    const entries = [];
-    for await (const e of Deno.readDir(dir)) entries.push(e);
+    const entries = await readdir(dir, { withFileTypes: true });
     for (const e of entries.sort((a, b) => a.name.localeCompare(b.name))) {
       const path = join(dir, e.name);
-      if (e.isDirectory) await walk(path);
-      else parts.push(relative(ROOT, path), await Deno.readTextFile(path));
+      if (e.isDirectory()) await walk(path);
+      // Paths with forward slashes, so the stamp is the same on every system.
+      else parts.push(relative(ROOT, path).split(sep).join("/"), await readFile(path, "utf8"));
     }
   };
   await walk(join(ROOT, "src"));
   await walk(join(ROOT, "public"));
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(parts.join("\0")));
-  return [...new Uint8Array(digest).slice(0, 4)].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-async function esbuildWasm(): Promise<WebAssembly.Module> {
-  let bytes: Uint8Array<ArrayBuffer>;
-  try {
-    bytes = await Deno.readFile(WASM_CACHE);
-  } catch {
-    const res = await fetch(WASM_URL);
-    if (!res.ok) throw new Error(`Couldn't download esbuild (${res.status} from ${WASM_URL})`);
-    bytes = new Uint8Array(await res.arrayBuffer());
-    await Deno.mkdir(join(ROOT, ".cache"), { recursive: true });
-    await Deno.writeFile(WASM_CACHE, bytes);
-  }
-  return await WebAssembly.compile(bytes);
-}
-await esbuild.initialize({ wasmModule: await esbuildWasm(), worker: false });
-
-/** esbuild-wasm can't read files itself, so this plugin resolves and loads the sources. */
-const sources: esbuild.Plugin = {
-  name: "sources",
-  setup(build) {
-    // Paths inside the build are posix paths from the repo root ("/src/main.ts").
-    const toBuildPath = (abs: string) => "/" + relative(ROOT, abs).split(SEPARATOR).join("/");
-    const toDisk = (p: string) => join(ROOT, ...p.split("/"));
-    build.onResolve({ filter: /.*/ }, ({ path, importer }) => {
-      const base = importer ? join(toDisk(importer), "..") : ROOT;
-      return { path: toBuildPath(join(base, path)), namespace: "src" };
-    });
-    build.onLoad({ filter: /.*/, namespace: "src" }, async ({ path }) => ({
-      contents: await Deno.readTextFile(toDisk(path)),
-      loader: "ts",
-    }));
-  },
-};
-
-async function copyDir(from: string, to: string): Promise<void> {
-  await Deno.mkdir(to, { recursive: true });
-  for await (const entry of Deno.readDir(from)) {
-    const [src, dest] = [join(from, entry.name), join(to, entry.name)];
-    if (entry.isDirectory) await copyDir(src, dest);
-    else await Deno.copyFile(src, dest);
-  }
+  return createHash("sha256").update(parts.join("\0")).digest("hex").slice(0, 8);
 }
 
 export async function build(): Promise<void> {
   const started = performance.now();
-  await Deno.remove(DIST, { recursive: true }).catch(() => {});
-  await copyDir(join(ROOT, "public"), DIST);
-  // The version from deno.json goes into the page itself, so the footer shows it before any script
-  // runs; the build stamp goes on the page's script and stylesheet (see buildStamp).
+  await rm(DIST, { recursive: true, force: true });
+  await mkdir(DIST, { recursive: true });
+  await cp(join(ROOT, "public"), DIST, { recursive: true });
+  // The version from package.json goes into the page itself, so the footer shows it before any
+  // script runs; the build stamp goes on the page's script and stylesheet (see buildStamp).
   const stamp = await buildStamp();
   const page = join(DIST, "index.html");
-  await Deno.writeTextFile(
+  await writeFile(
     page,
-    (await Deno.readTextFile(page)).replace(/\{\{\s*version\s*\}\}/g, version).replace(/\{\{\s*build\s*\}\}/g, stamp),
+    (await readFile(page, "utf8")).replace(/\{\{\s*version\s*\}\}/g, version).replace(/\{\{\s*build\s*\}\}/g, stamp),
   );
   const result = await esbuild.build({
-    plugins: [sources],
+    absWorkingDir: ROOT,
     entryPoints: { app: "src/main.ts", worker: "src/bots/worker.ts" },
-    outdir: "dist",
+    outdir: DIST,
     bundle: true,
     format: "esm",
     target: "es2022",
     minify: true,
     sourcemap: "linked",
-    write: false,
     define: { __VERSION__: JSON.stringify(version), __BUILD__: JSON.stringify(stamp) },
     logLevel: "warning",
+    metafile: true,
   });
-  for (const file of result.outputFiles) {
-    const name = file.path.split(/[\\/]/).pop()!;
-    await Deno.writeFile(join(DIST, name), file.contents);
-  }
-  const kb = result.outputFiles.filter((f) => f.path.endsWith(".js"))
-    .map((f) => `${f.path.split(/[\\/]/).pop()} ${(f.contents.length / 1024).toFixed(1)} kB`).join(", ");
+  const kb = Object.entries(result.metafile.outputs)
+    .filter(([path]) => path.endsWith(".js"))
+    .map(([path, out]) => `${path.split("/").pop()} ${(out.bytes / 1024).toFixed(1)} kB`).join(", ");
   console.log(`Built dist/ v${version}, build ${stamp} (${kb}) in ${Math.round(performance.now() - started)} ms`);
 }
 
-if (import.meta.main) {
-  const args = new Set(Deno.args);
+const TYPES: Record<string, string> = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".json": "application/json",
+  ".map": "application/json",
+};
+
+/** Serves dist/ for development: files as they are, / as index.html, nothing outside dist/. */
+function serve(port: number): void {
+  createServer(async (req, res) => {
+    const path = decodeURIComponent(new URL(req.url ?? "/", "http://localhost").pathname);
+    const file = resolve(DIST, "." + (path.endsWith("/") ? path + "index.html" : path));
+    if (!file.startsWith(DIST)) return void res.writeHead(403).end();
+    try {
+      const body = await readFile(file);
+      res.writeHead(200, {
+        "content-type": TYPES[extname(file)] ?? "application/octet-stream",
+        "cache-control": "no-store",
+      });
+      res.end(body);
+    } catch {
+      res.writeHead(404).end("Not found");
+    }
+  }).listen(port, () => console.log(`Serving http://localhost:${port}/`));
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const args = new Set(process.argv.slice(2));
   await build();
-  if (args.has("--serve")) {
-    Deno.serve(
-      { port: 8010, onListen: () => console.log("Serving http://localhost:8010/") },
-      (req) => serveDir(req, { fsRoot: DIST, quiet: true }),
-    );
-  }
+  if (args.has("--serve")) serve(8010);
   if (args.has("--watch")) {
     console.log("Watching src/ and public/…");
     let timer: ReturnType<typeof setTimeout> | undefined;
-    for await (const _ of Deno.watchFs([join(ROOT, "src"), join(ROOT, "public")])) {
+    const rebuild = () => {
       clearTimeout(timer);
       timer = setTimeout(() => build().catch((e) => console.error(`Build failed: ${e.message}`)), 120);
-    }
-  } else if (!args.has("--serve")) {
-    esbuild.stop();
+    };
+    for (const dir of ["src", "public"]) watch(join(ROOT, dir), { recursive: true }, rebuild);
   }
 }

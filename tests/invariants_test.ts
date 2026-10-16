@@ -3,7 +3,8 @@
  * house rules, random openings, random moves. After every turn: no seed is created or lost, the
  * input is never changed, and the event log replays to the new position; and every game ends.
  */
-import { assert, assertEquals } from "@std/assert";
+import { test } from "node:test";
+import { assert, assertEquals } from "./assert.ts";
 import { newGame, playTurn, totalSeeds, validMoves } from "../src/game/engine.ts";
 import { type GameState, M1, M2, P1, P2, type Rules, type TurnEvent } from "../src/game/types.ts";
 import { seeded } from "../tools/match.ts";
@@ -27,7 +28,7 @@ function replay(pits: readonly number[], events: TurnEvent[]): number[] {
   return p;
 }
 
-Deno.test(`engine invariants hold over ${GAMES} random games`, () => {
+test(`engine invariants hold over ${GAMES} random games`, () => {
   const rng = seeded(2026);
   const pick = <T>(xs: readonly T[]) => xs[Math.floor(rng() * xs.length)];
   let turns = 0;

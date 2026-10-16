@@ -1,12 +1,31 @@
 /**
  * What the game keeps in the browser: saved games (src/app/history.ts) and settings
- * (src/app/settings.ts), against Deno's localStorage. Each test starts from empty storage.
+ * (src/app/settings.ts), against localStorage (an in-memory one under Node, set up below). Each
+ * test starts from empty storage.
  */
-import { assert, assertEquals, assertThrows } from "@std/assert";
+import { test } from "node:test";
+import { assert, assertEquals, assertThrows } from "./assert.ts";
 import { clearGames, exportGames, importGames, loadGames, recordGame, type SavedGame } from "../src/app/history.ts";
 import { applyTheme, DEFAULTS, loadSettings, saveSettings, type Settings } from "../src/app/settings.ts";
 import { RATINGS } from "../src/bots/ratings.ts";
 import { DEFAULT_RULES, P1, P2 } from "../src/game/types.ts";
+
+// Node has no localStorage without a flag (browsers do): an in-memory one stands in. It does what
+// the game uses: getItem, setItem, removeItem, clear.
+if (typeof globalThis.localStorage === "undefined") {
+  const items = new Map<string, string>();
+  const memory: Storage = {
+    get length() {
+      return items.size;
+    },
+    key: (i) => [...items.keys()][i] ?? null,
+    getItem: (key) => items.get(key) ?? null,
+    setItem: (key, value) => void items.set(key, String(value)),
+    removeItem: (key) => void items.delete(key),
+    clear: () => items.clear(),
+  };
+  Object.defineProperty(globalThis, "localStorage", { value: memory, configurable: true });
+}
 
 /** A finished game as the turn loop hands it to recordGame(). */
 const finished = (over: Partial<Parameters<typeof recordGame>[0]> = {}) => ({
@@ -29,7 +48,7 @@ const saved = (at: string): SavedGame => ({
 });
 
 function storageTest(name: string, fn: () => void) {
-  Deno.test(name, () => {
+  test(name, () => {
     localStorage.clear();
     try {
       fn();
@@ -146,7 +165,7 @@ storageTest("bad saved settings fall back value by value", () => {
   assertEquals(loadSettings(), DEFAULTS);
 });
 
-Deno.test("applyTheme sets or clears the page's theme", () => {
+test("applyTheme sets or clears the page's theme", () => {
   const root = { dataset: {} as Record<string, string> };
   const page = globalThis as unknown as { document?: unknown };
   const before = page.document;
