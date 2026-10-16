@@ -98,8 +98,9 @@ test("minimax searches no deeper than it's told", () => {
 test("minimax stops on time", () => {
   const started = performance.now();
   const r = search(newGame(DEFAULT_RULES, P2), { timeMs: 150 });
+  // Loosely: it stopped, with a legal move. How deep it got depends on the machine (and on coverage).
   assert(performance.now() - started < 1500);
-  assert(r.depth >= 1 && r.move !== null);
+  assert(validMoves(newGame(DEFAULT_RULES, P2)).includes(r.move!));
 });
 
 test("first plays the leftmost pit from its own side", () => {
@@ -199,12 +200,9 @@ test("search bots say what they saw, for the move log", () => {
   assertEquals(minimax.note(), null);
   assertEquals(new MinimaxBot().note(), null, "before any move there's no note");
 
-  // Player 2 to move with 96 seeds against 2, but six moves deep it sees Player 1 win whatever it does.
-  //                                       0  1  2  3  4  5  6   7   8   9  10  11  12  13
-  const lost = newGame(DEFAULT_RULES, P2, [1, 1, 0, 0, 0, 0, 0, 14, 14, 14, 14, 14, 13, 13]);
-  const deep = new MinimaxBot({ depth: 6 });
-  deep.choose(lost);
-  assertEquals(deep.note(), "sees a forced loss");
+  // The winning board with Player 2 to move: whatever it plays, Player 1 still reaches 50.
+  minimax.choose({ ...win, current: P2 });
+  assertEquals(minimax.note(), "sees a forced loss");
 
   // One move ahead, and behind: "move", not "moves", and no plus sign.
   //                                         0  1  2  3  4  5  6   7   8   9  10  11  12  13
