@@ -80,7 +80,7 @@ test("last seed in your own store: a free turn", () => {
 **Positions are drawn, not described.** Put the pit numbers above the array, so the board can be read at a glance:
 
 ```ts
-//                  0  1  2  3  4  5  6   7  8  9 10 11 12 13  M1  M2
+//                  0  1  2  3  4  5  6  7  8  9 10 11 12 13  M1  M2
 const win = position([1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 49, 41]);
 ```
 
