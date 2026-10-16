@@ -19,10 +19,12 @@ seconds; CI runs the same checks on every push, and main only takes a PR whose c
 CI's "Check" runs these, in this order, and stops at the first failure. Run them the same way:
 
 ```bash
-npm run fmt:check && npm run lint && npm run check && npm test && npm run build
+npm run fmt:check && npm run lint && npm run check && npm run coverage && npm run build
 ```
 
-`npm run fmt` fixes formatting; the others say what to fix. Run `npm run coverage` too when you've added code.
+`npm run fmt` fixes formatting; the others say what to fix. CI runs the tests under coverage, so a PR that leaves new
+code untested fails even when every test passes. While you work, `npm test` is the quick run (coverage slows the search
+tests down).
 
 ## The files
 
