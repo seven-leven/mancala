@@ -9,7 +9,7 @@
     "dev": "node tools/build.ts --watch --serve",
     "build": "node tools/build.ts",
     "test": "node --test \"tests/**/*_test.ts\"",
-    "coverage": "c8 --reporter=text --reporter=html --report-dir=coverage --include=\"src/**\" --include=\"tools/**\" node --test \"tests/**/*_test.ts\"",
+    "coverage": "c8 --100 --reporter=text --reporter=html --report-dir=coverage --include=\"src/**\" --include=\"tools/**\" node --test \"tests/**/*_test.ts\"",
     "check": "tsc --noEmit",
     "lint": "eslint .",
     "fmt": "dprint fmt",
