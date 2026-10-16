@@ -1,9 +1,10 @@
 /**
  * Renders docs/design-guide.html to docs/design-guide.png with headless Chrome.
- * Run after changing docs/DESIGN.md's tokens or public/style.css:  deno task design-sheet
+ * Run after changing docs/DESIGN.md's tokens or public/style.css:  npm run design-sheet
  *
  * Chrome is found at CHROME_PATH or the usual install locations.
  */
+import { statSync } from "node:fs";
 import puppeteer from "puppeteer-core";
 
 const CANDIDATES = [
@@ -13,9 +14,9 @@ const CANDIDATES = [
   "/usr/bin/google-chrome",
   "/usr/bin/chromium",
 ];
-const chrome = Deno.env.get("CHROME_PATH") ?? CANDIDATES.find((p) => {
+const chrome = process.env.CHROME_PATH ?? CANDIDATES.find((p) => {
   try {
-    return Deno.statSync(p).isFile;
+    return statSync(p).isFile();
   } catch {
     return false;
   }

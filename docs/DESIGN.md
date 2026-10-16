@@ -37,9 +37,9 @@ too.
 | `--rule-strong` | `#cbc4b6`     | `rgba(246,244,239,0.30)`       | Ghost buttons, pills         |
 | `--accent`      | `#a8483f`     | `#e39a86`                      | Links and focus (terracotta) |
 
-Like the folio, components only use these semantic roles. The dark theme redefines them under
-`@media (prefers-color-scheme: dark)`, exactly as the folio's `.personal-band` does, and a `data-theme` attribute on
-`<html>` can force either.
+Like the folio, components only use these semantic roles. The dark theme redefines them under `@media
+(prefers-color-scheme: dark)`, exactly as the folio's `.personal-band` does, and a `data-theme` attribute on `<html>`
+can force either.
 
 ### Players
 
@@ -87,10 +87,9 @@ Scale (rem): label 0.76 · caption 0.82 · small 0.9 · body 1 · lead 1.08 · h
 - **Space** (rem): 0.25 · 0.5 · 0.75 · 1 · 1.5 · 2.25.
 - **Corners:** 4px for small marks, 8px for tiles, 14px for cards and dialogs, pill (999px) for buttons, selects, tags
   and chips. Pits are circles and stores are capsules: the board is the one place with its own shapes.
-- **Shadow:** only the folio's card shadow, on dialogs:
-  `0 1px 2px rgba(22,21,20,0.04), 0 14px 34px -14px
-  rgba(22,21,20,0.22)`. The one other shade is the inset on pits and
-  stores, which makes them read as hollows in the wood, not as raised objects.
+- **Shadow:** only the folio's card shadow, on dialogs: `0 1px 2px rgba(22,21,20,0.04), 0 14px 34px -14px
+  rgba(22,21,20,0.22)`. The one other shade is the inset on pits and stores, which makes them read as hollows in the
+  wood, not as raised objects.
 - **Ease:** `cubic-bezier(0.2, 0.7, 0.2, 1)`, the folio's.
 - **Timing:** one seed drop is 220ms at Normal speed (Slow ×1.6, Fast ×0.45), a landing pulse is 300ms, and a capture
   pauses 200ms before it resolves. A move with more than 30 drops (long relays) speeds up to last about as long as 30,
@@ -151,9 +150,8 @@ usable size. Pits must stay at least 40px across, the smallest comfortable tap t
 ## Icons
 
 One outline set, kept in one file: [public/svg/icons.svg](../public/svg/icons.svg), a sprite of `<symbol>`s. Nothing is
-pasted into the page: HTML writes
-`<svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build }}#name"/></svg>` (the build stamps the URL,
-like the scripts), and scripts call `icon("name")` from `src/ui/icons.ts`.
+pasted into the page: HTML writes `<svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v={{ build
+}}#name"/></svg>` (the build stamps the URL, like the scripts), and scripts call `icon("name")` from `src/ui/icons.ts`.
 
 - **Grid and line:** a 24px grid, outline only, a 2px line with round caps and joins, no fills. The `.icon` style sets
   the line, so a symbol holds only shapes, and every icon draws alike. A dot is a zero-length line (`M12 12h.01`).
@@ -164,11 +162,11 @@ like the scripts), and scripts call `icon("name")` from `src/ui/icons.ts`.
   does ("Your games and rating"), and a key if it has one (`aria-keyshortcuts`). A button that toggles, like Sound,
   keeps one label and says whether it's on with `aria-pressed`.
 - **Adding one:** draw it to these rules, add a `<symbol>` to the sprite and its name to `IconName` in
-  `src/ui/icons.ts`, add it to the table below, and run `deno task icon-sheet`.
+  `src/ui/icons.ts`, add it to the table below, and run `npm run icon-sheet`.
 
 ![Every icon at 32, 20 and 16px, light and dark](icons.png)
 
-`deno task icon-sheet` redraws that sheet from the sprite.
+`npm run icon-sheet` redraws that sheet from the sprite.
 
 | Icon                    | Used for                                               |
 | ----------------------- | ------------------------------------------------------ |
@@ -187,7 +185,7 @@ like the scripts), and scripts call `icon("name")` from `src/ui/icons.ts`.
 | `capture`               | The Capture rule card                                  |
 | `tip`                   | Hint, and A word of strategy                           |
 
-**Site icons.** The site's mark is `public/svg/favicon.svg`. `deno task icon-sheet` also renders it to `public/png/`: a
+**Site icons.** The site's mark is `public/svg/favicon.svg`. `npm run icon-sheet` also renders it to `public/png/`: a
 32px PNG favicon for browsers that don't take SVG, and a 180px Apple touch icon on paper (iOS shows transparency as
 black). The page links all three.
 

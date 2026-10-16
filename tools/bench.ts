@@ -2,14 +2,14 @@
  * How deep and how fast Minimax searches: 30 mid-game positions (seeded, so runs compare),
  * each searched for a fixed time. Use it before and after changing src/bots/search/.
  *
- *   deno task bench [ms per position, default 300]
+ *   npm run bench [-- ms per position, default 300]
  */
 import { search } from "../src/bots/search/minimax.ts";
 import { newGame, playTurn, validMoves } from "../src/game/engine.ts";
 import { DEFAULT_RULES, type GameState, P1, P2 } from "../src/game/types.ts";
 import { seeded } from "./match.ts";
 
-const MS = Number(Deno.args[0] ?? 300);
+const MS = Number(process.argv[2] ?? 300);
 const rng = seeded(2024);
 const WIN = 10_000;
 

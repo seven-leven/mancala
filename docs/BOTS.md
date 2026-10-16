@@ -31,8 +31,8 @@ The menus, the Web Worker, saved games and the tournament all read it.
 
 ## Rules every bot follows
 
-1. **Ask the engine; never re-implement the rules.** A bot learns what a move does from `playTurn()` (with
-   `{ record: false }`), and what it may play from `validMoves()`.
+1. **Ask the engine; never re-implement the rules.** A bot learns what a move does from `playTurn()` (with `{ record:
+   false }`), and what it may play from `validMoves()`.
 2. **Always legal.** `choose` returns one of `validMoves(state)`, and returns null only when that's empty. The tests
    play every bot through whole games to check.
 3. **Plays either side.** A bot plays for `state.current`, whichever player that is.
@@ -70,7 +70,7 @@ them. A new idea is a new function there, not a copy inside a bot.
 
 ## Rating
 
-Every bot in `BOTS` is rated against every other by the rating harness, `deno task rate`. How to run it, how many games,
+Every bot in `BOTS` is rated against every other by the rating harness, `npm run rate`. How to run it, how many games,
 how to read the ranges and where a new bot should land: [RATING.md](RATING.md).
 
 **Tunable on purpose.** A bot meant to fill a gap should have one knob that moves its strength smoothly (a probability,
@@ -90,7 +90,7 @@ A bot that lands on top of another adds nothing to the menu. Keep it out of `BOT
 
 A bot that works but doesn't earn its place yet (it rates on top of another, or costs far more than it adds) can go
 dormant: it moves from `BOTS` to `DORMANT` in `src/bots/bots.ts`. It's out of the menus and the default tournament, its
-id stays reserved, and `deno task rate --bots random,minimax,grandmaster` still rates it, so it can come back when
+id stays reserved, and `npm run rate -- --bots random,minimax,grandmaster` still rates it, so it can come back when
 something changes. Say why next to it.
 
 Dormant now: Grandmaster (Minimax searching to depth 10; level with Minimax for five times the time), and First (always

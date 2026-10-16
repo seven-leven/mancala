@@ -1,0 +1,37 @@
+{
+  "lineWidth": 120,
+  "typescript": {
+    "quoteStyle": "preferDouble",
+    "quoteProps": "asNeeded",
+    "arrowFunction.useParentheses": "force",
+    "binaryExpression.operatorPosition": "sameLine",
+    "conditionalExpression.operatorPosition": "nextLine",
+    "nextControlFlowPosition": "sameLine",
+    "bracePosition": "sameLine",
+    "commentLine.forceSpaceAfterSlashes": false,
+    "constructSignature.spaceAfterNewKeyword": true,
+    "constructorType.spaceAfterNewKeyword": true,
+    "module.sortImportDeclarations": "maintain",
+    "module.sortExportDeclarations": "maintain",
+    "exportDeclaration.sortNamedExports": "maintain",
+    "importDeclaration.sortNamedImports": "maintain"
+  },
+  "markdown": {
+    "textWrap": "always"
+  },
+  "excludes": [
+    "dist/",
+    "data/",
+    "node_modules/",
+    ".cache/",
+    "docs/design-guide.html",
+    "package-lock.json"
+  ],
+  "plugins": [
+    "npm:@dprint/typescript@0.96.1",
+    "npm:@dprint/json@0.25.2",
+    "npm:@dprint/markdown@0.26.0",
+    "npm:dprint-plugin-malva@0.16.0",
+    "npm:dprint-plugin-markup@0.27.5"
+  ]
+}

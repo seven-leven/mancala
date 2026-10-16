@@ -10,31 +10,35 @@
  * 5. GitHub Actions builds main and publishes dist/ to the gh-pages branch, which GitHub Pages
  *    serves. This waits for that run and reports.
  *
- * Run: deno task release
+ * Run: npm run release
  */
+import { execFile, spawn } from "node:child_process";
+import { readFile } from "node:fs/promises";
+
 const SITE = "https://seven-leven.github.io/mancala/";
 
-async function run(cmd: string, args: string[]): Promise<boolean> {
-  try {
-    const { success } = await new Deno.Command(cmd, { args, stdout: "inherit", stderr: "inherit" }).output();
-    return success;
-  } catch {
-    return false;
-  }
+// npm is npm.cmd on Windows, which only runs through a shell.
+const shell = process.platform === "win32";
+
+/** Runs a command with its output on screen; true if it succeeded. */
+function run(cmd: string, args: string[]): Promise<boolean> {
+  return new Promise((done) => {
+    const child = spawn(cmd, args, { stdio: "inherit", shell });
+    child.on("error", () => done(false));
+    child.on("close", (code) => done(code === 0));
+  });
 }
 
-async function capture(cmd: string, ...args: string[]): Promise<string | null> {
-  try {
-    const out = await new Deno.Command(cmd, { args, stdout: "piped", stderr: "null" }).output();
-    return out.success ? new TextDecoder().decode(out.stdout).trim() : null;
-  } catch {
-    return null;
-  }
+/** Runs a command quietly; its output, trimmed, or null if it failed. */
+function capture(cmd: string, ...args: string[]): Promise<string | null> {
+  return new Promise((done) => {
+    execFile(cmd, args, { shell }, (error, stdout) => done(error ? null : stdout.trim()));
+  });
 }
 
 function fail(message: string): never {
   console.error(`\n✗ ${message}`);
-  Deno.exit(1);
+  process.exit(1);
 }
 
 if (await capture("gh", "--version") === null) fail("Install the GitHub CLI (gh): main only takes pull requests.");
@@ -50,19 +54,19 @@ if (!await run("git", ["fetch", "origin", "main"]) || !await run("git", ["merge"
   fail("Couldn't merge origin/main into dev. Resolve it, then release again.");
 }
 
-const checks: [string, string[]][] = [
-  ["Formatting", ["fmt", "--check"]],
-  ["Lint", ["lint"]],
-  ["Types", ["task", "check"]],
-  ["Tests", ["task", "test"]],
-  ["Build", ["task", "build"]],
+const checks: [string, string][] = [
+  ["Formatting", "fmt:check"],
+  ["Lint", "lint"],
+  ["Types", "check"],
+  ["Tests", "test"],
+  ["Build", "build"],
 ];
-for (const [name, args] of checks) {
+for (const [name, script] of checks) {
   console.log(`→ ${name}…`);
-  if (!await run("deno", args)) fail(`${name} failed, so nothing was pushed.`);
+  if (!await run("npm", ["run", "--silent", script])) fail(`${name} failed, so nothing was pushed.`);
 }
 
-const version = JSON.parse(await Deno.readTextFile(new URL("../deno.json", import.meta.url))).version;
+const version = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8")).version;
 
 console.log("\n→ Pushing dev…");
 if (!await run("git", ["push", "origin", "dev"])) fail("Couldn't push dev.");

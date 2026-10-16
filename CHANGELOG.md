@@ -3,6 +3,14 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `deno.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
+## Unreleased
+
+- **Node instead of Deno.** Node 24 runs the TypeScript as it is (it strips the types), so nothing gained a compile
+  step. `npm install` once, then `npm run dev`, `npm test`, `npm run rate -- 240 --write` and so on; README has the
+  list. Tests run on Node's test runner, the rating harness on `worker_threads`, and esbuild comes from npm (a build
+  takes a tenth of a second). Formatting is dprint (what `deno fmt` was built on) and linting ESLint. The rating harness
+  plays exactly the same games as before, and the game in the browser hasn't changed.
+
 ## v2.3.0 · 2026-10-15
 
 - **A tidier toolbar** in three groups: New game and the opponent; Undo, Hint and Skip as icon buttons (Replay takes
@@ -151,8 +159,8 @@ A rewrite in TypeScript.
 - A new interface built to [DESIGN.md](docs/DESIGN.md), which borrows the
   [folio](https://seven-leven.github.io/folio/)'s design language: paper and ink themes, a wooden board with drawn
   seeds, who plays each side and who goes first, undo, hint, skip, a move log, keyboard play and a phone layout.
-- Built with esbuild (as WebAssembly) by Deno; CI checks every push and deploys `main` to the `gh-pages` branch;
-  `deno task release` ships `dev` to `main`.
+- Built with esbuild (as WebAssembly) by Deno; CI checks every push and deploys `main` to the `gh-pages` branch; `deno
+  task release` ships `dev` to `main`.
 
 ## v1.1 · 2026-07-03
 

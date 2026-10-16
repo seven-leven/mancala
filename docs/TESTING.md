@@ -1,15 +1,15 @@
 # Testing
 
-What the tests check, how to run them, and what belongs elsewhere. `deno task test` runs everything in `tests/`, in
-parallel, in about 5 seconds; CI runs the same on every push.
+What the tests check, how to run them, and what belongs elsewhere. `npm test` runs everything in `tests/`, in parallel,
+in about 5 seconds; CI runs the same on every push.
 
 ## Commands
 
-| Command                                         | What it does                                                                                             |
-| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `deno task test`                                | Every test, in parallel (`--allow-read`: the harness test starts workers, the link check reads the docs) |
-| `deno task coverage`                            | The tests with coverage, then a table of what each file's tests reach (into `data/coverage/`)            |
-| `deno test --allow-read tests/strength_test.ts` | One file                                                                                                 |
+| Command                              | What it does                                                                    |
+| ------------------------------------ | ------------------------------------------------------------------------------- |
+| `npm test`                           | Every test, in parallel, each file in its own process                           |
+| `npm run coverage`                   | The tests with coverage, then a table of what they reach in `src/` and `tools/` |
+| `node --test tests/strength_test.ts` | One file                                                                        |
 
 ## The files
 
@@ -32,29 +32,24 @@ parallel, in about 5 seconds; CI runs the same on every push.
   the rest (that's why the strength checks have one).
 - **Seeded.** Anything random takes a seeded generator (`seeded()` in `tools/match.ts`), so a failure repeats.
 - **Strength is the harness's job.** Tests check only gaps so wide they can't fail by chance. Who is 50 Elo above whom
-  is for `deno task rate` and [RATING.md](RATING.md).
+  is for `npm run rate` and [RATING.md](RATING.md).
 - **Same results.** A speed-up that claims to change nothing must keep `harness_test.ts` passing. If a bot's play
-  changes on purpose, refresh its snapshot:
-  `deno test --allow-read --allow-write=tests/snapshots tests/harness_test.ts -- --update`, and say why in the commit.
+  changes on purpose, refresh its snapshot: `UPDATE_SNAPSHOT=1 node --test tests/harness_test.ts`, and say why in the
+  commit.
 
 ## What isn't covered
 
-`deno task coverage` (October 2026): 98% of lines in the files the tests load, none below 93%. What no test loads:
+`npm run coverage` (October 2026, Node 24): 94% of branches in the files the tests load. Node counts lines coarsely (it
+reports 100%), so branches are the figure to watch. What no test loads:
 
 - **The page.** `src/main.ts`, `src/app/game.ts` (the turn loop: undo, hint, which games are rated), `src/ui/` (the
   board, the picker, the stats dialog, sound) and `src/bots/client.ts` need a browser's DOM, so they're checked by hand
-  in `deno task dev`. Testing them would take a DOM for the tests (deno-dom, or happy-dom under Node).
+  in `npm run dev`. Testing them would take a DOM for the tests (such as happy-dom).
 
-## Deno and Node
+## How they run
 
-The game itself (`src/`) uses no Deno API: it runs in the browser. The tests are mostly portable too, but not yet
-runnable under Node as they stand:
-
-- **Every file** uses `Deno.test` and `@std/assert`. `@std/assert` installs under Node from JSR; `Deno.test` would
-  become `node:test`'s `test` (one import per file, or a two-line wrapper both runtimes share).
-- **Three files** use more of Deno: `docs_test.ts` reads files (`Deno.readDir`, `Deno.readTextFile`, `Deno.stat`: become
-  `node:fs/promises`), `harness_test.ts` reads `Deno.args` and writes its snapshot, and starts the rating harness's Web
-  Workers (`tools/tournament/pool.ts`: Node has `node:worker_threads` instead), and `storage_test.ts` uses
-  `localStorage` (Node has it only behind a flag, so it would need a small in-memory stand-in).
-- **The tools** (`tools/`) use Deno's file, process and worker APIs throughout, and `deno.json`'s tasks and permissions;
-  they'd move with the rest of the migration.
+`npm test` is Node's own test runner (`node --test`), which runs each test file in its own process, in parallel. Node
+runs the `.ts` files directly by stripping the types, so there's no compile step; `npm run check` type-checks
+separately, with the options that keep the code strippable (no parameter properties or enums). The assertions are
+`assert`, `assertEquals` and `assertThrows` from `tests/assert.ts`, on `node:assert`. Node has no `localStorage`, so
+`storage_test.ts` puts an in-memory one in its place.

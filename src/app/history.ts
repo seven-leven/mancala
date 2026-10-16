@@ -53,7 +53,7 @@ function saveGames(games: SavedGame[]): void {
 
 /**
  * Saved games as MGN (docs/NOTATION.md), one after another: readable, and ready for
- * `deno task positions`. A game that won't replay (from an older version's rules) is left out.
+ * `npm run positions`. A game that won't replay (from an older version's rules) is left out.
  */
 export function gamesToMgn(games: SavedGame[]): string {
   const out: string[] = [];

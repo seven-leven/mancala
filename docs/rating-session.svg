@@ -1,9 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 506" width="720" height="506" role="img" aria-labelledby="t d">
   <title id="t">A rating session, step by step</title>
-  <desc
-    id="d">1. Decide whether to re-rate: A new or changed bot, or an engine or harness change that plays different games. 2. Place a new bot: A quick run with Random and a few neighbours; tune its knob until it lands in its gap. 3. Run the full rating: Every bot in BOTS, 240 games a pairing: about 5 min on 16 cores. Ctrl+C stops; --resume goes on. 4. Read it as a ladder: Neighbours whose 90% ranges overlap are too close to call; a move inside the old range is noise. 5. Publish: Redraw the chart, reorder levels if the ladder changed, update the README table and CHANGELOG.</desc>
-  <style>
-  svg {
+  <desc id="d">1. Decide whether to re-rate: A new or changed bot, or an engine or harness change that plays different games. 2. Place a new bot: A quick run with Random and a few neighbours; tune its knob until it lands in its gap. 3. Run the full rating: Every bot in BOTS, 240 games a pairing: about 5 min on 16 cores. Ctrl+C stops; --resume goes on. 4. Read it as a ladder: Neighbours whose 90% ranges overlap are too close to call; a move inside the old range is noise. 5. Publish: Redraw the chart, reorder levels if the ladder changed, update the README table and CHANGELOG.</desc>
+  <style>svg {
     --ink: #161514;
     --muted: #6b6760;
     --rule: #dfdad0;
@@ -90,8 +88,7 @@
   }
   .mark {
     fill: var(--accent);
-  }
-  </style>
+  }</style>
   <rect class="bg" width="720" height="506" rx="12" />
   <text class="title" x="24" y="34">A rating session</text>
   <text class="muted small" x="696" y="34" text-anchor="end">deno task rate · see RATING.md</text>
@@ -112,7 +109,7 @@
   <text class="muted" x="72" y="211">tune its knob until it lands in its gap.</text>
   <rect class="box" x="420" y="154" width="276" height="62" rx="8" />
   <text class="mono" x="434" y="180">deno task rate 40 --bots \</text>
-  <text class="mono" x="434" y="200">  random,greedy,turtle,newBot</text>
+  <text class="mono" x="434" y="200">random,greedy,turtle,newBot</text>
   <line class="rule" x1="44" x2="44" y1="270" y2="326" />
   <circle class="circle" cx="44" cy="256" r="14" />
   <text class="num" x="44" y="261" text-anchor="middle">3</text>
@@ -121,7 +118,7 @@
   <text class="muted" x="72" y="297">5 min on 16 cores. Ctrl+C stops; --resume goes on.</text>
   <rect class="box" x="420" y="240" width="276" height="62" rx="8" />
   <text class="mono" x="434" y="266">deno task rate 240 --write \</text>
-  <text class="mono" x="434" y="286">  | tee data/ratings-240.md</text>
+  <text class="mono" x="434" y="286">| tee data/ratings-240.md</text>
   <line class="rule" x1="44" x2="44" y1="356" y2="412" />
   <circle class="circle" cx="44" cy="342" r="14" />
   <text class="num" x="44" y="347" text-anchor="middle">4</text>

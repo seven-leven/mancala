@@ -1,0 +1,19 @@
+{
+  // Type checking only (npm run check): Node runs the .ts files itself by stripping the types,
+  // and esbuild bundles src/ for the browser. erasableSyntaxOnly and verbatimModuleSyntax make tsc
+  // reject the TypeScript Node can't strip (parameter properties, enums, type imports without `type`).
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "lib": ["es2023", "dom", "dom.iterable"],
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true
+  },
+  "include": ["src", "tools", "tests"]
+}

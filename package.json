@@ -1,0 +1,43 @@
+{
+  "name": "mancala",
+  "version": "2.3.0",
+  "private": true,
+  "description": "Ohvalhugondi, the Maldivian mancala, in the browser.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "dev": "node tools/build.ts --watch --serve",
+    "build": "node tools/build.ts",
+    "test": "node --test \"tests/**/*_test.ts\"",
+    "coverage": "node --test --experimental-test-coverage --test-coverage-include=\"src/**\" --test-coverage-include=\"tools/**\" \"tests/**/*_test.ts\"",
+    "check": "tsc --noEmit",
+    "lint": "eslint .",
+    "fmt": "dprint fmt",
+    "fmt:check": "dprint check",
+    "rate": "node tools/tournament/main.ts",
+    "positions": "node tools/positions.ts",
+    "ladder": "node tools/ladder.ts",
+    "profile": "node --cpu-prof --cpu-prof-dir=data/profile tools/tournament/main.ts 2",
+    "design-sheet": "node tools/design-sheet.ts",
+    "icon-sheet": "node tools/icon-sheet.ts",
+    "release": "node tools/release.ts",
+    "bench": "node tools/bench.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.19.2",
+    "dprint": "^0.63.0",
+    "esbuild": "^0.25.12",
+    "eslint": "^10.12.0",
+    "puppeteer-core": "^23.11.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.2"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "allowScripts": {
+    "dprint@0.63.0": true,
+    "esbuild@0.25.12": true
+  }
+}

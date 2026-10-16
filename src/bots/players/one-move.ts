@@ -13,7 +13,12 @@ export interface OneMoveOptions {
 
 /** The pit whose resulting position `evaluate` likes best (or least). */
 export class OneMoveBot implements Bot {
-  constructor(private evaluate: Evaluator, private opts: OneMoveOptions = {}, private rng: Rng = Math.random) {}
+  private evaluate: Evaluator;
+  private opts: OneMoveOptions;
+  private rng: Rng;
+  constructor(evaluate: Evaluator, opts: OneMoveOptions = {}, rng: Rng = Math.random) {
+    [this.evaluate, this.opts, this.rng] = [evaluate, opts, rng];
+  }
   choose(state: GameState): number | null {
     const me = state.current;
     const sign = this.opts.aim === "worst" ? -1 : 1;

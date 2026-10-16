@@ -22,32 +22,29 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Set up Deno (with its module cache)
-        uses: denoland/setup-deno@v2
+      - name: Set up Node (with npm's cache)
+        uses: actions/setup-node@v7
         with:
-          deno-version: v2.x
-          cache: true
+          node-version: 24
+          cache: npm
 
-      - name: Cache esbuild's WebAssembly (downloaded by tools/build.ts)
-        uses: actions/cache@v6
-        with:
-          path: .cache
-          key: esbuild-${{ hashFiles('tools/build.ts') }}
+      - name: Install
+        run: npm ci
 
       - name: Formatting
-        run: deno fmt --check
+        run: npm run fmt:check
 
       - name: Lint
-        run: deno lint
+        run: npm run lint
 
       - name: Type check
-        run: deno task check
+        run: npm run check
 
-      - name: Tests (rules and bots)
-        run: deno task test
+      - name: Tests (rules, bots, harness, docs)
+        run: npm test
 
       - name: Build
-        run: deno task build
+        run: npm run build
 
   deploy:
     name: Deploy to GitHub Pages
@@ -59,20 +56,17 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Set up Deno (with its module cache)
-        uses: denoland/setup-deno@v2
+      - name: Set up Node (with npm's cache)
+        uses: actions/setup-node@v7
         with:
-          deno-version: v2.x
-          cache: true
+          node-version: 24
+          cache: npm
 
-      - name: Cache esbuild's WebAssembly (downloaded by tools/build.ts)
-        uses: actions/cache@v6
-        with:
-          path: .cache
-          key: esbuild-${{ hashFiles('tools/build.ts') }}
+      - name: Install
+        run: npm ci
 
       - name: Build
-        run: deno task build
+        run: npm run build
 
       - name: Publish dist/ to gh-pages
         uses: peaceiris/actions-gh-pages@v4

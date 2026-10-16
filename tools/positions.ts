@@ -3,22 +3,24 @@
  * player to move. This is what tuning the evaluation needs (Texel's method, issue #15): fit the
  * weights so the evaluation of each position predicts its result.
  *
- *   deno task rate 40 --record data/games.mgn
- *   deno task positions data/games.mgn > data/positions.jsonl
+ *   npm run rate -- 40 --record data/games.mgn
+ *   npm run --silent positions -- data/games.mgn > data/positions.jsonl
  *
  * Each line: {"game":0,"ply":12,"pits":[...16],"toMove":1,"result":1,"margin":18}
  * result is 1 (the player to move went on to win), ½ or 0; margin is the final store difference
  * from their side. Finished positions are left out, since there's nothing left to predict.
  */
+import { readFile } from "node:fs/promises";
 import { parseGames, replay } from "../src/game/notation.ts";
 
-if (!Deno.args.length) {
-  console.error("Usage: deno task positions <games.mgn> [more.mgn ...] > positions.jsonl");
-  Deno.exit(1);
+const files = process.argv.slice(2);
+if (!files.length) {
+  console.error("Usage: npm run --silent positions -- <games.mgn> [more.mgn ...] > positions.jsonl");
+  process.exit(1);
 }
 let game = 0, rows = 0;
-for (const file of Deno.args) {
-  for (const record of parseGames(await Deno.readTextFile(file))) {
+for (const file of files) {
+  for (const record of parseGames(await readFile(file, "utf8"))) {
     const { states } = replay(record);
     const end = states.at(-1)!;
     const lead = end.pits[14] - end.pits[15]; // Player 1's view

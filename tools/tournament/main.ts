@@ -2,7 +2,7 @@
  * Every bot plays every other bot; prints Elo ratings and a win-rate table (as in the README).
  * docs/RATING.md is the guide: when to run it, how many games, and how to read the results.
  *
- *   deno task rate [games per pairing, default 40] [--openings random-moves|symmetric|standard]
+ *   npm run rate -- [games per pairing, default 40] [--openings random-moves|symmetric|standard]
  *                        [--bots random,greedy,...] [--time 10m] [--resume] [--record games.mgn] [--write]
  *                        [--workers N, default one per CPU core] [--adaptive]
  *
@@ -30,6 +30,7 @@
  * Gaps like that are set by the closer pairings in between (and one virtual draw per pairing keeps
  * them finite), so each rating comes with a 90% range from re-fitting resampled pairs.
  */
+import { appendFile, mkdir, writeFile } from "node:fs/promises";
 import { type BotId, BOTS, DORMANT, type DormantId, isBotId, isDormantId } from "../../src/bots/bots.ts";
 import { seeded } from "../match.ts";
 import { type Checkpoint, load, save } from "./checkpoint.ts";
@@ -40,14 +41,16 @@ import { Pool } from "./pool.ts";
 import { plan, weight } from "./adaptive.ts";
 import { RATINGS } from "../../src/bots/ratings.ts";
 
+const ARGS = process.argv.slice(2);
+
 /** A flag's value: `--name value` or `--name=value`. */
 function flag(name: string): string | undefined {
-  const i = Deno.args.findIndex((a) => a === `--${name}` || a.startsWith(`--${name}=`));
+  const i = ARGS.findIndex((a) => a === `--${name}` || a.startsWith(`--${name}=`));
   if (i < 0) return undefined;
-  return Deno.args[i].includes("=") ? Deno.args[i].split("=")[1] : Deno.args[i + 1];
+  return ARGS[i].includes("=") ? ARGS[i].split("=")[1] : ARGS[i + 1];
 }
 const VALUED = ["games", "time", "openings", "bots", "record", "workers"];
-const positional = Deno.args.filter((a, i) => !a.startsWith("--") && !VALUED.includes(Deno.args[i - 1]?.slice(2)));
+const positional = ARGS.filter((a, i) => !a.startsWith("--") && !VALUED.includes(ARGS[i - 1]?.slice(2)));
 
 /** "90s", "10m", "1h" (or plain seconds) in milliseconds. */
 function duration(s: string): number {
@@ -71,7 +74,7 @@ const unknown = picked.filter((id) => !isBotId(id) && !isDormantId(id));
 if (unknown.length) throw new Error(`--bots: no bot called ${unknown.join(", ")}; try ${Object.keys(BOTS).join(",")}`);
 if (!picked.includes("random")) throw new Error("--bots must include random, the anchor");
 const ids = ["random", ...picked.filter((id) => id !== "random")] as (BotId | DormantId)[];
-if (Deno.args.includes("--write") && (ids.some(isDormantId) || ids.length < Object.keys(BOTS).length)) {
+if (ARGS.includes("--write") && (ids.some(isDormantId) || ids.length < Object.keys(BOTS).length)) {
   throw new Error("--write rates exactly the bots in BOTS together; leave out --bots");
 }
 const labels = ids.map((id) => (isDormantId(id) ? DORMANT[id] : BOTS[id]).label);
@@ -87,7 +90,7 @@ const WORKERS = Math.max(1, Math.floor(Number(flag("workers") ?? navigator.hardw
 const pool = new Pool(WORKERS);
 
 // --adaptive: close pairings many games, lopsided ones few, fixed before the run from ratings.ts.
-const ADAPTIVE = Deno.args.includes("--adaptive");
+const ADAPTIVE = ARGS.includes("--adaptive");
 const PLAN = ADAPTIVE ? plan(ids, RATINGS, GAMES) : null;
 
 // Each bot's thinking time and moves, for Elo against time per move (this run's games only).
@@ -107,7 +110,7 @@ let state: Checkpoint = {
   decided: 0,
   ...(PLAN ? { plan: PLAN, done: {} } : {}),
 };
-if (Deno.args.includes("--resume")) {
+if (ARGS.includes("--resume")) {
   const saved = await load();
   if (!saved) throw new Error("--resume: no checkpoint to resume");
   if (saved.opening !== OPENING || saved.bots.join() !== names.join()) {
@@ -122,13 +125,13 @@ if (Deno.args.includes("--resume")) {
 // Ctrl+C once: stop after the game in progress. Twice: stop now.
 let stopping = false;
 const onInterrupt = () => {
-  if (stopping) Deno.exit(130);
+  if (stopping) process.exit(130);
   stopping = true;
 };
-Deno.addSignalListener("SIGINT", onInterrupt);
+process.on("SIGINT", onInterrupt);
 
 // A live progress line, on the terminal only, so piped output stays a clean table.
-const live = Deno.stderr.isTerminal();
+const live = process.stderr.isTTY === true;
 const startedAt = performance.now();
 const startRounds = state.rounds;
 const perRound = (n * (n - 1)) / 2;
@@ -136,13 +139,7 @@ const clock = (ms: number) => {
   const s = Math.round(ms / 1000);
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 };
-const columns = () => {
-  try {
-    return Deno.consoleSize().columns;
-  } catch {
-    return 80;
-  }
-};
+const columns = () => process.stderr.columns || 80;
 // Every round plays the same pairings, so rounds take about as long as each other, while single
 // pairings differ a thousandfold (Random against First, or anything with Minimax). So the ETA
 // counts rounds, not games: the rounds left at the recent round time, plus what's left of this
@@ -169,7 +166,7 @@ function progress(pairsThisRound: number) {
     `${clock(elapsed)} elapsed · ETA ${left === null ? "after round 1" : clock(left)}` +
     (stopping ? " · stopping" : "");
   // Clear the line and rewrite it, cut to the terminal's width so it never wraps.
-  Deno.stderr.writeSync(new TextEncoder().encode(`\r\x1b[2K${line.slice(0, columns() - 1)}`));
+  process.stderr.write(`\r\x1b[2K${line.slice(0, columns() - 1)}`);
 }
 
 /**
@@ -243,7 +240,7 @@ async function playAdaptive(): Promise<void> {
     recorded = [];
     rebuild();
     saving = saving.then(async () => {
-      if (RECORD && games.length) await Deno.writeTextFile(RECORD, games.join("\n") + "\n", { append: true });
+      if (RECORD && games.length) await appendFile(RECORD, games.join("\n") + "\n");
       await save(state);
     });
   };
@@ -267,7 +264,7 @@ async function playAdaptive(): Promise<void> {
         `Adaptive · ${doneNow}/${total} pairs · ${clock(elapsed)} elapsed · ETA ${
           eta === null ? "--:--" : clock(eta)
         }` + (stopping ? " · stopping" : "");
-      Deno.stderr.writeSync(new TextEncoder().encode(`\r\x1b[2K${line.slice(0, columns() - 1)}`));
+      process.stderr.write(`\r\x1b[2K${line.slice(0, columns() - 1)}`);
     },
   });
   flush();
@@ -288,16 +285,16 @@ else {while (state.rounds < ROUNDS && !stopping && performance.now() - startedAt
       recorded.push(...games);
     }
     state.rounds++;
-    if (RECORD) await Deno.writeTextFile(RECORD, recorded.join("\n") + "\n", { append: true });
+    if (RECORD) await appendFile(RECORD, recorded.join("\n") + "\n");
     await save(state);
   }}
 pool.close();
-Deno.removeSignalListener("SIGINT", onInterrupt);
-if (live) Deno.stderr.writeSync(new TextEncoder().encode("\r\x1b[2K"));
+process.off("SIGINT", onInterrupt);
+if (live) process.stderr.write("\r\x1b[2K");
 
 if (state.rounds === 0) {
   console.log(ADAPTIVE ? "No pairs played yet, so no ratings." : "No complete rounds yet, so no ratings.");
-  Deno.exit(0);
+  process.exit(0);
 }
 const { results, firstWon, decided } = state;
 const played = state.rounds * 2;
@@ -371,7 +368,7 @@ A 100% pairing only shows one bot is much stronger; those gaps come from the clo
     `in between, hence the ranges.`,
 );
 
-if (Deno.args.includes("--write")) {
+if (ARGS.includes("--write")) {
   const entries = order.map((i, k) => {
     const id = ids[i];
     const next = above[k] === null ? "" : `, above: ${above[k]!.toFixed(2)}`;
@@ -380,10 +377,10 @@ if (Deno.args.includes("--write")) {
     }${next} },`;
   });
   const file = new URL("../../src/bots/ratings.ts", import.meta.url);
-  await Deno.writeTextFile(
+  await writeFile(
     file,
     `/**
- * Elo ratings from \`deno task rate ${GAMES}${ADAPTIVE ? " --adaptive" : ""} --openings ${OPENING} --write\` (${
+ * Elo ratings from \`npm run rate -- ${GAMES}${ADAPTIVE ? " --adaptive" : ""} --openings ${OPENING} --write\` (${
       ADAPTIVE ? `${allGames} games, adaptive` : `${played} games per pairing`
     },
  * in matched pairs). Generated: don't edit. Random is pinned at 1000; low and high bound the 90% range;
@@ -401,7 +398,7 @@ ${entries.join("\n")}
 
 // Elo against time per move, for the chart (this run's games; wall-clock, so it depends on the machine).
 try {
-  await Deno.mkdir(new URL("../../data/", import.meta.url), { recursive: true });
+  await mkdir(new URL("../../data/", import.meta.url), { recursive: true });
   const rows = order.map((i) => ({
     id: ids[i],
     label: labels[i],
@@ -410,7 +407,7 @@ try {
     high: range[i][1],
     msPerMove: msPerMove(i),
   }));
-  await Deno.writeTextFile(
+  await writeFile(
     new URL("../../data/elo-time.json", import.meta.url),
     JSON.stringify({ workers: WORKERS, rows }, null, 2),
   );

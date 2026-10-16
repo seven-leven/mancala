@@ -64,7 +64,14 @@ export class Game {
   /** Called with each finished game once it's saved (to update the stats). */
   onGameSaved: (game: SavedGame) => void = () => {};
 
-  constructor(private board: BoardView, private ui: Chrome, public settings: Settings) {
+  private board: BoardView;
+  private ui: Chrome;
+  settings: Settings;
+
+  constructor(board: BoardView, ui: Chrome, settings: Settings) {
+    this.board = board;
+    this.ui = ui;
+    this.settings = settings;
     this.state = newGame(settings.rules);
     board.onPit((pit) => this.humanMove(pit));
   }

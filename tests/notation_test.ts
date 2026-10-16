@@ -1,4 +1,5 @@
-import { assert, assertEquals, assertThrows } from "@std/assert";
+import { test } from "node:test";
+import { assert, assertEquals, assertThrows } from "./assert.ts";
 import { GreedyBot, LookaheadBot, MinimaxBot, RandomBot } from "../src/bots/bots.ts";
 import { newGame, playTurn } from "../src/game/engine.ts";
 import { formatGame, type GameRecord, parseGame, parseGames, pitName, replay } from "../src/game/notation.ts";
@@ -18,11 +19,11 @@ function played(first: Player, seed: number, layout?: number[]): GameRecord {
   return { tags: { P1: "lookahead", P2: "random" }, rules: { ...DEFAULT_RULES }, first, layout, moves };
 }
 
-Deno.test("pits are named 1–7 from the mover's own left", () => {
+test("pits are named 1–7 from the mover's own left", () => {
   assertEquals([0, 6, 13, 7].map(pitName), [1, 7, 1, 7]);
 });
 
-Deno.test("a game survives formatting and parsing, move for move", () => {
+test("a game survives formatting and parsing, move for move", () => {
   for (const [first, seed] of [[P1, 1], [P2, 2], [P1, 3]] as const) {
     const game = played(first, seed);
     const text = formatGame(game);
@@ -34,7 +35,7 @@ Deno.test("a game survives formatting and parsing, move for move", () => {
   }
 });
 
-Deno.test("the text marks free turns and captures, and ends with the score", () => {
+test("the text marks free turns and captures, and ends with the score", () => {
   const text = formatGame(played(P1, 4));
   const end = replay(parseGame(text)).states.at(-1)!;
   assert(text.includes(`[Result "${end.pits[14]}-${end.pits[15]}"]`));
@@ -43,12 +44,12 @@ Deno.test("the text marks free turns and captures, and ends with the score", () 
   assert(/^1\. /m.test(text));
 });
 
-Deno.test("a pit 1 opening: free turn, written 1+", () => {
+test("a pit 1 opening: free turn, written 1+", () => {
   const text = formatGame({ tags: {}, rules: { ...DEFAULT_RULES }, first: P1, moves: [0] });
   assert(/\n1\. 1\+\n$/.test(text), text);
 });
 
-Deno.test("a start board other than the standard one is kept", () => {
+test("a start board other than the standard one is kept", () => {
   const layout = [3, 4, 5, 6, 7, 10, 14, 14, 10, 7, 6, 5, 4, 3];
   const game = played(P2, 5, layout);
   const text = formatGame(game);
@@ -56,19 +57,19 @@ Deno.test("a start board other than the standard one is kept", () => {
   assertEquals(parseGame(text).layout, layout);
 });
 
-Deno.test("wrong marks or illegal moves are refused", () => {
+test("wrong marks or illegal moves are refused", () => {
   assertThrows(() => parseGame(`[First "1"]\n\n1. 1`), Error, "marks"); // pit 1 is a free turn: 1+
   assertThrows(() => parseGame(`[First "1"]\n\n1. 1+ 1`), Error, "legal"); // pit 1 is empty now
   assertThrows(() => parseGame(`[First "1"]\n\n1. 9`), Error, "isn't a move");
 });
 
-Deno.test("several games in one file", () => {
+test("several games in one file", () => {
   const games = [played(P1, 6), played(P2, 7)];
   const text = games.map(formatGame).join("\n");
   assertEquals(parseGames(text).map((g) => g.moves), games.map((g) => g.moves));
 });
 
-Deno.test("search bots' games format too", () => {
+test("search bots' games format too", () => {
   const a = new MinimaxBot({ depth: 2 }), b = new GreedyBot();
   let g = newGame(DEFAULT_RULES, P2);
   const moves: number[] = [];
