@@ -52,7 +52,14 @@ test("every bot only plays legal pits", () => {
 test("bots return null when there's no move", () => {
   const over = { ...newGame(DEFAULT_RULES, P1), gameOver: true };
   for (
-    const bot of [new RandomBot(), new GreedyBot(), new LookaheadBot(), new DfsBot(), new MinimaxBot({ depth: 2 })]
+    const bot of [
+      new RandomBot(),
+      new GreedyBot(),
+      new LookaheadBot(),
+      new DfsBot(),
+      new MinimaxBot({ depth: 2 }),
+      new FirstBot(),
+    ]
   ) {
     assertEquals(bot.choose(over), null);
   }
@@ -191,4 +198,27 @@ test("search bots say what they saw, for the move log", () => {
   assertEquals(minimax.choose(forced), 6);
   assertEquals(minimax.note(), null);
   assertEquals(new MinimaxBot().note(), null, "before any move there's no note");
+
+  // Player 2 to move with 96 seeds against 2, but six moves deep it sees Player 1 win whatever it does.
+  //                                        0  1  2  3  4  5  6   7   8   9  10  11  12  13
+  const lost = newGame(DEFAULT_RULES, P2, [1, 1, 0, 0, 0, 0, 0, 14, 14, 14, 14, 14, 13, 13]);
+  const deep = new MinimaxBot({ depth: 6 });
+  deep.choose(lost);
+  assertEquals(deep.note(), "sees a forced loss");
+
+  // One move ahead, and behind: "move", not "moves", and no plus sign.
+  const behind = newGame(DEFAULT_RULES, P1, [2, 2, 2, 2, 2, 2, 2, 12, 12, 12, 12, 12, 12, 12]);
+  const shallow = new LookaheadBot(1, 0, () => 0);
+  shallow.choose(behind);
+  assertEquals(shallow.note(), "saw 1 move ahead, -5");
+});
+
+test("createBot makes dormant bots too, and fills in what it isn't told", () => {
+  assert(createBot("first") instanceof FirstBot);
+  assertEquals(createBot("first").choose(newGame(DEFAULT_RULES, P1)), 0);
+  // Grandmaster: depth 10 when rated, twice Minimax's time in the game.
+  assert(createBot("grandmaster", { mode: "rate" }) instanceof MinimaxBot);
+  assert(createBot("grandmaster") instanceof MinimaxBot);
+  // No context: Math.random and the game's time budget.
+  assert(validMoves(newGame(DEFAULT_RULES, P1)).includes(createBot("random").choose(newGame(DEFAULT_RULES, P1))!));
 });

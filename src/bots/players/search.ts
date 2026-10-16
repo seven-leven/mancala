@@ -87,6 +87,7 @@ export class TwoMoveBot implements Bot {
     let bestValue = -Infinity;
     for (const move of validMoves(state)) {
       const r = playTurn(state, move, { record: false });
+      /* c8 ignore next: the move came from validMoves; the check only narrows the type */
       if (r.invalid) continue;
       let value = this.evaluate(r.state, me);
       if (!r.state.gameOver && r.state.current !== me) {

@@ -81,3 +81,15 @@ test("search bots' games format too", () => {
   const game = { tags: {}, rules: { ...DEFAULT_RULES }, first: P2, moves } satisfies GameRecord;
   assertEquals(parseGame(formatGame(game)).moves, moves);
 });
+
+test("house rules are written out, and missing ones read as the defaults", () => {
+  const text = formatGame({ tags: {}, rules: { seeds: 5, capture: "any", clinch: false }, first: P1, moves: [] });
+  assert(text.includes('[Rules "seeds=5 capture=any clinch=off"]'), text);
+  assertEquals(parseGame('[Rules "capture=any"]\n').rules, { ...DEFAULT_RULES, capture: "any" });
+});
+
+test("a start board needs 7 pits a side, and replay refuses an illegal move", () => {
+  assertThrows(() => parseGame('[Start "7 7 7 | 7 7 7"]\n'), Error, "needs 7 pits a side");
+  const illegal: GameRecord = { tags: {}, rules: { ...DEFAULT_RULES }, first: P1, moves: [7] };
+  assertThrows(() => replay(illegal), Error, "isn't legal there");
+});

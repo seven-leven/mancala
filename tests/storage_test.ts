@@ -179,3 +179,20 @@ test("applyTheme sets or clears the page's theme", () => {
     page.document = before;
   }
 });
+
+storageTest("storage that refuses to write loses nothing but the save", () => {
+  // Full, or blocked by the browser: the game carries on, and nothing is thrown.
+  const { setItem, removeItem } = localStorage;
+  const refuse = () => {
+    throw new Error("QuotaExceededError");
+  };
+  Object.assign(localStorage, { setItem: refuse, removeItem: refuse });
+  try {
+    recordGame(finished(), null);
+    saveSettings(DEFAULTS);
+    clearGames();
+    assertEquals(loadGames(), []);
+  } finally {
+    Object.assign(localStorage, { setItem, removeItem });
+  }
+});

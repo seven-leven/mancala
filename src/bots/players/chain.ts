@@ -28,6 +28,7 @@ export class DfsBot implements Bot {
 
   private chain(state: GameState, move: number, depth: number, me: GameState["current"]): number {
     const r = playTurn(state, move, { record: false });
+    /* c8 ignore next: the move came from validMoves; the check only narrows the type */
     if (r.invalid) return -Infinity;
     if (!r.freeTurn || depth + 1 >= this.maxDepth) return score(r.state, me);
     let best = score(r.state, me);

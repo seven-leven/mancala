@@ -115,8 +115,8 @@ export function search(
       const free = flags !== INVALID && (flags & FREE_TURN) !== 0;
       at.moves[n] = move;
       at.free[n] = free ? 1 : 0;
-      at.score[n] = (move === hashMove ? 1e6 : 0) + (flags === INVALID ? -1e9 : 0) + (free ? 1000 : 0) +
-        board.pits[store];
+      // Only legal moves get here (the check above), so none needs scoring down.
+      at.score[n] = (move === hashMove ? 1e6 : 0) + (free ? 1000 : 0) + board.pits[store];
       // A stable insertion sort, best first: equal scores keep pit order, as Array.sort did.
       let k = n;
       while (k > 0 && at.score[at.order[k - 1]] < at.score[n]) {
@@ -177,6 +177,7 @@ export function search(
       const scores = new Map<number, number>();
       for (const move of order) {
         const r = playTurn(root, move, { record: false });
+        /* c8 ignore next: `order` holds only legal moves; the check only narrows the type */
         if (r.invalid) continue;
         const extend = r.freeTurn && extensions > 0;
         // scoreAll keeps the window open, so every move gets its true score, not just a bound.
@@ -199,8 +200,10 @@ export function search(
       if (Math.abs(bestScore) >= WIN) break;
     } catch (e) {
       if (e instanceof OutOfTime) break;
+      /* c8 ignore start: any other error is a bug, passed on */
       throw e;
     }
+    /* c8 ignore stop */
   }
   return { ...result, nodes };
 }

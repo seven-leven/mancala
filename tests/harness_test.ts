@@ -51,3 +51,21 @@ test("a pairing plays the same games on 1 worker, on 4, in any order, and as the
   }
   assertEquals(snapshot, JSON.parse(await readFile(SNAPSHOT, "utf8")), "results differ from the snapshot");
 });
+
+test("the pool reports each pairing as it finishes, and stops when told", async () => {
+  const pool = new Pool(1);
+  const finished: number[] = [];
+  try {
+    const result = await pool.run(jobs, undefined, {
+      done: (k, ms) => {
+        assertEquals(typeof ms, "number");
+        finished.push(k);
+      },
+      stop: () => finished.length > 0,
+    });
+    assertEquals(result, null, "a stopped run resolves null");
+    assertEquals(finished, [0], "the pairing in flight finishes; no more are handed out");
+  } finally {
+    pool.close();
+  }
+});

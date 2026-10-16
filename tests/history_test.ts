@@ -102,3 +102,27 @@ test("saved games export as MGN that parses back to the same moves", () => {
   assertEquals(back[0].tags.Date, "2026.10.10");
   assertEquals(back[1].tags.Rated, "no (Undo used)");
 });
+
+test("an unrated game with no reason says so, and a game that won't replay is left out", () => {
+  const unrated = { ...game("greedy", 1320, "win", false), moves: [0] };
+  const broken = { ...game("greedy", 1320, "win"), moves: [7] }; // Player 2's pit on Player 1's turn
+  const back = parseGames(gamesToMgn([unrated, broken]));
+  assertEquals(back.length, 1);
+  assertEquals(back[0].tags.Rated, "no (unrated)");
+});
+
+test("the record counts only one person against a known bot, from either side", () => {
+  const asP2: SavedGame = { ...game("greedy", 1320, "win"), seats: { 1: "greedy", 2: "human" }, botElo: { 1: 1320 } };
+  const twoBots: SavedGame = { ...game("greedy", 1320, "win"), seats: { 1: "random", 2: "greedy" } };
+  const gone = game("deleted" as SavedGame["seats"][2], 1320, "win");
+  const s = playerStats([asP2, twoBots, gone]);
+  // As Player 2, Player 1's win is a loss.
+  assertEquals(s.vs.get("greedy"), { w: 0, l: 1, d: 0 });
+  assertEquals([s.vs.size, s.rated, s.played], [1, 1, 3]);
+});
+
+test("seat names: a person, a bot by its level, anything else as it was saved", () => {
+  assertEquals(seatName("human"), "A person");
+  assertEquals(seatName("random"), "Easy bot");
+  assertEquals(seatName("deleted" as SavedGame["seats"][2]), "deleted");
+});
