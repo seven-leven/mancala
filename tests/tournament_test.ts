@@ -4,7 +4,9 @@ import { newGame } from "../src/game/engine.ts";
 import { DEFAULT_RULES, M1, M2, P1, P2 } from "../src/game/types.ts";
 import { seeded } from "../tools/match.ts";
 import { aboveShare, fit, misfits, ranges } from "../tools/tournament/elo.ts";
-import { opening, symmetricLayout } from "../tools/tournament/openings.ts";
+import { isOpening, opening, OPENINGS, symmetricLayout } from "../tools/tournament/openings.ts";
+import { game } from "../tools/tournament/play.ts";
+import type { Bot } from "../src/bots/bots.ts";
 
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
 
@@ -67,4 +69,21 @@ test("model check: a pairing the ratings can't explain is flagged, a fair one is
   assert(found.length > 0, "rock-paper-scissors should be flagged");
   const fair = [[[], ab, pairs(0.9)], [flip(ab), [], bc], [flip(pairs(0.9)), flip(bc), []]];
   assertEquals(misfits(fair, fit(fair)), []);
+});
+
+test("model check: a pairing with no games is skipped", () => {
+  assertEquals(misfits([[[], []], [[], []]], [1000, 1000]), []);
+});
+
+test("openings: --openings takes only the known names", () => {
+  assert(OPENINGS.every(isOpening));
+  assert(!isOpening("sicilian"));
+});
+
+test("a game stops when a bot has no move, and refuses an illegal one", () => {
+  const start = newGame(DEFAULT_RULES, P1);
+  const silent: Bot = { choose: () => null };
+  assertEquals(game(silent, silent, start), { winner: null, moves: [] });
+  const cheat: Bot = { choose: () => 7 }; // Player 2's pit, on Player 1's turn
+  assertThrows(() => game(cheat, silent, start), Error, "illegal move");
 });

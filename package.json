@@ -9,7 +9,7 @@
     "dev": "node tools/build.ts --watch --serve",
     "build": "node tools/build.ts",
     "test": "node --test \"tests/**/*_test.ts\"",
-    "coverage": "node --test --experimental-test-coverage --test-coverage-include=\"src/**\" --test-coverage-include=\"tools/**\" \"tests/**/*_test.ts\"",
+    "coverage": "c8 --reporter=text --reporter=html --report-dir=coverage --include=\"src/**\" --include=\"tools/**\" node --test \"tests/**/*_test.ts\"",
     "check": "tsc --noEmit",
     "lint": "eslint .",
     "fmt": "dprint fmt",
@@ -26,6 +26,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.19.2",
+    "c8": "^12.0.0",
     "dprint": "^0.63.0",
     "esbuild": "^0.25.12",
     "eslint": "^10.12.0",

@@ -131,3 +131,15 @@ test("the event log replays to the final position", () => {
     g = r.state;
   }
 });
+
+test("with no first player given, a new game picks one at random", () => {
+  const random = Math.random;
+  try {
+    Math.random = () => 0.2;
+    assertEquals(newGame().current, P1);
+    Math.random = () => 0.8;
+    assertEquals(newGame().current, P2);
+  } finally {
+    Math.random = random;
+  }
+});
