@@ -3,3 +3,4 @@ dist/
 tools/tournament/checkpoint.json*
 data/
 node_modules/
+coverage/

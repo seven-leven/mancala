@@ -5,11 +5,11 @@ in about 5 seconds; CI runs the same on every push.
 
 ## Commands
 
-| Command                              | What it does                                                                    |
-| ------------------------------------ | ------------------------------------------------------------------------------- |
-| `npm test`                           | Every test, in parallel, each file in its own process                           |
-| `npm run coverage`                   | The tests with coverage, then a table of what they reach in `src/` and `tools/` |
-| `node --test tests/strength_test.ts` | One file                                                                        |
+| Command                              | What it does                                                                                                             |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `npm test`                           | Every test, in parallel, each file in its own process                                                                    |
+| `npm run coverage`                   | The tests with coverage: a table of what they reach in `src/` and `tools/`, and a page per file in `coverage/index.html` |
+| `node --test tests/strength_test.ts` | One file                                                                                                                 |
 
 ## The files
 
@@ -39,8 +39,9 @@ in about 5 seconds; CI runs the same on every push.
 
 ## What isn't covered
 
-`npm run coverage` (October 2026, Node 24): 94% of branches in the files the tests load. Node counts lines coarsely (it
-reports 100%), so branches are the figure to watch. What no test loads:
+`npm run coverage` (October 2026, Node 24): 94% of branches and 99.9% of lines in the files the tests load. It runs the
+tests under [c8](https://github.com/bcoe/c8), which reads Node's own coverage data. Open `coverage/index.html` to see
+each file with the lines and branches no test reaches marked in red. What no test loads:
 
 - **The page.** `src/main.ts`, `src/app/game.ts` (the turn loop: undo, hint, which games are rated), `src/ui/` (the
   board, the picker, the stats dialog, sound) and `src/bots/client.ts` need a browser's DOM, so they're checked by hand

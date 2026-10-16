@@ -24,6 +24,7 @@
     "data/",
     "node_modules/",
     ".cache/",
+    "coverage/",
     "docs/design-guide.html",
     "package-lock.json"
   ],
