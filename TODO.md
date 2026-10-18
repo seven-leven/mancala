@@ -224,7 +224,8 @@ repo. It still describes v2.1: eight bots, 40 games a pairing, the first Elo lad
 
 ## Research
 
-None of these ship in the game; each ends as a note in the README or on the folio.
+None of these ship in the game; each ends as a post in [research/](research/README.md), which has the plan
+([research/PLAN.md](research/PLAN.md)) and a list of post ideas.
 
 - [x] Does the first player win by force? Yes: pit 1 opens a free-turn chain that clinches (see the README).
 - [ ] Opening statistics: average chain length, seeds per relay, game length; each opening pit's result.
