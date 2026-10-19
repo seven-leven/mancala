@@ -292,6 +292,8 @@ first rating (v2.0, 14 October 2026) there were four named levels with no number
 | Seventeen bots (v2.2.0)       |   17 |              60 | Matched pairs     |               ±36 |    ±41 |
 | After the speed-ups (v2.2.2)  |   17 |             240 | Matched pairs     |               ±20 |    ±25 |
 | First made dormant (v2.2.3)   |   16 |             240 | Matched pairs     |               ±21 |    ±26 |
+| Eighteen bots (v2.3.0)        |   18 |             240 | Matched pairs     |               ±19 |    ±23 |
+| Monte Carlo and DFS v2 (next) |   20 |             240 | Matched pairs     |               ±20 |    ±24 |
 
 What it taught:
 
@@ -301,19 +303,19 @@ What it taught:
 - **With seventeen bots, games are the cheaper lever.** Four times the games did more in 5 minutes than five more bots
   would. Giving the games to close pairings (adaptive allocation, in [TODO.md](../TODO.md)) should do better still.
 
-### The ladder's shape, sixteen bots without First
+### The ladder's shape, twenty bots
 
-The ladder runs from 516 (Pushover) to 2043 (Minimax), sixteen bots. The average step is about 100 Elo, so each bot
-beats the one below it about 64% of the time: each step up is noticeably harder, and none is a wall. Most rungs sit
-between 900 and 1750, where people play.
+The ladder runs from 503 (Pushover) to 2092 (Minimax), twenty bots. The average step is about 84 Elo, so each bot beats
+the one below it about 62% of the time: each step up is noticeably harder, and none is a wall. Every bot is above the
+next one down in at least 98% of resampled fits, so no neighbours are too close to call.
 
-- **Same strength, different style:** Greedy and Turtle (13 apart), Chainer and Spoiler (11). They earn their place as
-  styles, not as steps. First, level with Random (1 apart), added no style worth a rung and is now dormant.
-- **The widest gaps:** Planner to Chainer (208), Hoarder to Sometimes generous (186), Sometimes generous to Generous
-  (172), Shrewd to Lookahead (169). A new bot does most good in the first two: Planner to Chainer is the middle of the
-  ladder, where players climb.
-- **The ceiling:** nothing is above Minimax, so a strong player runs out of ladder. That's for a stronger Expert (v2.4),
-  not for more bots in the middle.
+- **Closest neighbours:** Greedy and Turtle (17 apart), Chainer and Spoiler (21), Minimax and DFS v2 (28). They earn
+  their place as styles more than as steps.
+- **The widest gaps:** Sometimes generous to Generous (171), Spoiler to Greedy (154), Striker to Random (137), Planner
+  to Sometimes planner (118), Monte Carlo to Lookahead (111).
+- **The top:** DFS v2 and Monte Carlo filled the two gaps under Minimax. Minimax itself can't be beaten under the
+  standard rules: from these openings the seat decides the game, and it already wins every won position (TODO, v2.4). A
+  contest at the top waits for the pie rule (#17).
 
 Update this section after each full rating that changes the shape.
 

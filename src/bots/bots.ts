@@ -155,6 +155,14 @@ export const BOTS = {
     family: "search",
     create: ({ rng }) => new LookaheadBot(2, 3, rng),
   },
+  montecarlo: {
+    label: "Monte Carlo",
+    level: "Lucky",
+    blurb: "Plays thousands of random games from each move and picks the one that won most.",
+    family: "montecarlo",
+    // 10 ms a move in the game; when rated, the 2000 playouts that 10 ms buys from the opening.
+    create: ({ mode, rng }) => new MonteCarloBot(mode === "rate" ? { playouts: 2000 } : { timeMs: 10 }, rng),
+  },
   shrewd: {
     label: "Shrewd",
     level: "Sharp",
@@ -169,6 +177,13 @@ export const BOTS = {
     blurb: "Chains free turns as far as they go. The original 2024 bot.",
     family: "chain",
     create: () => new DfsBot(8),
+  },
+  dfs2: {
+    label: "DFS v2",
+    level: "Very hard",
+    blurb: "Chains free turns like DFS, then checks your best chain in answer before it commits.",
+    family: "chain",
+    create: () => new DfsReplyBot(8),
   },
   minimax: {
     label: "Minimax",
@@ -186,26 +201,6 @@ export const BOTS = {
  * See docs/BOTS.md, "Dormant bots".
  */
 export const DORMANT = {
-  // DFS v2: DFS's own chains, then the opponent's best chain in answer, with alpha-beta and
-  // Minimax's evaluation. Beat DFS 56% over 400 games (+42 Elo, 90%: +13 to +71) at about 3 ms a
-  // move. Dormant until a full rating places it (between DFS and Minimax, if it holds).
-  dfs2: {
-    label: "DFS v2",
-    level: "Hard v2",
-    blurb: "Chains free turns like DFS, then checks your best chain in answer before it commits.",
-    family: "chain",
-    create: () => new DfsReplyBot(8),
-  },
-  // Monte Carlo tree search with random playouts (TODO, #16): 10 ms a move in the game, and in
-  // rating the 2000 playouts that 10 ms buys from the opening. Dormant until it's placed on the
-  // ladder (docs/RATING.md, "Placing a new bot").
-  montecarlo: {
-    label: "Monte Carlo",
-    level: "Lucky",
-    blurb: "Plays thousands of random games from each move and picks the one that won most.",
-    family: "montecarlo",
-    create: ({ mode, rng }) => new MonteCarloBot(mode === "rate" ? { playouts: 2000 } : { timeMs: 10 }, rng),
-  },
   // Rated level with Random (999 against 1000 over 240 games, too close to call), so it adds no
   // step to the ladder, and a player can't tell the two apart. Kept as the simplest fixed
   // strategy for tests and research.

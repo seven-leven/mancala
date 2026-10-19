@@ -5,17 +5,21 @@ release has a section here; work since the last one sits under _Unreleased_.
 
 ## Unreleased
 
-- **DFS v2** (dormant for now): DFS's own free-turn chains, then the opponent's best chain in answer, scored by
-  Minimax's evaluation, with alpha-beta pruning (the same moves as a full search, about 60 times faster). It sees the
-  captures DFS walks into, and beat DFS 56% over 400 matched-pair games (+42 Elo, 90% range +13 to +71) at about 3 ms a
-  move. Planner's scoring pieces added nothing to it.
+- **Twenty bots: Very hard (DFS v2) and Lucky (Monte Carlo) join the ladder**, in the two gaps under Minimax. Re-rated
+  over 240 games a pairing (45,600 games in 3 minutes 44): DFS v2 at 2064, between DFS and Minimax, and Monte Carlo at
+  1848, between Lookahead and Shrewd. Every bot is above the next one down in at least 98% of resampled fits, and the
+  widest 90% range is ±24. With close rungs added at the top it spread out: Minimax 2048 → 2092, DFS 1970 → 2005.
+- **DFS v2**: DFS's own free-turn chains, then the opponent's best chain in answer, scored by Minimax's evaluation, with
+  alpha-beta pruning (the same moves as a full search, about 60 times faster). It sees the captures DFS walks into, and
+  beat DFS 56% over 400 matched-pair games (+42 Elo, 90% range +13 to +71) at about 3 ms a move. Planner's scoring
+  pieces added nothing to it.
 - **Minimax has no headroom under these rules.** A Minimax v2 was tried three ways (a sharper evaluation, depth 8, depth
   4) and every one split every matched pair 1–1 with Minimax: from these openings the seat decides the game, and Minimax
   already wins every won position. Symmetric deals are the same. Even depth 2 lost only 7 pairs in 100.
-- **A Monte Carlo bot** (dormant for now): Monte Carlo tree search with random playouts, 10 ms a move in the game and
-  2000 playouts when rated. Placed at about 1760, between Lookahead and Shrewd, so it could fill that gap; it never beat
-  Minimax in 40 games, and DFS is stronger at a twentieth of the time. Random games are a poor guide in a game this
-  tactical. A new family, `montecarlo`, in docs/BOTS.md.
+- **A Monte Carlo bot**: Monte Carlo tree search with random playouts, 10 ms a move in the game and 2000 playouts when
+  rated. It filled the gap between Lookahead and Shrewd, but it isn't a stronger top: it scored 8% against Minimax, and
+  DFS is stronger at a twentieth of the time. Random games are a poor guide in a game this tactical. A new family,
+  `montecarlo`, in docs/BOTS.md.
 
 ## v2.4.0 · 2026-10-19
 
