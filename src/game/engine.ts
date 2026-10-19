@@ -103,6 +103,14 @@ export function turn(state: GameState, start: number, log: Log = null, info: Tur
     pits[from] = 0;
     log?.({ type: "pickup", pit: from, count: hand });
     let pos = from;
+    // Whole laps at once when no one is watching each drop: a lap is 15 drops, one in every slot
+    // but the opponent's store (the pit it started from included), and it ends where it began.
+    if (!log && hand >= 15) {
+      const laps = Math.floor(hand / 15);
+      for (let i = 0; i < 16; i++) if (i !== skip) pits[i] += laps;
+      hand -= 15 * laps;
+      drops += 15 * laps;
+    }
     while (hand > 0 && drops++ < MAX_DROPS) {
       pos = NEXT[pos];
       if (pos === skip) continue;

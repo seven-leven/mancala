@@ -78,6 +78,16 @@ export function resample(results: number[][][], rng: () => number, block = 1): n
 export const aboveShare = (samples: number[][], a: number, b: number) =>
   samples[a].filter((r, k) => r > samples[b][k]).length / samples[a].length;
 
+/**
+ * The 90% range of a's rating minus b's, over the resampled fits: how far apart two bots are, and
+ * how sure. Narrower than the two bots' own ranges side by side, which each carry the uncertainty
+ * of the chain back to Random.
+ */
+export function gapRange(samples: number[][], a: number, b: number): [number, number] {
+  const gaps = samples[a].map((r, k) => r - samples[b][k]).sort((x, y) => x - y);
+  return [Math.round(gaps[Math.floor(gaps.length * 0.05)]), Math.round(gaps[Math.floor(gaps.length * 0.95)])];
+}
+
 export interface Misfit {
   i: number;
   j: number;

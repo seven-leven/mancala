@@ -5,6 +5,14 @@ release has a section here; work since the last one sits under _Unreleased_.
 
 ## Unreleased
 
+- **Minimax 1.75× faster, playing the same moves.** Positions are keyed by 64-bit Zobrist hashes in a typed-array table
+  (no strings or objects per node), ties in the move order go to the pit with the better history, and big hands sow
+  whole laps at once. 600 decisions on seeded positions: the same moves and scores in 5.9 s instead of 10.4 s. In the
+  game it searches deeper in the same time; rating runs finish sooner.
+- **The gap to the next bot, with its 90% range**, in the rating table and the dashboard: how far apart two neighbours
+  are, and how sure.
+- **Openings, measured.** Sharing one opening a round across every pairing made the ranges wider, not narrower, and
+  symmetric deals were no better than random moves at twice the time, so the default stays (docs/RATING.md).
 - **The dashboard, two more views.** _Converging_ draws every bot's rating over the games played and how wide the ranges
   still are, so you can see when a run has played enough. _Watch the games_ replays any pairing's games on the game's
   own board: click a cell in the head-to-head table. The run keeps each pairing's first 20 games for it, and only with

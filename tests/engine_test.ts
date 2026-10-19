@@ -151,3 +151,14 @@ test("with no first player given, a new game picks one at random", () => {
     Math.random = random;
   }
 });
+
+test("a big hand sows whole laps at once, and lands exactly as seed by seed", () => {
+  // Pit 0 holds 40: two whole laps (30 seeds) and 10 more. With the event log on, every seed is
+  // dropped one at a time; without it, the laps go in at once. Both must end the same.
+  //                  0  1  2  3  4  5  6  7  8  9 10 11 12 13 M1 M2
+  const s = position([40, 2, 0, 3, 0, 1, 0, 2, 5, 0, 1, 4, 0, 2, 20, 18]);
+  const slow = playTurn(s, 0);
+  const fast = playTurn(s, 0, { record: false });
+  assertEquals(fast.state, slow.state);
+  assert(!slow.invalid && slow.events.filter((e) => e.type === "drop").length >= 40, "the log saw every seed");
+});

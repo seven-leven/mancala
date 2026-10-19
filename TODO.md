@@ -105,9 +105,12 @@ in `src/bots/players/`.
 - [ ] [#17](https://github.com/seven-leven/mancala/issues/17) A **pie rule** house rule: after the first move, the
       second player may swap sides. A real answer to the first-move edge for human games, beside choosing who goes
       first.
-- [ ] [#14](https://github.com/seven-leven/mancala/issues/14) Last in v2.4 (the profile: building keys is 1.5% of the
-      time). Faster table keys: the transposition table keys positions by a 17-character string; a number (Zobrist
-      hashing) should be cheaper. Measure with `npm run bench` before keeping it.
+- [x] [#14](https://github.com/seven-leven/mancala/issues/14) Faster table keys. Done, with more than the keys: 64-bit
+      Zobrist keys and a table in typed arrays, no strings or objects per node. With a history tie-breaker in the move
+      order and whole laps sown at once, Minimax is 1.75× faster (600 decisions: 10.4 s → 5.9 s, the same moves and
+      scores) and searches 2,369k positions a second (was 1,925k). Measured and dropped: typed-array boards (slower: the
+      engine then sees two kinds of array), killer moves and principal variation search (both searched more nodes, not
+      fewer).
 
 ## v2.5 · Faster
 

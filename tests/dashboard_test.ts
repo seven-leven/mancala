@@ -5,7 +5,7 @@
 import { test } from "node:test";
 import { assert, assertEquals } from "./assert.ts";
 import { buildSnapshot, rangesDue, type SnapshotInput } from "../tools/dashboard/snapshot.ts";
-import { fit, rangesOf, resample } from "../tools/tournament/elo.ts";
+import { fit, gapRange, rangesOf, resample } from "../tools/tournament/elo.ts";
 import { seeded } from "../tools/match.ts";
 import { playPair } from "../tools/tournament/play.ts";
 import { replay } from "../src/game/notation.ts";
@@ -73,6 +73,7 @@ test("before any game: everyone level with the anchor, and nothing to show yet",
   );
   assertEquals(s.rows.map((r) => r.change), [0, -300, null], "a bot new this run has no change");
   assertEquals(s.rows.map((r) => [r.score, r.above]), [[null, null], [null, null], [null, null]]);
+  assertEquals(s.rows[0].gap, { elo: 0, low: null, high: null }, "a gap before any ranges has no range yet");
   assertEquals(s.rows.map((r) => r.msPerMove), [0.1, null, 5]);
   assertEquals([s.misfits, s.rangesGames, s.firstMoverWon], [[], null, null]);
   assertEquals(s.score[0][1], null);
@@ -99,6 +100,15 @@ test("at the end: the ranges and 'above next' are exactly the printed table's", 
   const s = buildSnapshot(input({ results, samples, samplesRating: fit(results), samplesGames: 120 }));
   const range = rangesOf(samples);
   for (const r of s.rows.filter((row) => row.i !== 0)) assertEquals([r.low, r.high], range[r.i]);
+  for (const [k, r] of s.rows.slice(0, -1).entries()) {
+    const next = s.rows[k + 1];
+    assertEquals(r.gap, {
+      elo: r.elo - next.elo,
+      low: gapRange(samples, r.i, next.i)[0],
+      high: gapRange(samples, r.i, next.i)[1],
+    });
+  }
+  assertEquals(s.rows.at(-1)!.gap, null);
   assertEquals(s.rangesGames, 120);
   assert(s.rows.slice(0, -1).every((r) => r.above !== null && r.above >= 0 && r.above <= 1));
   assertEquals(s.rows.at(-1)!.above, null, "the weakest has no next one down");

@@ -156,6 +156,21 @@ about 53% of decided games, so this matters.
 10 seeds a pit, the same on both sides seen from each seat. `standard`: the plain starting board (every pair is the same
 game twice, so only useful for checking).
 
+**Openings measured** (October 2026, all 18 bots, 80 games a pairing, each run's ranges resampled by whole rounds so the
+setups compare fairly). Half the width of the 90% ranges, narrower is better:
+
+| Openings                                               | Median ± | Widest ± | Median gap ± |  Time |
+| ------------------------------------------------------ | -------: | -------: | -----------: | ----: |
+| `random-moves`, its own for each pairing (the default) |     30.5 |     36.5 |         26.5 |  57 s |
+| `random-moves`, one a round shared by every pairing    |       38 |       68 |         34.5 |  43 s |
+| `symmetric`, its own for each pairing                  |       33 |       41 |           25 | 139 s |
+| `symmetric`, one a round shared by every pairing       |       41 |     52.5 |         33.5 | 134 s |
+
+Sharing a round's opening across its pairings made the ranges wider, not narrower: openings suit particular bots, so one
+board moves a bot up or down against every opponent at once, and adds to its rating's noise instead of cancelling.
+Symmetric deals were no better than random moves, at more than twice the time. So the default stays, and shared openings
+were dropped.
+
 **Rounds.** One round is one matched pair for every pairing. Pairings run in parallel on a pool of workers, slowest
 first (by the last round's times), so a round doesn't end with one long Minimax pairing while the other cores wait. A
 checkpoint (`tools/tournament/checkpoint.json`, git-ignored) is saved after every round. Ctrl+C once stops after the
@@ -189,7 +204,8 @@ updates as the run goes:
 - **Converging:** each bot's rating over the games played, and how wide the ranges still are (the widest and the median,
   against the ±25 of a full 240-game run). Pick a bot to follow its line with its 90% range around it. Ranges narrow
   about as 1/√games, so this answers "is the run long enough?" by eye.
-- **Bots:** the same table the run prints, plus the rating before and the change.
+- **Bots:** the same table the run prints (with the gap to the next bot and its range), plus the rating before and the
+  change.
 - **Head to head:** each pairing's score, or (Games) its games played against the plan. In an adaptive run the Games
   view shows the allocation at work: the close pairings planned in the hundreds, the lopsided ones near the floor of 10.
 - **Watch the games:** click a head-to-head cell (or a bot's name in the panel for one bot) to replay that pairing's
@@ -218,8 +234,12 @@ replacement, a matched pair at a time. The range runs from the 5th to the 95th p
 
 ![Three ways two ratings can sit, and what a game is worth by the Elo gap](images/rating-reading.svg)
 
-The run prints a table (Elo, 90% range, the share of all its games each bot won), then a head-to-head table: each bot's
-win rate against each other bot.
+The run prints a table (Elo, 90% range, "above next", the gap to the next bot down with its 90% range, the share of all
+its games each bot won), then a head-to-head table: each bot's win rate against each other bot.
+
+**The gap to the next bot** is how far a bot rates above the one below it, with the 90% range of that difference over
+the resampled fits. It answers "how far apart are they?" directly. Two bots' own ranges side by side overstate it: each
+one also carries the uncertainty back to Random, which the two share.
 
 - **Read the ratings as a ladder, not exact numbers.** A 100% pairing only says one bot is much stronger, not how much.
   Those gaps are set by the closer pairings in between.

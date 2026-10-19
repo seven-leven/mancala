@@ -155,16 +155,21 @@ function renderLadder(s: Snapshot): void {
 
 function renderTable(s: Snapshot): void {
   const head = `<thead><tr><th>Bot</th><th class="num">Elo</th><th class="num">90% range</th><th class="num">Before</th>
-    <th class="num">Change</th><th class="num">Above next</th><th class="num">Won</th><th class="num">Games</th>
+    <th class="num">Change</th><th class="num">Above next</th><th class="num">Gap to next</th><th class="num">Won</th><th class="num">Games</th>
     <th class="num">ms a move</th></tr></thead>`;
   const rows = s.rows.map((r) => {
     const range = r.i === 0 ? "anchor" : r.low === null ? "…" : `${r.low}–${r.high}`;
+    const gap = !r.gap
+      ? "–"
+      : `${r.gap.elo}${r.gap.low === null ? "" : ` <span class="quiet">(${r.gap.low}–${r.gap.high})</span>`}`;
     const above = r.above === null ? "–" : `<span class="${r.above < 0.9 ? "unsure" : ""}">${pct(r.above)}</span>`;
     const change = r.change === null ? "–" : `<span class="${r.change < 0 ? "down" : ""}">${signed(r.change)}</span>`;
     return `<tr data-i="${r.i}" class="${r.i === selected ? "selected" : ""}">
       <td><button class="bot-name" type="button">${nameOf(r)}</button></td>
       <td class="num">${r.elo}</td><td class="num">${range}</td><td class="num">${r.previous?.elo ?? "new"}</td>
-      <td class="num">${change}</td><td class="num">${above}</td><td class="num">${pct(r.score)}</td>
+      <td class="num">${change}</td><td class="num">${above}</td><td class="num">${gap}</td><td class="num">${
+      pct(r.score)
+    }</td>
       <td class="num">${thousands(r.games)}</td><td class="num">${ms(r.msPerMove)}</td></tr>`;
   }).join("");
   const table = $("bots");

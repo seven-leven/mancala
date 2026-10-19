@@ -9,6 +9,9 @@
  * A transposition table remembers positions already searched (the same board is often reached by
  * different move orders, and every deeper pass revisits the last one), so each is searched once
  * per depth, and the best move found for it last time is tried first.
+ *
+ * Speed-ups that keep the same moves are checked against the moves before them (600 decisions
+ * on seeded positions, at depths 4 and 6); `npm run bench` measures them.
  */
 import { FREE_TURN, INVALID, pitsOf, playTurn, storeOf, turn, validMoves } from "../../game/engine.ts";
 import type { GameState } from "../../game/types.ts";
@@ -44,15 +47,90 @@ export interface SearchResult {
 
 /** What a remembered value means: exact, or only a bound because the search was cut off early. */
 const EXACT = 0, LOWER = 1, UPPER = 2;
-interface Entry {
-  depth: number;
-  value: number;
-  flag: number;
-  best: number;
-}
-/** A position's key: its 16 pit counts and whose turn it is, as a short string. */
-const keyOf = (s: GameState) => String.fromCharCode(...s.pits, s.current);
 const FREE_TURN_EXTENSIONS = 12;
+
+/*
+ * The transposition table. A position's key is 64 bits (two 32-bit halves): the XOR of a random
+ * number for each slot's seed count, and one for Player 2 to move (Zobrist hashing). Entries live
+ * in typed arrays with open addressing. The table grows instead of evicting, so it remembers every
+ * position a search visits, as the Map it replaced did; a generation number empties it between
+ * searches without clearing. No strings, no objects per node, so little for the garbage collector.
+ */
+/** More than any slot can hold under any house rules (14 pits × 15 seeds is 210). */
+const COUNTS = 256;
+const SIDE = 2 * 16 * COUNTS;
+const Z = new Uint32Array(SIDE + 2);
+{
+  // mulberry32, from a fixed seed, so keys (and searches) repeat. Not xorshift: its outputs are
+  // linear in each other, which would tie a key's two halves together and leave it 32 bits.
+  let x = 0x9e3779b9;
+  for (let k = 0; k < Z.length; k++) {
+    x = (x + 0x6d2b79f5) | 0;
+    let t = Math.imul(x ^ (x >>> 15), 1 | x);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    Z[k] = (t ^ (t >>> 14)) >>> 0;
+  }
+}
+let keyLo = 0, keyHi = 0;
+/** Sets keyLo and keyHi to the position's key. */
+function hash(s: GameState): void {
+  let lo = 0, hi = 0;
+  for (let i = 0; i < 16; i++) {
+    const k = 2 * (i * COUNTS + s.pits[i]);
+    lo ^= Z[k];
+    hi ^= Z[k + 1];
+  }
+  if (s.current === 2) {
+    lo ^= Z[SIDE];
+    hi ^= Z[SIDE + 1];
+  }
+  keyLo = lo >>> 0;
+  keyHi = hi >>> 0;
+}
+
+let size = 1 << 16, mask = size - 1, used = 0, generation = 0;
+let tLo = new Uint32Array(size), tHi = new Uint32Array(size), tGen = new Uint32Array(size);
+let tDepth = new Int16Array(size), tValue = new Float64Array(size), tFlag = new Uint8Array(size);
+let tBest = new Int8Array(size);
+/** The slot holding this key, or the empty one where it would go. */
+function slot(lo: number, hi: number): number {
+  let i = lo & mask;
+  while (tGen[i] === generation && (tLo[i] !== lo || tHi[i] !== hi)) i = (i + 1) & mask;
+  return i;
+}
+/** Doubles the table, moving this search's entries over. */
+function grow(): void {
+  const old = { tLo, tHi, tGen, tDepth, tValue, tFlag, tBest };
+  size *= 2;
+  mask = size - 1;
+  [tLo, tHi, tGen] = [new Uint32Array(size), new Uint32Array(size), new Uint32Array(size)];
+  [tDepth, tValue, tFlag, tBest] = [
+    new Int16Array(size),
+    new Float64Array(size),
+    new Uint8Array(size),
+    new Int8Array(size),
+  ];
+  for (let j = 0; j < old.tGen.length; j++) {
+    if (old.tGen[j] !== generation) continue;
+    const i = slot(old.tLo[j], old.tHi[j]);
+    [tLo[i], tHi[i], tGen[i]] = [old.tLo[j], old.tHi[j], generation];
+    [tDepth[i], tValue[i], tFlag[i], tBest[i]] = [old.tDepth[j], old.tValue[j], old.tFlag[j], old.tBest[j]];
+  }
+}
+function remember(lo: number, hi: number, depth: number, value: number, flag: number, best: number): void {
+  if (2 * (used + 1) > size) grow();
+  const i = slot(lo, hi);
+  if (tGen[i] !== generation) {
+    used++;
+    tGen[i] = generation;
+    tLo[i] = lo;
+    tHi[i] = hi;
+  }
+  tDepth[i] = depth;
+  tValue[i] = value;
+  tFlag[i] = flag;
+  tBest[i] = best;
+}
 class OutOfTime extends Error {}
 
 /** One ply's children: up to seven boards, their moves, scores, and the order to try them in. */
@@ -88,17 +166,25 @@ export function search(
   const deadline = depth === undefined ? performance.now() + timeMs : Infinity;
   const maxDepth = depth ?? 64;
   let nodes = 0;
-  const table = new Map<string, Entry>();
+  // A new generation: the table starts empty for this search.
+  generation++;
+  used = 0;
 
   // Boards for the children of each ply, made once per search and reused, so the search never
   // copies a position into a new object: each child is the parent copied into a pooled board,
   // then played in place.
   const levels: Level[] = [];
   const level = (ply: number) => (levels[ply] ??= newLevel(root));
+  // The history heuristic: how often each pit cut a search short (weighted by depth). It only
+  // breaks ties between moves the ordering below scores the same, always by less than one seed.
+  // (Killer moves, tried the same way, searched more nodes, not fewer: free turns and store gain
+  // already order this game's moves well.)
+  const history = new Float64Array(16);
 
   /**
    * The children of `s`, into `level(ply)`, best-looking first, which makes alpha-beta prune far
-   * more: last time's best move, then free turns, then whatever grows the mover's store most.
+   * more: last time's best move, then free turns, then whatever grows the mover's store most, then
+   * the pit with the better history.
    * Returns how many there are; `at.order` lists them by index, best first.
    */
   const children = (s: GameState, ply: number, hashMove = -1): number => {
@@ -116,7 +202,8 @@ export function search(
       at.moves[n] = move;
       at.free[n] = free ? 1 : 0;
       // Only legal moves get here (the check above), so none needs scoring down.
-      at.score[n] = (move === hashMove ? 1e6 : 0) + (free ? 1000 : 0) + board.pits[store];
+      at.score[n] = (move === hashMove ? 1e6 : 0) + (free ? 1000 : 0) + board.pits[store] +
+        history[move] / (history[move] + 1e4);
       // A stable insertion sort, best first: equal scores keep pit order, as Array.sort did.
       let k = n;
       while (k > 0 && at.score[at.order[k - 1]] < at.score[n]) {
@@ -135,34 +222,43 @@ export function search(
     if (++nodes % 2048 === 0 && performance.now() > deadline) throw new OutOfTime();
     if (d === 0 || s.gameOver) return value(s);
 
-    const key = keyOf(s);
-    const hit = table.get(key);
-    if (hit && hit.depth >= d) {
-      if (hit.flag === EXACT) return hit.value;
-      if (hit.flag === LOWER) alpha = Math.max(alpha, hit.value);
-      else beta = Math.min(beta, hit.value);
-      if (alpha >= beta) return hit.value;
+    hash(s);
+    const lo = keyLo, hi = keyHi;
+    const t = slot(lo, hi);
+    const hit = tGen[t] === generation;
+    if (hit && tDepth[t] >= d) {
+      const v = tValue[t];
+      if (tFlag[t] === EXACT) return v;
+      if (tFlag[t] === LOWER) alpha = Math.max(alpha, v);
+      else beta = Math.min(beta, v);
+      if (alpha >= beta) return v;
     }
 
-    const [alpha0, beta0] = [alpha, beta];
+    const alpha0 = alpha, beta0 = beta;
     const maximising = aim === "lose" || s.current === me;
     let best = maximising ? -Infinity : Infinity;
     let bestMove = -1;
     const at = level(ply);
-    const count = children(s, ply, hit?.best);
+    const count = children(s, ply, hit ? tBest[t] : -1);
     for (let c = 0; c < count; c++) {
       const k = at.order[c];
       const move = at.moves[k];
       const extend = at.free[k] === 1 && ext > 0;
       const v = alphabeta(at.boards[k], extend ? d : d - 1, extend ? ext - 1 : ext, alpha, beta, ply + 1);
-      if (maximising ? v > best : v < best) [best, bestMove] = [v, move];
+      if (maximising ? v > best : v < best) {
+        best = v;
+        bestMove = move;
+      }
       if (maximising) alpha = Math.max(alpha, v);
       else beta = Math.min(beta, v);
-      if (alpha >= beta) break;
+      if (alpha >= beta) {
+        history[move] += d * d;
+        break;
+      }
     }
     // Values are always from `me`'s side, so the bounds read the same at every node.
     const flag = best <= alpha0 ? UPPER : best >= beta0 ? LOWER : EXACT;
-    table.set(key, { depth: d, value: best, flag, best: bestMove });
+    remember(lo, hi, d, best, flag, bestMove);
     return best;
   };
 

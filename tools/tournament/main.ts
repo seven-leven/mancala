@@ -38,7 +38,7 @@ import { appendFile, mkdir, writeFile } from "node:fs/promises";
 import { type BotId, BOTS, DORMANT, type DormantId, isBotId, isDormantId } from "../../src/bots/bots.ts";
 import { seeded } from "../match.ts";
 import { type Checkpoint, load, save } from "./checkpoint.ts";
-import { aboveShare, fit, misfits, rangesOf, resample, sum } from "./elo.ts";
+import { aboveShare, fit, gapRange, misfits, rangesOf, resample, sum } from "./elo.ts";
 import { isOpening, type Opening, OPENINGS } from "./openings.ts";
 import type { PairJob, PairResult, PlayedGame } from "./play.ts";
 import { Pool } from "./pool.ts";
@@ -493,16 +493,20 @@ const order = [...ids.keys()].sort((a, b) => rating[b] - rating[a]);
 // "Above next": the share of resamples in which each bot rates above the next one down.
 const above = order.map((i, k) => (k + 1 < order.length ? aboveShare(samples, i, order[k + 1]) : null));
 const msPerMove = (i: number) => think[i].moves ? think[i].ms / think[i].moves : null;
-console.log("| Bot | Elo | 90% range | Above next | Won | ms a move |");
-console.log("| --- | ---: | :---: | ---: | ---: | ---: |");
+console.log("| Bot | Elo | 90% range | Above next | Gap to next (90%) | Won | ms a move |");
+console.log("| --- | ---: | :---: | ---: | ---: | ---: | ---: |");
 for (const [k, i] of order.entries()) {
   const all = results[i].flat();
   const rng90 = i === 0 ? "anchor" : `${range[i][0]}–${range[i][1]}`;
   const next = above[k] === null ? "–" : `${Math.round(above[k]! * 100)}%`;
+  const below = order[k + 1];
+  const gap = below === undefined
+    ? "–"
+    : `${rating[i] - rating[below]} (${gapRange(samples, i, below).join("–")})`;
   const won = `${Math.round((sum(all) / all.length) * 100)}%${ADAPTIVE ? ` of ${all.length}` : ""}`;
   const ms = msPerMove(i);
   console.log(
-    `| ${labels[i]} | ${rating[i]} | ${rng90} | ${next} | ${won} | ${
+    `| ${labels[i]} | ${rating[i]} | ${rng90} | ${next} | ${gap} | ${won} | ${
       ms === null ? "–" : ms < 1 ? ms.toFixed(2) : ms.toFixed(1)
     } |`,
   );
