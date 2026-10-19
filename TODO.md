@@ -207,6 +207,34 @@ Small additions to the rating harness's output, each an hour or so. Document eac
       same mark, so the site looks right as a bookmark and on a phone's home screen. Add them to DESIGN.md's Icons
       section.
 
+## Dashboard 2.0
+
+Ideas for the rating dashboard (`npm run rate -- --ui`, `tools/dashboard/`), roughly by how much each would help. Each
+one must keep the rule the first version kept: a run plays and prints the same with the page open or closed, at no
+measurable cost.
+
+- [ ] **Ratings converging.** Each bot's rating and range over the games played, narrowing as the run goes. It answers
+      "is this run long enough?" by eye, and shows a bot still moving when the run ends.
+- [ ] **A game viewer.** Click a head-to-head cell to replay that pairing's games on the game's own board, move by move
+      from the MGN. Most useful for pairings the model check flags: see _why_ Striker scores against DFS.
+- [ ] **Run history.** Save each run's results (`data/runs/<date>.json`) and compare any two: which bots moved, and was
+      it more than their ranges? Today "before" only means the ratings in `src/bots/ratings.ts`.
+- [ ] **Controls on the page.** Stop after this round (what Ctrl+C does), and, once a run is done, "Write these ratings"
+      (`--write`) after reading them. Writes the same files the terminal would; asks first.
+- [ ] **Start a run from the page.** Pick the bots, games, openings, adaptive or not, and go: the dashboard as a small
+      local lab (`npm run lab`), not only a view of a run started in the terminal.
+- [ ] **Placing a new bot.** With `--bots`, show the new bot's live rating between its neighbours and how sure its place
+      is, to settle "where does it land?" without reading tables (RATING.md, "Placing a new bot").
+- [ ] **SPRT matches.** For v2.4's "does the new version beat the old one?": the live log-likelihood ratio between its
+      two bounds, and a verdict the moment it crosses one.
+- [ ] **Elo against time per move.** The chart `data/elo-time.json` is written for, live: which bots buy strength with
+      time, and which waste it (Grandmaster).
+- [ ] **The workers.** What each worker is playing now and for how long, and how busy the pool is: shows a slow pairing
+      holding up the end of a round.
+- [ ] **The game itself.** Live statistics from the recorded games: first-move edge by opening, game length, and the
+      research measures (progress, entropy, relays; research/PLAN.md) by bot strength.
+- [ ] **Export.** The ladder and tables as SVG or PNG, ready for a research post or the README.
+
 ## The folio page
 
 [seven-leven.github.io/folio/code-mancala.html](https://seven-leven.github.io/folio/code-mancala.html), in the folio
