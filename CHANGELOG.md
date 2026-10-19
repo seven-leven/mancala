@@ -3,8 +3,36 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `package.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
-## Unreleased
+## v2.4.0 · 2026-10-19
 
+- **A better ETA, with an error range.** The rating run's ETA is its own module (`tools/tournament/eta.ts`), chosen and
+  calibrated on the ETA logs: from the last run with the same settings when there is one (about 9% off), otherwise from
+  the mean round leaving out the first (about 34% off; the old median ran 23% short). It now shows the range that held
+  the real finish 80% of the time, as `ETA 02:10 (01:50–02:40)`, in the terminal and the dashboard.
+  [docs/ETA.md](docs/ETA.md) has the numbers and the roadmap for ETA 2.0.
+- **Minimax 1.75× faster, playing the same moves.** Positions are keyed by 64-bit Zobrist hashes in a typed-array table
+  (no strings or objects per node), ties in the move order go to the pit with the better history, and big hands sow
+  whole laps at once. 600 decisions on seeded positions: the same moves and scores in 5.9 s instead of 10.4 s. In the
+  game it searches deeper in the same time; rating runs finish sooner.
+- **The engine sows faster** for every bot: sowing is one function outside `turn()` instead of a new one made on every
+  turn, with its own loop when no event log is wanted. Minimax 14% faster again, DFS 20%, the one-move bots up to 25%,
+  every move the same. (Scoring leaves inside Minimax's loop, and looping over pits instead of calling `validMoves()`,
+  were measured too: no real difference, so not kept.)
+- **Every bot that looks ahead shares one way of trying moves**: `playOn()` plays a move on a reused board, one per
+  depth, without the copy and event log `playTurn()` makes for the screen (`src/bots/search/moves.ts`). DFS is about 15%
+  faster, Planner, Spoiler and Chainer about 10%, and every bot plays exactly the same moves as before (checked on 400
+  positions for each of the 19). Rewriting the scoring pieces as plain loops was measured too, and made no difference,
+  so they stayed as they were.
+- **The gap to the next bot, with its 90% range**, in the rating table and the dashboard: how far apart two neighbours
+  are, and how sure.
+- **Openings, measured.** Sharing one opening a round across every pairing made the ranges wider, not narrower, and
+  symmetric deals were no better than random moves at twice the time, so the default stays (docs/RATING.md).
+- **The dashboard, two more views.** _Converging_ draws every bot's rating over the games played and how wide the ranges
+  still are, so you can see when a run has played enough. _Watch the games_ replays any pairing's games on the game's
+  own board: click a cell in the head-to-head table. The run keeps each pairing's first 20 games for it, and only with
+  `--ui`.
+- **An ETA log.** Every rating run writes its ETA predictions, about once a second, and its actual total time to
+  `data/eta/`, so the ETA can be checked against what really happened and calibrated.
 - **Watch a rating run live**: `npm run rate -- 240 --ui` serves a dashboard at http://localhost:8020/, in the game's
   own design. It shows the ladder with each bot's 90% range over its rating before the run, with pairs too close to call
   in red; each bot's results against the others, next to what the ratings predict; the head-to-head table, by score or

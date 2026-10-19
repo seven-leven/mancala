@@ -105,9 +105,12 @@ in `src/bots/players/`.
 - [ ] [#17](https://github.com/seven-leven/mancala/issues/17) A **pie rule** house rule: after the first move, the
       second player may swap sides. A real answer to the first-move edge for human games, beside choosing who goes
       first.
-- [ ] [#14](https://github.com/seven-leven/mancala/issues/14) Last in v2.4 (the profile: building keys is 1.5% of the
-      time). Faster table keys: the transposition table keys positions by a 17-character string; a number (Zobrist
-      hashing) should be cheaper. Measure with `npm run bench` before keeping it.
+- [x] [#14](https://github.com/seven-leven/mancala/issues/14) Faster table keys. Done, with more than the keys: 64-bit
+      Zobrist keys and a table in typed arrays, no strings or objects per node. With a history tie-breaker in the move
+      order and whole laps sown at once, Minimax is 1.75× faster (600 decisions: 10.4 s → 5.9 s, the same moves and
+      scores) and searches 2,369k positions a second (was 1,925k). Measured and dropped: typed-array boards (slower: the
+      engine then sees two kinds of array), killer moves and principal variation search (both searched more nodes, not
+      fewer).
 
 ## v2.5 · Faster
 
@@ -133,9 +136,11 @@ profile` and `npm run bench`; keep a change only if the tournament still prints 
 - [x] **Re-rated after the speed-ups**, with 240 games a pairing (4× as many) in 5 minutes: every 90% range within ±25
       (was ±40), three neighbouring pairs too close to call (was five). `npm run rate -- 4`: 37 s → 10 s (16 cores);
       bench 1220k → 1769k positions/s; rating fit 55 s → 0.7 s. Next: Pushover below.
-- [x] **A truthful ETA.** It counts rounds, not games: the median of the last five round times, plus what's left of this
-      round weighted by each pairing's last time. Pairings also run slowest first, so a round no longer ends with one
-      long Minimax pairing while the other cores wait. Same results.
+- [x] **A truthful ETA.** It counts rounds, not games, and pairings run slowest first, so a round no longer ends with
+      one long Minimax pairing while the other cores wait. Same results. Since replaced by `tools/tournament/eta.ts`,
+      chosen and calibrated on the ETA logs, with an 80% range: the median it used ran 23% short (docs/ETA.md).
+- [ ] **ETA 2.0**, the roadmap in [docs/ETA.md](docs/ETA.md#eta-20-the-roadmap): better than ~34% off when a run has no
+      earlier twin to learn from.
 - [x] **Adaptive allocation** (`--adaptive`). Done, with the virtual draw scaled to each pairing's games: from 480, ±27
       in 49 s against a plain 240-game run's ±22 in 220 s, 16 of 18 bots inside its ranges (docs/RATING.md, "Adaptive
       allocation"). Kept for quick re-rates; plain runs still write the menu ratings. Was: Lopsided pairings carry
@@ -206,6 +211,34 @@ Small additions to the rating harness's output, each an hour or so. Document eac
       `npm run icon-sheet`, in DESIGN.md's Icons section. Was: A PNG fallback and an Apple touch icon (180 px), in the
       same mark, so the site looks right as a bookmark and on a phone's home screen. Add them to DESIGN.md's Icons
       section.
+
+## Dashboard 2.0
+
+Ideas for the rating dashboard (`npm run rate -- --ui`, `tools/dashboard/`), roughly by how much each would help. Each
+one must keep the rule the first version kept: a run plays and prints the same with the page open or closed, at no
+measurable cost.
+
+- [x] **Ratings converging.** Each bot's rating and range over the games played, narrowing as the run goes. It answers
+      "is this run long enough?" by eye, and shows a bot still moving when the run ends.
+- [x] **A game viewer.** Click a head-to-head cell to replay that pairing's games on the game's own board, move by move
+      from the MGN. Most useful for pairings the model check flags: see _why_ Striker scores against DFS.
+- [ ] **Run history.** Save each run's results (`data/runs/<date>.json`) and compare any two: which bots moved, and was
+      it more than their ranges? Today "before" only means the ratings in `src/bots/ratings.ts`.
+- [ ] **Controls on the page.** Stop after this round (what Ctrl+C does), and, once a run is done, "Write these ratings"
+      (`--write`) after reading them. Writes the same files the terminal would; asks first.
+- [ ] **Start a run from the page.** Pick the bots, games, openings, adaptive or not, and go: the dashboard as a small
+      local lab (`npm run lab`), not only a view of a run started in the terminal.
+- [ ] **Placing a new bot.** With `--bots`, show the new bot's live rating between its neighbours and how sure its place
+      is, to settle "where does it land?" without reading tables (RATING.md, "Placing a new bot").
+- [ ] **SPRT matches.** For v2.4's "does the new version beat the old one?": the live log-likelihood ratio between its
+      two bounds, and a verdict the moment it crosses one.
+- [ ] **Elo against time per move.** The chart `data/elo-time.json` is written for, live: which bots buy strength with
+      time, and which waste it (Grandmaster).
+- [ ] **The workers.** What each worker is playing now and for how long, and how busy the pool is: shows a slow pairing
+      holding up the end of a round.
+- [ ] **The game itself.** Live statistics from the recorded games: first-move edge by opening, game length, and the
+      research measures (progress, entropy, relays; research/PLAN.md) by bot strength.
+- [ ] **Export.** The ladder and tables as SVG or PNG, ready for a research post or the README.
 
 ## The folio page
 

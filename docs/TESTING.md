@@ -48,6 +48,8 @@ One file per area. A new test goes in the file for the code it tests.
   MGN.
 - **`storage_test.ts`**: what the browser keeps: saved games (rated or not and why, backup and restore, the 500-game
   cap, corrupt storage, storage that refuses to write) and settings (defaults, bad values falling back one by one).
+- **`eta_test.ts`**: the rating run's ETA: reading an earlier run's timeline, estimating from history and from rounds,
+  and the 80% range.
 - **`dashboard_test.ts`**: the rating dashboard's snapshot: before any game, during a run, at the end (where it must
   match the printed table), and ranges moved to the latest ratings.
 - **`docs_test.ts`**: every relative link and `#anchor` in the Markdown docs resolves.
@@ -112,9 +114,10 @@ it fails if any figure drops below. It runs the tests under [c8](https://github.
 coverage data; open `coverage/index.html` to see each file, with anything no test reaches marked in red.
 
 New code comes with the tests that keep it at 100%. The one exception is code that can't run: mark it `/* c8 ignore next
-*/` (or `start` … `stop` for a block) with the reason on the same line. Five guards are marked today: the `if
-(r.invalid)` checks on moves taken from `validMoves` (they only narrow the type) and minimax passing on an error that
-isn't `OutOfTime` (only a bug reaches it). If a test could reach it, it gets a test, not an ignore.
+*/` (or `start` … `stop` for a block) with the reason on the same line. Two guards are marked today: Minimax's `if
+(r.invalid)` on a root move it already knows is legal (it only narrows the type), and Minimax passing on an error that
+isn't `OutOfTime` (only a bug reaches it). If a test could reach it, it gets a test, not an ignore; better still, code
+that can't run is written away (the bots that look ahead play moves with `playOn`, which has no such case).
 
 What no test loads, and so isn't counted:
 

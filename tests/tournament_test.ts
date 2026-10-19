@@ -3,7 +3,7 @@ import { assert, assertEquals, assertThrows } from "./assert.ts";
 import { newGame } from "../src/game/engine.ts";
 import { DEFAULT_RULES, M1, M2, P1, P2 } from "../src/game/types.ts";
 import { seeded } from "../tools/match.ts";
-import { aboveShare, fit, misfits, ranges } from "../tools/tournament/elo.ts";
+import { aboveShare, fit, gapRange, misfits, ranges } from "../tools/tournament/elo.ts";
 import { isOpening, opening, OPENINGS, symmetricLayout } from "../tools/tournament/openings.ts";
 import { game } from "../tools/tournament/play.ts";
 import type { Bot } from "../src/bots/bots.ts";
@@ -87,4 +87,11 @@ test("a game stops when a bot has no move, and refuses an illegal one", () => {
   assertEquals(game(silent, silent, start), { winner: null, moves: [] });
   const cheat: Bot = { choose: () => 7 }; // Player 2's pit, on Player 1's turn
   assertThrows(() => game(cheat, silent, start), Error, "illegal move");
+});
+
+test("a gap's range: the 5th to 95th percentile of one bot's rating minus another's, over the resamples", () => {
+  // 20 resamples in which bot 1 rates 0, 1, 2 … 19 above bot 0: the 5th percentile is the 2nd
+  // smallest gap and the 95th the largest.
+  const samples = [new Array(20).fill(1000), Array.from({ length: 20 }, (_, k) => 1000 + k)];
+  assertEquals(gapRange(samples, 1, 0), [1, 19]);
 });

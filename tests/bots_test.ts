@@ -18,7 +18,8 @@ import {
 } from "../src/bots/bots.ts";
 import { exposed, freeTurnsReady, lead, mobility, threats } from "../src/bots/search/evaluate.ts";
 import { search } from "../src/bots/search/minimax.ts";
-import { newGame, playTurn, validMoves } from "../src/game/engine.ts";
+import { Boards, playOn } from "../src/bots/search/moves.ts";
+import { FREE_TURN, newGame, playTurn, validMoves } from "../src/game/engine.ts";
 import { DEFAULT_RULES, type GameState, P1, P2 } from "../src/game/types.ts";
 import { seeded } from "../tools/match.ts";
 
@@ -220,4 +221,29 @@ test("createBot makes dormant bots too, and fills in what it isn't told", () => 
   assert(createBot("grandmaster") instanceof MinimaxBot);
   // No context: Math.random and the game's time budget.
   assert(validMoves(newGame(DEFAULT_RULES, P1)).includes(createBot("random").choose(newGame(DEFAULT_RULES, P1))!));
+});
+
+test("playOn plays a move on a reused board exactly as playTurn does, and Boards keeps one per depth", () => {
+  const boards = new Boards();
+  const start = newGame(DEFAULT_RULES, P1);
+  const board = boards.at(0, start);
+  assert(boards.at(0, start) === board, "the same board again for the same depth and rules");
+  assert(boards.at(1, start) !== board, "another depth, another board");
+  // A few moves in a row, each from the position after the last, against the engine's own copy.
+  let g = start;
+  for (const move of [3, 9, 0, 12]) {
+    const flags = playOn(board, g, move);
+    const r = playTurn(g, move, { record: false });
+    assert(!r.invalid);
+    assertEquals(board.pits, r.state.pits);
+    assertEquals([board.current, board.gameOver, (flags & FREE_TURN) !== 0], [
+      r.state.current,
+      r.state.gameOver,
+      r.freeTurn,
+    ]);
+    g = r.state;
+  }
+  // New rules (house rules, a new game): a new board for them.
+  const house = newGame({ ...DEFAULT_RULES, seeds: 5 }, P1);
+  assert(boards.at(0, house) !== board && boards.at(0, house).rules === house.rules);
 });

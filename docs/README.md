@@ -13,6 +13,7 @@ ratings, and how the site is built. Notes on the game itself, as posts, are in [
 
 - [Bot standard](BOTS.md): how a bot is built, named and kept.
 - [Rating the bots](RATING.md): how the bots get their Elo, how to run a rating, and how to read it.
+- [The rating run's ETA](ETA.md): how a run predicts its finish, how well, and the roadmap for doing better.
 - [Game notation (MGN)](NOTATION.md): one game as plain text, as the tournament writes it.
 
 ## Changing the code

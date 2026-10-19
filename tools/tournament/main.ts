@@ -33,17 +33,19 @@
  * Gaps like that are set by the closer pairings in between (and one virtual draw per pairing keeps
  * them finite), so each rating comes with a 90% range from re-fitting resampled pairs.
  */
+import { createWriteStream } from "node:fs";
 import { appendFile, mkdir, writeFile } from "node:fs/promises";
 import { type BotId, BOTS, DORMANT, type DormantId, isBotId, isDormantId } from "../../src/bots/bots.ts";
 import { seeded } from "../match.ts";
 import { type Checkpoint, load, save } from "./checkpoint.ts";
-import { aboveShare, fit, misfits, rangesOf, resample, sum } from "./elo.ts";
+import { aboveShare, fit, gapRange, misfits, rangesOf, resample, sum } from "./elo.ts";
 import { isOpening, type Opening, OPENINGS } from "./openings.ts";
-import type { PairJob, PairResult } from "./play.ts";
+import type { PairJob, PairResult, PlayedGame } from "./play.ts";
 import { Pool } from "./pool.ts";
 import { plan, weight } from "./adaptive.ts";
+import { type Eta, fromHistory, fromRounds, lastTimeline, runKey, withBand } from "./eta.ts";
 import { RATINGS } from "../../src/bots/ratings.ts";
-import type { Progress } from "../dashboard/snapshot.ts";
+import type { History, Progress } from "../dashboard/snapshot.ts";
 
 const ARGS = process.argv.slice(2);
 
@@ -114,6 +116,16 @@ if (dash) console.error(`Dashboard: ${dash.url}`);
 const PLANNED = ids.map((_, i) =>
   ids.map((_, j) => (i === j ? 0 : PLAN ? 2 * PLAN[Math.min(i, j)][Math.max(i, j)] : GAMES))
 );
+/** The dashboard's game viewer: each pairing's first KEEP_PAIRS matched pairs, as moves. */
+const KEEP_PAIRS = 10;
+const kept = new Map<string, PlayedGame[]>();
+const keep = (r: PairResult) => {
+  if (!r.kept.length) return;
+  const key = `${r.i} ${r.j}`;
+  kept.set(key, [...(kept.get(key) ?? []), ...r.kept]);
+};
+/** The dashboard's convergence charts: ratings as the run goes, and ranges when resampled. */
+const history: History = { points: [], ranges: [] };
 /** This round's finished pairings, not yet in state.results (rounds go in whole). */
 const pending: PairResult[] = [];
 let liveProgress: Omit<Progress, "status" | "elapsedMs"> = {
@@ -123,6 +135,8 @@ let liveProgress: Omit<Progress, "status" | "elapsedMs"> = {
   games: 0,
   gamesPerSec: 0,
   etaMs: null,
+  etaLowMs: null,
+  etaHighMs: null,
 };
 
 let state: Checkpoint = {
@@ -158,38 +172,82 @@ process.on("SIGINT", onInterrupt);
 const live = process.stderr.isTTY === true;
 const startedAt = performance.now();
 const startRounds = state.rounds;
+
+// The last finished run with the same settings, if this one starts fresh: it played the same games,
+// so it's the ETA's best guide (eta.ts).
+const pastRun = state.rounds === 0
+  ? await lastTimeline(
+    new URL("../../data/eta/", import.meta.url),
+    runKey({ games: GAMES, bots: names, opening: OPENING, adaptive: ADAPTIVE }),
+  )
+  : null;
+/** The latest ETA, for the log. */
+let lastEta: Eta | null = null;
+
+// Every ETA the run predicts, with when it predicted it, for calibrating the ETA: a JSON line about
+// once a second, and the actual total at the end (data/eta/<start time>.jsonl, git-ignored).
+const etaLog = await (async () => {
+  try {
+    const dir = new URL("../../data/eta/", import.meta.url);
+    await mkdir(dir, { recursive: true });
+    const stream = createWriteStream(new URL(`${new Date().toISOString().replace(/[:.]/g, "-")}.jsonl`, dir));
+    stream.on("error", () => {}); // a log that can't be written mustn't stop the run
+    const run = { games: GAMES, bots: names, workers: WORKERS, adaptive: ADAPTIVE, opening: OPENING };
+    stream.write(JSON.stringify({ run: { ...run, resumedFrom: state.rounds } }) + "\n");
+    return stream;
+  } catch {
+    return null;
+  }
+})();
+let etaLoggedAt = -Infinity;
+function logEta(elapsed: number): void {
+  if (!etaLog || elapsed - etaLoggedAt < 1000) return;
+  etaLoggedAt = elapsed;
+  const { done, total, unit, games } = liveProgress;
+  const e = lastEta;
+  const eta = e
+    ? { etaMs: Math.round(e.ms), lowMs: Math.round(e.low), highMs: Math.round(e.high), from: e.from }
+    : { etaMs: null };
+  etaLog.write(JSON.stringify({ elapsedMs: Math.round(elapsed), ...eta, done, total, unit, games }) + "\n");
+}
 const perRound = (n * (n - 1)) / 2;
 const clock = (ms: number) => {
   const s = Math.round(ms / 1000);
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 };
 const columns = () => process.stderr.columns || 80;
-// Every round plays the same pairings, so rounds take about as long as each other, while single
-// pairings differ a thousandfold (Random against First, or anything with Minimax). So the ETA
-// counts rounds, not games: the rounds left at the recent round time, plus what's left of this
-// round, weighted by how long each of its pairings took last time.
-const cost: number[] = []; // each pairing's last time, in ms, by its index in the round
-const roundTimes: number[] = []; // complete rounds this run, in ms
-let finished: boolean[] = []; // this round's pairings that are done
-const median = (xs: number[]) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
-function eta(elapsed: number): number | null {
-  if (!roundTimes.length) return null;
-  const round = median(roundTimes.slice(-5));
-  const total = sum(cost);
-  const unfinished = sum(cost.filter((_, k) => !finished[k]));
-  const left = (ROUNDS - state.rounds - 1) * round + (total > 0 ? round * unfinished / total : round);
-  return Math.max(0, Math.min(left, BUDGET - elapsed));
+const cost: number[] = []; // each pairing's last time, in ms, by its index in the round: slowest first
+const roundEnds: number[] = []; // when each of this run's rounds ended, in ms since the start
+/** The ETA with its 80% range (eta.ts): from the last run like this one, else from this run's rounds. */
+function eta(elapsed: number, games: number): Eta | null {
+  const budget = BUDGET - elapsed;
+  const past = pastRun ? fromHistory(pastRun, games, elapsed) : null;
+  if (past !== null) return withBand(past, "history", budget);
+  const ms = fromRounds(roundEnds, ROUNDS - state.rounds, elapsed);
+  return ms === null ? null : withBand(ms, "rounds", budget);
 }
+const etaText = (e: Eta | null, none: string) =>
+  e === null ? none : `${clock(e.ms)} (${clock(e.low)}–${clock(e.high)})`;
 function progress(pairsThisRound: number) {
   const elapsed = performance.now() - startedAt;
   const games = ((state.rounds - startRounds) * perRound + pairsThisRound) * 2;
   const rate = games / (elapsed / 1000);
-  const left = eta(elapsed);
-  liveProgress = { done: state.rounds, total: ROUNDS, unit: "rounds", games, gamesPerSec: rate, etaMs: left };
+  const left = lastEta = eta(elapsed, games);
+  liveProgress = {
+    done: state.rounds,
+    total: ROUNDS,
+    unit: "rounds",
+    games,
+    gamesPerSec: rate,
+    etaMs: left?.ms ?? null,
+    etaLowMs: left?.low ?? null,
+    etaHighMs: left?.high ?? null,
+  };
   refreshUi();
+  logEta(elapsed);
   if (!live) return;
   const line = `Round ${state.rounds + 1}/${ROUNDS} · ${games} games · ${rate.toFixed(1)} games/s · ` +
-    `${clock(elapsed)} elapsed · ETA ${left === null ? "after round 1" : clock(left)}` +
+    `${clock(elapsed)} elapsed · ETA ${etaText(left, "after round 1")}` +
     (stopping ? " · stopping" : "");
   // Clear the line and rewrite it, cut to the terminal's width so it never wraps.
   process.stderr.write(`\r\x1b[2K${line.slice(0, columns() - 1)}`);
@@ -203,26 +261,34 @@ async function playRound(round: number): Promise<PairResult[] | null> {
   const jobs: PairJob[] = [];
   for (let i = 0; i < n; i++) {
     for (let j = i + 1; j < n; j++) {
-      jobs.push({ round, i, j, a: ids[i], b: ids[j], opening: OPENING as Opening, record: !!RECORD });
+      jobs.push({
+        round,
+        i,
+        j,
+        a: ids[i],
+        b: ids[j],
+        opening: OPENING as Opening,
+        record: !!RECORD,
+        keep: UI && round < KEEP_PAIRS,
+      });
     }
   }
   // Slowest pairings first (by last round's times), so the round doesn't end with one long
   // pairing running while the other workers wait. Results don't change: each pairing has its own
   // seed and its own slot.
   const order = jobs.map((_, k) => k).sort((a, b) => (cost[b] ?? 0) - (cost[a] ?? 0));
-  finished = jobs.map(() => false);
-  const startedRound = performance.now();
+
   let done = 0;
   const out = await pool.run(jobs, order, {
     stop: () => stopping,
     done: (k, ms, result) => {
       cost[k] = ms;
-      finished[k] = true;
       pending.push(result);
+      keep(result);
       progress(++done);
     },
   });
-  if (out) roundTimes.push(performance.now() - startedRound);
+  if (out) roundEnds.push(performance.now() - startedAt);
   return out;
 }
 
@@ -253,7 +319,16 @@ async function playAdaptive(): Promise<void> {
     for (let j = i + 1; j < n; j++) {
       for (let round = 0; round < PLAN![i][j]; round++, total++) {
         if (state.done![`${i} ${j} ${round}`]) continue;
-        jobs.push({ round, i, j, a: ids[i], b: ids[j], opening: OPENING as Opening, record: !!RECORD });
+        jobs.push({
+          round,
+          i,
+          j,
+          a: ids[i],
+          b: ids[j],
+          opening: OPENING as Opening,
+          record: !!RECORD,
+          keep: UI && round < KEEP_PAIRS,
+        });
       }
     }
   }
@@ -266,6 +341,7 @@ async function playAdaptive(): Promise<void> {
     const games = recorded;
     recorded = [];
     rebuild();
+    recordHistory();
     saving = saving.then(async () => {
       if (RECORD && games.length) await appendFile(RECORD, games.join("\n") + "\n");
       await save(state);
@@ -275,6 +351,7 @@ async function playAdaptive(): Promise<void> {
     stop: () => stopping || performance.now() - startedAt > BUDGET,
     done: (k, _ms, r) => {
       state.done![`${r.i} ${r.j} ${jobs[k].round}`] = [r.results[0], r.results[1], r.firstWon, r.decided];
+      keep(r);
       addThink(r);
       recorded.push(...r.games);
       doneCost += cost(jobs[k]);
@@ -285,7 +362,13 @@ async function playAdaptive(): Promise<void> {
       }
       const elapsed = performance.now() - startedAt;
       const doneNow = Object.keys(state.done!).length;
-      const eta = doneCost ? elapsed * (left - doneCost) / doneCost : null;
+      // From the last run like this one if there is one, else from the planned costs still to play.
+      const past = pastRun ? fromHistory(pastRun, doneNow * 2, elapsed) : null;
+      const eta = lastEta = past !== null
+        ? withBand(past, "history")
+        : doneCost
+        ? withBand(elapsed * (left - doneCost) / doneCost, "costs")
+        : null;
       playedNow++;
       liveProgress = {
         done: doneNow,
@@ -293,14 +376,15 @@ async function playAdaptive(): Promise<void> {
         unit: "pairs",
         games: doneNow * 2,
         gamesPerSec: (playedNow * 2) / (elapsed / 1000),
-        etaMs: eta,
+        etaMs: eta?.ms ?? null,
+        etaLowMs: eta?.low ?? null,
+        etaHighMs: eta?.high ?? null,
       };
       refreshUi();
+      logEta(elapsed);
       if (!live) return;
-      const line =
-        `Adaptive · ${doneNow}/${total} pairs · ${clock(elapsed)} elapsed · ETA ${
-          eta === null ? "--:--" : clock(eta)
-        }` + (stopping ? " · stopping" : "");
+      const line = `Adaptive · ${doneNow}/${total} pairs · ${clock(elapsed)} elapsed · ETA ${etaText(eta, "--:--")}` +
+        (stopping ? " · stopping" : "");
       process.stderr.write(`\r\x1b[2K${line.slice(0, columns() - 1)}`);
     },
   });
@@ -352,6 +436,7 @@ function publishUi(status: Progress["status"] = stopping ? "stopping" : "running
     progress: { ...liveProgress, status, elapsedMs: finishedMs ?? performance.now() - startedAt },
     run: { opening: OPENING, workers: WORKERS, adaptive: ADAPTIVE, gamesPerPairing: GAMES },
     planned: PLANNED,
+    history,
   }));
 }
 /** At most one snapshot a second, and none while no page is open. */
@@ -362,7 +447,29 @@ function refreshUi(): void {
     publishUi();
   }, 1000);
 }
-if (dash) dash.onRanges = dash.onWatch = () => publishUi();
+/** A point on the convergence chart: every bot's rating now. One fit, a few ms; only with --ui. */
+function recordHistory(): void {
+  if (!dash) return;
+  const games = sum(state.results.map((row) => sum(row.map((g) => g.length)))) / 2;
+  if (!games || history.points.at(-1)?.games === games) return;
+  history.points.push({ games, elo: fit(state.results).map(Math.round) });
+}
+/** The ranges at the time they were resampled, for the chart of how wide they still are. */
+function recordRanges(): void {
+  if (!dash?.samples || history.ranges.at(-1)?.games === dash.samplesGames) return;
+  // Ranges from the first few games say nothing yet: the chart starts where the ratings' does.
+  if (!history.points.length || dash.samplesGames < history.points[0].games) return;
+  const range = rangesOf(dash.samples);
+  history.ranges.push({ games: dash.samplesGames, low: range.map((r) => r[0]), high: range.map((r) => r[1]) });
+}
+if (dash) {
+  dash.onWatch = () => publishUi();
+  dash.onRanges = () => {
+    recordRanges();
+    publishUi();
+  };
+  dash.gamesFor = (i, j) => kept.get(`${Math.min(i, j)} ${Math.max(i, j)}`) ?? [];
+}
 
 if (ADAPTIVE) await playAdaptive();
 else {while (state.rounds < ROUNDS && !stopping && performance.now() - startedAt < BUDGET) {
@@ -382,11 +489,20 @@ else {while (state.rounds < ROUNDS && !stopping && performance.now() - startedAt
     }
     pending.length = 0;
     state.rounds++;
+    recordHistory();
     if (RECORD) await appendFile(RECORD, recorded.join("\n") + "\n");
     await save(state);
   }}
 pool.close();
 process.off("SIGINT", onInterrupt);
+// The actual total, for the ETA log: what every prediction above should have said.
+etaLog?.end(
+  JSON.stringify({
+    finishedMs: Math.round(performance.now() - startedAt),
+    games: liveProgress.games,
+    complete: ADAPTIVE ? !stopping && performance.now() - startedAt <= BUDGET : state.rounds >= ROUNDS,
+  }) + "\n",
+);
 if (live) process.stderr.write("\r\x1b[2K");
 
 if (state.rounds === 0) {
@@ -403,16 +519,20 @@ const order = [...ids.keys()].sort((a, b) => rating[b] - rating[a]);
 // "Above next": the share of resamples in which each bot rates above the next one down.
 const above = order.map((i, k) => (k + 1 < order.length ? aboveShare(samples, i, order[k + 1]) : null));
 const msPerMove = (i: number) => think[i].moves ? think[i].ms / think[i].moves : null;
-console.log("| Bot | Elo | 90% range | Above next | Won | ms a move |");
-console.log("| --- | ---: | :---: | ---: | ---: | ---: |");
+console.log("| Bot | Elo | 90% range | Above next | Gap to next (90%) | Won | ms a move |");
+console.log("| --- | ---: | :---: | ---: | ---: | ---: | ---: |");
 for (const [k, i] of order.entries()) {
   const all = results[i].flat();
   const rng90 = i === 0 ? "anchor" : `${range[i][0]}–${range[i][1]}`;
   const next = above[k] === null ? "–" : `${Math.round(above[k]! * 100)}%`;
+  const below = order[k + 1];
+  const gap = below === undefined
+    ? "–"
+    : `${rating[i] - rating[below]} (${gapRange(samples, i, below).join("–")})`;
   const won = `${Math.round((sum(all) / all.length) * 100)}%${ADAPTIVE ? ` of ${all.length}` : ""}`;
   const ms = msPerMove(i);
   console.log(
-    `| ${labels[i]} | ${rating[i]} | ${rng90} | ${next} | ${won} | ${
+    `| ${labels[i]} | ${rating[i]} | ${rng90} | ${next} | ${gap} | ${won} | ${
       ms === null ? "–" : ms < 1 ? ms.toFixed(2) : ms.toFixed(1)
     } |`,
   );
@@ -515,7 +635,9 @@ if (dash) {
   clearTimeout(uiTimer);
   finishedMs = performance.now() - startedAt;
   [dash.samples, dash.samplesRating, dash.samplesGames] = [samples, fit(results), allGames];
-  liveProgress = { ...liveProgress, etaMs: 0 };
+  liveProgress = { ...liveProgress, etaMs: 0, etaLowMs: 0, etaHighMs: 0 };
+  recordHistory();
+  recordRanges();
   dash.stopRanges();
   publishUi("done");
   console.error(`

@@ -80,9 +80,50 @@ type Log = ((e: TurnEvent) => void) | null;
 export const FREE_TURN = 1, GAME_OVER = 2, INVALID = -1;
 
 const sideEmpty = (pits: readonly number[], p: Player) => {
-  for (const i of pitsOf(p)) if (pits[i] !== 0) return false;
+  const first = p === P1 ? 0 : 7;
+  for (let i = first; i < first + 7; i++) if (pits[i] !== 0) return false;
   return true;
 };
+
+/** Seeds dropped so far this turn: sow() counts them, turn() starts each turn at 0. */
+let drops = 0;
+
+/**
+ * Picks up the pit `from` and drops one seed in each slot after it, skipping `skip` (the
+ * opponent's store). Returns where the last seed landed. Outside turn(), so no function is made
+ * per turn: the bots call turn() millions of times.
+ */
+function sow(pits: number[], from: number, skip: number, log: Log): number {
+  let hand = pits[from];
+  pits[from] = 0;
+  let pos = from;
+  if (!log) {
+    // Whole laps at once when no one is watching each drop: a lap is 15 drops, one in every slot
+    // but the opponent's store (the pit it started from included), and it ends where it began.
+    if (hand >= 15) {
+      const laps = Math.floor(hand / 15);
+      for (let i = 0; i < 16; i++) if (i !== skip) pits[i] += laps;
+      hand -= 15 * laps;
+      drops += 15 * laps;
+    }
+    while (hand > 0 && drops++ < MAX_DROPS) {
+      pos = NEXT[pos];
+      if (pos === skip) continue;
+      pits[pos]++;
+      hand--;
+    }
+    return pos;
+  }
+  log({ type: "pickup", pit: from, count: hand });
+  while (hand > 0 && drops++ < MAX_DROPS) {
+    pos = NEXT[pos];
+    if (pos === skip) continue;
+    pits[pos]++;
+    hand--;
+    log({ type: "drop", pit: pos, count: pits[pos], inHand: hand });
+  }
+  return pos;
+}
 
 /**
  * Plays the pit `start` for the player whose turn it is, changing `state` in place: the rules,
@@ -95,30 +136,14 @@ export function turn(state: GameState, start: number, log: Log = null, info: Tur
   if (state.gameOver || !isPit(start) || ownerOf(start) !== player || pits[start] === 0) return INVALID;
 
   const skip = storeOf(other(player));
-  let drops = 0;
-
-  // Pick up a pit and drop one seed in each pit after it, skipping the opponent's store.
-  const sow = (from: number): number => {
-    let hand = pits[from];
-    pits[from] = 0;
-    log?.({ type: "pickup", pit: from, count: hand });
-    let pos = from;
-    while (hand > 0 && drops++ < MAX_DROPS) {
-      pos = NEXT[pos];
-      if (pos === skip) continue;
-      pits[pos]++;
-      hand--;
-      log?.({ type: "drop", pit: pos, count: pits[pos], inHand: hand });
-    }
-    return pos;
-  };
+  drops = 0;
 
   // Relay sowing: while the last seed lands in a pit that already had seeds, pick them all up
   // and keep going.
-  let landing = sow(start);
+  let landing = sow(pits, start, skip, log);
   let relays = 0;
   while (isPit(landing) && pits[landing] > 1 && drops < MAX_DROPS) {
-    landing = sow(landing);
+    landing = sow(pits, landing, skip, log);
     relays++;
   }
 
@@ -163,7 +188,10 @@ export function turn(state: GameState, start: number, log: Log = null, info: Tur
   }
 
   if (!freeTurn && !state.gameOver) state.current = other(player);
-  if (info) [info.captured, info.relays] = [captured, relays];
+  if (info) {
+    info.captured = captured;
+    info.relays = relays;
+  }
   return (freeTurn && !state.gameOver ? FREE_TURN : 0) | (state.gameOver ? GAME_OVER : 0);
 }
 

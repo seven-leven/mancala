@@ -8,7 +8,7 @@
  * drawn around): a range keeps its width and stays centred on the rating it belongs to. At the end
  * of a run the samples come from the same results, nothing moves, and the ranges match the table.
  */
-import { aboveShare, fit, misfits, rangesOf, sum } from "../tournament/elo.ts";
+import { aboveShare, fit, gapRange, misfits, rangesOf, sum } from "../tournament/elo.ts";
 
 export interface BotInfo {
   id: string;
@@ -33,6 +33,9 @@ export interface Progress {
   gamesPerSec: number;
   elapsedMs: number;
   etaMs: number | null;
+  /** The ETA's 80% range (tools/tournament/eta.ts). */
+  etaLowMs: number | null;
+  etaHighMs: number | null;
 }
 
 export interface Run {
@@ -40,6 +43,14 @@ export interface Run {
   workers: number;
   adaptive: boolean;
   gamesPerPairing: number;
+}
+
+/** How the ratings settled as the run went, for the convergence charts. */
+export interface History {
+  /** Every bot's rating (by index) after `games` games. */
+  points: { games: number; elo: number[] }[];
+  /** Every bot's 90% range at the times it was resampled. */
+  ranges: { games: number; low: number[]; high: number[] }[];
 }
 
 export interface SnapshotInput {
@@ -59,6 +70,7 @@ export interface SnapshotInput {
   run: Run;
   /** By bot index: the games planned for each pairing (adaptive runs plan more for close ones). */
   planned: number[][];
+  history: History;
 }
 
 export interface BotRow {
@@ -75,6 +87,8 @@ export interface BotRow {
   change: number | null;
   /** The share of resampled fits in which it rates above the next bot down. */
   above: number | null;
+  /** How far it rates above the next bot down, with that gap's 90% range (null before ranges). */
+  gap: { elo: number; low: number | null; high: number | null } | null;
   games: number;
   /** Its average result, 0 to 1. */
   score: number | null;
@@ -90,6 +104,7 @@ export interface Snapshot {
   score: (number | null)[][];
   games: number[][];
   planned: number[][];
+  history: History;
   /** By bot index: the result the ratings predict for i against j. */
   expected: number[][];
   misfits: { i: number; j: number; observed: number; expected: number; z: number }[];
@@ -125,6 +140,11 @@ export function buildSnapshot(input: SnapshotInput): Snapshot {
       previous,
       change: previous ? rating[i] - previous.elo : null,
       above: samples && next !== undefined ? aboveShare(samples, i, next) : null,
+      gap: next === undefined ? null : {
+        elo: rating[i] - rating[next],
+        low: samples ? gapRange(samples, i, next)[0] : null,
+        high: samples ? gapRange(samples, i, next)[1] : null,
+      },
       games: all.length,
       score: mean(all),
       msPerMove: t.moves ? t.ms / t.moves : null,
@@ -138,6 +158,7 @@ export function buildSnapshot(input: SnapshotInput): Snapshot {
     score: results.map((row) => row.map(mean)),
     games: results.map((row) => row.map((games) => games.length)),
     planned: input.planned,
+    history: input.history,
     expected,
     misfits: played ? misfits(results, rating) : [],
     rangesGames: samples ? input.samplesGames : null,

@@ -5,8 +5,11 @@
 import { test } from "node:test";
 import { assert, assertEquals } from "./assert.ts";
 import { buildSnapshot, rangesDue, type SnapshotInput } from "../tools/dashboard/snapshot.ts";
-import { fit, rangesOf, resample } from "../tools/tournament/elo.ts";
+import { fit, gapRange, rangesOf, resample } from "../tools/tournament/elo.ts";
 import { seeded } from "../tools/match.ts";
+import { playPair } from "../tools/tournament/play.ts";
+import { replay } from "../src/game/notation.ts";
+import { DEFAULT_RULES } from "../src/game/types.ts";
 
 const bots = [
   { id: "random", label: "Random", level: "Easy" },
@@ -36,9 +39,12 @@ function input(over: Partial<SnapshotInput> = {}): SnapshotInput {
       gamesPerSec: 0,
       elapsedMs: 0,
       etaMs: null,
+      etaLowMs: null,
+      etaHighMs: null,
     },
     run: { opening: "random-moves", workers: 4, adaptive: false, gamesPerPairing: 40 },
     planned: [[0, 40, 40], [40, 0, 40], [40, 40, 0]],
+    history: { points: [{ games: 60, elo: [1000, 1100, 1200] }], ranges: [] },
     ...over,
   };
 }
@@ -69,10 +75,12 @@ test("before any game: everyone level with the anchor, and nothing to show yet",
   );
   assertEquals(s.rows.map((r) => r.change), [0, -300, null], "a bot new this run has no change");
   assertEquals(s.rows.map((r) => [r.score, r.above]), [[null, null], [null, null], [null, null]]);
+  assertEquals(s.rows[0].gap, { elo: 0, low: null, high: null }, "a gap before any ranges has no range yet");
   assertEquals(s.rows.map((r) => r.msPerMove), [0.1, null, 5]);
   assertEquals([s.misfits, s.rangesGames, s.firstMoverWon], [[], null, null]);
   assertEquals(s.score[0][1], null);
   assertEquals(s.planned, input().planned);
+  assertEquals(s.history, input().history, "the history goes through as the run kept it");
 });
 
 test("during a run: ratings fitted fresh, strongest first, with each pairing's score and games", () => {
@@ -94,6 +102,15 @@ test("at the end: the ranges and 'above next' are exactly the printed table's", 
   const s = buildSnapshot(input({ results, samples, samplesRating: fit(results), samplesGames: 120 }));
   const range = rangesOf(samples);
   for (const r of s.rows.filter((row) => row.i !== 0)) assertEquals([r.low, r.high], range[r.i]);
+  for (const [k, r] of s.rows.slice(0, -1).entries()) {
+    const next = s.rows[k + 1];
+    assertEquals(r.gap, {
+      elo: r.elo - next.elo,
+      low: gapRange(samples, r.i, next.i)[0],
+      high: gapRange(samples, r.i, next.i)[1],
+    });
+  }
+  assertEquals(s.rows.at(-1)!.gap, null);
   assertEquals(s.rangesGames, 120);
   assert(s.rows.slice(0, -1).every((r) => r.above !== null && r.above >= 0 && r.above <= 1));
   assertEquals(s.rows.at(-1)!.above, null, "the weakest has no next one down");
@@ -121,4 +138,22 @@ test("new ranges are asked for when there are new games and the last ask is old 
   assert(!rangesDue(100, 100, 60_000), "no new games");
   assert(!rangesDue(120, 100, 5_000), "asked too recently");
   assert(rangesDue(120, 100, 10_000));
+});
+
+test("a pair kept for the game viewer replays to the same results, from the same opening", () => {
+  const job = { round: 1, i: 0, j: 1, a: "random", b: "greedy", opening: "random-moves", record: false } as const;
+  const plain = playPair(job);
+  const kept = playPair({ ...job, keep: true });
+  assertEquals(plain.kept, [], "nothing kept unless asked");
+  assertEquals(kept.results, plain.results, "keeping the games changes nothing played");
+  assertEquals(kept.kept.map((g) => g.seats), [[0, 1], [1, 0]], "the seats swap within the pair");
+  for (const [k, g] of kept.kept.entries()) {
+    const end = replay({ tags: {}, rules: { ...DEFAULT_RULES }, first: g.first, moves: g.moves }).states.at(-1)!;
+    assert(end.gameOver);
+    const winner = end.pits[14] === end.pits[15] ? null : end.pits[14] > end.pits[15] ? 1 : 2;
+    assertEquals(winner, g.winner);
+    // Bot i's result in game k: a win when the winner's seat holds bot 0.
+    assertEquals(kept.results[k], winner === null ? 0.5 : g.seats[winner - 1] === 0 ? 1 : 0);
+  }
+  assertEquals(kept.kept[0].moves.slice(0, 2), kept.kept[1].moves.slice(0, 2), "one opening for both games");
 });

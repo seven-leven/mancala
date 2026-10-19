@@ -37,6 +37,21 @@
         <div class="card scroll"><svg id="ladder" role="img" aria-label="The bots' ratings"></svg></div>
       </section>
 
+      <section aria-labelledby="converge-h">
+        <h2 class="label dash-h" id="converge-h">Converging</h2>
+        <p class="dash-legend" id="convergeNote"></p>
+        <div class="dash-pair">
+          <div class="card">
+            <p class="dash-sub">Each bot's rating as the games came in</p>
+            <svg id="converge" role="img" aria-label="Each bot's rating over the games played"></svg>
+          </div>
+          <div class="card">
+            <p class="dash-sub">How wide the 90% ranges still are, ±</p>
+            <svg id="widths" role="img" aria-label="The widest and the median range over the games played"></svg>
+          </div>
+        </div>
+      </section>
+
       <section id="detail" aria-labelledby="detail-h" hidden>
         <h2 class="label dash-h" id="detail-h">Against each bot</h2>
         <div class="card" id="detailBody"></div>
@@ -56,8 +71,38 @@
           <button class="btn btn--ghost" type="button" data-view="games" aria-pressed="false">Games</button>
         </div>
         <p class="dash-legend" id="matrixLegend"></p>
+        <p class="dash-legend">Click a cell to watch that pairing's games.</p>
         <div class="card scroll">
           <table class="dash-matrix" id="matrix"></table>
+        </div>
+      </section>
+
+      <section id="viewer" aria-labelledby="viewer-h" hidden>
+        <h2 class="label dash-h" id="viewer-h">Watch the games</h2>
+        <div class="card">
+          <div class="viewer-head">
+            <h3 class="serif" id="viewerTitle"></h3>
+            <p class="mono" id="viewerInfo"></p>
+          </div>
+          <div class="viewer-controls">
+            <div role="group" aria-label="Game">
+              <button class="btn btn--ghost" type="button" data-go="prevGame">Previous game</button>
+              <button class="btn btn--ghost" type="button" data-go="nextGame">Next game</button>
+            </div>
+            <div role="group" aria-label="Move">
+              <button class="btn btn--ghost" type="button" data-go="start">Start</button>
+              <button class="btn btn--ghost" type="button" data-go="back">Back</button>
+              <button class="btn btn--primary" type="button" data-go="play">Play</button>
+              <button class="btn btn--ghost" type="button" data-go="forward">Forward</button>
+              <button class="btn btn--ghost" type="button" data-go="end">End</button>
+            </div>
+          </div>
+          <div class="board viewer-board" id="board" role="group" aria-label="The board"></div>
+          <p class="viewer-move" id="viewerMove" aria-live="polite"></p>
+          <details class="viewer-mgn">
+            <summary>The game in notation (MGN)</summary>
+            <pre class="mono" id="viewerMgn"></pre>
+          </details>
         </div>
       </section>
 

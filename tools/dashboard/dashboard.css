@@ -325,6 +325,120 @@ section {
   color: var(--accent);
 }
 
+.dash-pair {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: var(--space-4);
+}
+.dash-sub {
+  margin: 0 0 var(--space-2);
+  color: var(--text-2);
+  font-size: var(--fs-small);
+}
+#converge,
+#widths {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+#converge text,
+#widths text {
+  fill: var(--text-muted);
+  font: 400 12px var(--font-data);
+}
+#converge .grid,
+#widths .grid {
+  stroke: var(--rule);
+}
+#converge .line {
+  fill: none;
+  stroke: var(--rule-strong);
+  stroke-width: 1.25;
+}
+#converge .line.selected {
+  stroke: var(--text);
+  stroke-width: 2.5;
+}
+#converge .band {
+  fill: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+#converge .name {
+  fill: var(--text-2);
+  font: 500 12px var(--font-sans);
+  cursor: pointer;
+}
+#converge .name.selected {
+  fill: var(--text);
+  font-weight: 700;
+}
+#widths .widest {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 2;
+}
+#widths .median {
+  fill: none;
+  stroke: var(--text-muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+#widths .goal {
+  stroke: var(--accent);
+  stroke-dasharray: 2 4;
+}
+
+.dash-matrix td[data-c] {
+  cursor: pointer;
+}
+.dash-matrix td[data-c]:hover {
+  outline: 1px solid var(--accent);
+}
+.bars li[data-o] > span:first-child {
+  cursor: pointer;
+  text-decoration: underline dotted var(--rule-strong);
+}
+
+.viewer-head h3 {
+  margin: 0;
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+}
+.viewer-head p {
+  margin: var(--space-1) 0 var(--space-4);
+  color: var(--text-2);
+  font-size: var(--fs-small);
+}
+.viewer-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.viewer-controls [role="group"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.viewer-board {
+  max-width: 900px;
+  margin: 0 auto;
+}
+.viewer-move {
+  min-height: 1.6em;
+  margin: var(--space-4) 0 var(--space-2);
+  text-align: center;
+}
+.viewer-mgn summary {
+  color: var(--text-muted);
+  font-size: var(--fs-caption);
+  cursor: pointer;
+}
+.viewer-mgn pre {
+  overflow-x: auto;
+  font-size: 0.78rem;
+  white-space: pre-wrap;
+}
+
 #check ul {
   margin: 0;
   padding-left: 1.2rem;
@@ -338,6 +452,11 @@ section {
   border-top: 1px solid var(--rule);
 }
 
+@media (max-width: 860px) {
+  .dash-pair {
+    grid-template-columns: 1fr;
+  }
+}
 @media (max-width: 640px) {
   .bars {
     grid-template-columns: 1fr;
