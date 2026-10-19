@@ -17,6 +17,7 @@ runs by hand. A test run, a rating run.
 | `npm run --silent rate -- 240 --write \| tee data/ratings-240.md` | The full rating for the menus, kept as a table in `data/` (git-ignored)        |
 | `npm run rate -- 40 --bots random,greedy,newBot`                  | A placement run: only these bots. Random is always needed: it's the anchor     |
 | `npm run rate -- 240 --write --resume`                            | Carries on after Ctrl+C or `--time`: repeat the run's own games and flags      |
+| `npm run rate -- 240 --adaptive --ui`                             | Any run, watched live in the browser at http://localhost:8020/ (below)         |
 | `npm run ladder`                                                  | Redraws [docs/images/ladder.svg](images/ladder.svg) from `src/bots/ratings.ts` |
 | `npm run profile`                                                 | Where a short rating run spends its time (`data/profile/`)                     |
 
@@ -30,6 +31,7 @@ Flags:
 - `--time 10m` (or `90s`, `1h`): stop after the round that crosses the budget.
 - `--record games.mgn`: append every game in [MGN](NOTATION.md), for `npm run positions`.
 - `--workers N`: worker threads. Default one per CPU core; results are the same for any number.
+- `--ui`: a live dashboard in the browser ([Watching a run](#watching-a-run)). Changes nothing the run plays or prints.
 
 ## When to re-rate
 
@@ -85,6 +87,67 @@ ratings in the menus.
 
 ## How a run works
 
+### Step by step
+
+What the rating harness does, and when. The code is in `tools/tournament/`: `main.ts` runs it, `play.ts` plays a matched
+pair, `pool.ts` hands pairs to the workers.
+
+**Once, at the start of a run:**
+
+1. Read the flags and pick the bots: every bot in `BOTS`, or those named in `--bots`. Random goes first: it's the
+   anchor.
+2. Start the worker pool, one thread per CPU core (`--workers`).
+3. `--adaptive`: plan how many matched pairs each pairing gets, from the ratings in `src/bots/ratings.ts`
+   ([Adaptive allocation](#adaptive-allocation)). The plan doesn't change during the run.
+4. `--resume`: load the checkpoint, and refuse it if it was made with other openings, other bots or another plan.
+5. `--ui`: start the dashboard.
+
+**Every round** (a plain run; one matched pair for every pairing):
+
+1. Make one job per pairing: the round number, the two bots and the opening kind.
+2. Order the jobs slowest first, by how long each pairing took last round.
+3. Hand one job to each worker; as each one finishes, the next job goes to that worker.
+4. As each pairing finishes: note its time (for the ETA and next round's order), and update the progress line and the
+   dashboard.
+5. When the last one finishes: add every pair's results to the table (each result both ways round, a win for one is a
+   loss for the other), count first-mover wins, append the games to `--record`, and save the checkpoint.
+6. Stop if all the rounds are played, `--time` has run out or Ctrl+C was pressed; otherwise start the next round. A
+   round stopped by Ctrl+C is dropped whole, so the table only ever holds complete rounds.
+
+**Every matched pair** (one pairing's job, on a worker):
+
+1. Make the pair's random generator from its seed, which depends only on the round and the two bots' places. So the pair
+   plays the same games on any worker, in any order.
+2. Make both bots fresh, in rating mode: search bots use a fixed depth instead of a time limit, so a faster machine
+   plays the same moves. Both draw from the pair's generator.
+3. Choose who moves first: Player 1 in even rounds, Player 2 in odd ones.
+4. Set up the opening once: two random moves on the standard board (`random-moves`), a symmetric random deal
+   (`symmetric`), or the standard board (`standard`).
+5. Play game 1 with the first bot in seat 1, then game 2 from the same opening with the seats swapped.
+6. Return the first bot's two results (1 a win, ½ a draw, 0 a loss), the first-mover wins, each bot's thinking time and
+   moves, and the games in MGN if they're being recorded.
+
+**Every game** (inside a pair):
+
+1. The bot whose turn it is chooses a pit; its thinking time is added to its total. Timing changes nothing it plays.
+2. The engine plays the move. An illegal move stops the whole run with an error: it's a bug in the bot.
+3. Repeat until the game is over, or until 1,000 moves, a safety net against a game that never ends.
+4. The fuller store wins; level stores are a draw.
+
+**Every pair, in an adaptive run** (no rounds): all the planned pairs go on one queue, the costliest pairings first, and
+each pair's result is kept as it finishes. A checkpoint is saved every 50 pairs, and the results are put back in plan
+order before the fit, so a run repeats exactly.
+
+**Once, at the end:**
+
+1. Fit the ratings to every result at once, with Random pinned at 1000 ([below](#how-the-ratings-are-fitted)).
+2. Re-fit 300 resamples for each bot's 90% range, and for "above next".
+3. Run the model check, which flags pairings the ratings don't explain.
+4. Print the tables. With `--write`, save `src/bots/ratings.ts`. Save Elo against time per move to `data/elo-time.json`.
+5. With `--ui`, send the dashboard its final numbers, which are exactly the table's, and keep it open until Ctrl+C.
+
+### The parts in detail
+
 **Matched pairs.** Each opening is set up once, then played twice, the bots swapping seats. A board that favours the
 first player comes out 1–1, so a bot only gains by outplaying the other from the same start. The first player still wins
 about 53% of decided games, so this matters.
@@ -107,6 +170,29 @@ results don't depend on the machine either.
 time elapsed and an ETA. The ETA counts rounds, not games: every round plays the same pairings and takes about as long,
 while single pairings differ a thousandfold. It says "after round 1" until one round is timed, then uses the median of
 the last five rounds plus what's left of this one, weighted by each pairing's last time.
+
+## Watching a run
+
+`--ui` serves a dashboard at http://localhost:8020/ (the next free port if that's taken), in the game's own design. It
+updates as the run goes:
+
+- **Status:** the round (or pairs), games, games a second, time elapsed and the ETA, with a progress bar.
+- **Ladder:** each bot's rating with its 90% range, over its rating before this run (from `src/bots/ratings.ts`) and the
+  change. A neighbouring pair whose order holds in under 90% of resampled fits is marked red, as on the docs' ladder
+  chart. Click a bot to see its results against each of the others: its score, and what the ratings predict, with
+  pairings the model check flags marked.
+- **Bots:** the same table the run prints, plus the rating before and the change.
+- **Head to head:** each pairing's score, or (Games) its games played against the plan. In an adaptive run the Games
+  view shows the allocation at work: the close pairings planned in the hundreds, the lopsided ones near the floor of 10.
+- **Model check:** the pairings the ratings don't explain, as the run prints them.
+
+When the run ends, the page shows exactly the printed table's numbers and stays up until Ctrl+C.
+
+**What it costs.** Without `--ui`, nothing: the dashboard's code isn't even loaded. With it, the page is served from the
+run's main thread, which mostly waits on the game workers. Snapshots are built only while a page is open, at most once a
+second, and one fit takes a few milliseconds. The ranges need 300 re-fits (about a second), so they're resampled on a
+thread of their own about every 10 seconds, and centred on each bot's latest rating in between. A 40-game run of all 18
+bots took 51.9 s with the page open against 52.0 s without (16 cores, October 2026).
 
 ## How the ratings are fitted
 

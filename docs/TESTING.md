@@ -48,6 +48,8 @@ One file per area. A new test goes in the file for the code it tests.
   MGN.
 - **`storage_test.ts`**: what the browser keeps: saved games (rated or not and why, backup and restore, the 500-game
   cap, corrupt storage, storage that refuses to write) and settings (defaults, bad values falling back one by one).
+- **`dashboard_test.ts`**: the rating dashboard's snapshot: before any game, during a run, at the end (where it must
+  match the printed table), and ranges moved to the latest ratings.
 - **`docs_test.ts`**: every relative link and `#anchor` in the Markdown docs resolves.
 
 A new file is for a new area (`tests/<area>_test.ts`, which `npm test` picks up by its `_test.ts` ending) or for a test
@@ -119,6 +121,8 @@ What no test loads, and so isn't counted:
 - **The page.** `src/main.ts`, `src/app/game.ts` (the turn loop: undo, hint, which games are rated), `src/ui/` (the
   board, the picker, the stats dialog, sound) and `src/bots/client.ts` need a browser's DOM, so they're checked by hand
   in `npm run dev`. Testing them would take a DOM for the tests (such as happy-dom).
+- **The rating dashboard's server and page** (`tools/dashboard/server.ts`, `app.ts`): checked by hand with `npm run
+  rate -- 40 --ui`. What they show comes from `snapshot.ts`, which is tested.
 
 ## How they run
 

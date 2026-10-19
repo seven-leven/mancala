@@ -4,7 +4,10 @@
  *
  *   npm run rate -- [games per pairing, default 40] [--openings random-moves|symmetric|standard]
  *                        [--bots random,greedy,...] [--time 10m] [--resume] [--record games.mgn] [--write]
- *                        [--workers N, default one per CPU core] [--adaptive]
+ *                        [--workers N, default one per CPU core] [--adaptive] [--ui]
+ *
+ * --ui serves a live dashboard at http://localhost:8020/ (tools/dashboard/): the ladder with its
+ * ranges against the ratings before the run, each bot's results, and the head-to-head table.
  *
  * --write saves the ratings to src/bots/ratings.ts, which the game's menus show.
  *
@@ -40,6 +43,7 @@ import type { PairJob, PairResult } from "./play.ts";
 import { Pool } from "./pool.ts";
 import { plan, weight } from "./adaptive.ts";
 import { RATINGS } from "../../src/bots/ratings.ts";
+import type { Progress } from "../dashboard/snapshot.ts";
 
 const ARGS = process.argv.slice(2);
 
@@ -101,6 +105,26 @@ const addThink = (r: PairResult) => {
   }
 };
 
+// --ui: the live dashboard. Loaded only when asked for, so a plain run doesn't pay for it.
+const UI = ARGS.includes("--ui");
+const dash = UI ? await (await import("../dashboard/server.ts")).Dashboard.start() : null;
+const snapshots = UI ? await import("../dashboard/snapshot.ts") : null;
+if (dash) console.error(`Dashboard: ${dash.url}`);
+/** Games planned for each pairing, both ways round: what the dashboard's Games view shows. */
+const PLANNED = ids.map((_, i) =>
+  ids.map((_, j) => (i === j ? 0 : PLAN ? 2 * PLAN[Math.min(i, j)][Math.max(i, j)] : GAMES))
+);
+/** This round's finished pairings, not yet in state.results (rounds go in whole). */
+const pending: PairResult[] = [];
+let liveProgress: Omit<Progress, "status" | "elapsedMs"> = {
+  done: 0,
+  total: 0,
+  unit: ADAPTIVE ? "pairs" : "rounds",
+  games: 0,
+  gamesPerSec: 0,
+  etaMs: null,
+};
+
 let state: Checkpoint = {
   opening: OPENING,
   bots: names,
@@ -157,11 +181,13 @@ function eta(elapsed: number): number | null {
   return Math.max(0, Math.min(left, BUDGET - elapsed));
 }
 function progress(pairsThisRound: number) {
-  if (!live) return;
   const elapsed = performance.now() - startedAt;
   const games = ((state.rounds - startRounds) * perRound + pairsThisRound) * 2;
   const rate = games / (elapsed / 1000);
   const left = eta(elapsed);
+  liveProgress = { done: state.rounds, total: ROUNDS, unit: "rounds", games, gamesPerSec: rate, etaMs: left };
+  refreshUi();
+  if (!live) return;
   const line = `Round ${state.rounds + 1}/${ROUNDS} · ${games} games · ${rate.toFixed(1)} games/s · ` +
     `${clock(elapsed)} elapsed · ETA ${left === null ? "after round 1" : clock(left)}` +
     (stopping ? " · stopping" : "");
@@ -189,9 +215,10 @@ async function playRound(round: number): Promise<PairResult[] | null> {
   let done = 0;
   const out = await pool.run(jobs, order, {
     stop: () => stopping,
-    done: (k, ms) => {
+    done: (k, ms, result) => {
       cost[k] = ms;
       finished[k] = true;
+      pending.push(result);
       progress(++done);
     },
   });
@@ -233,7 +260,7 @@ async function playAdaptive(): Promise<void> {
   const cost = (job: PairJob) => weight(job.a) + weight(job.b);
   const order = jobs.map((_, k) => k).sort((a, b) => cost(jobs[b]) - cost(jobs[a]) || a - b);
   const left = sum(jobs.map(cost));
-  let doneCost = 0, sinceSave = 0, recorded: string[] = [];
+  let doneCost = 0, sinceSave = 0, playedNow = 0, recorded: string[] = [];
   let saving = Promise.resolve();
   const flush = () => {
     const games = recorded;
@@ -256,10 +283,20 @@ async function playAdaptive(): Promise<void> {
         sinceSave = 0;
         flush();
       }
-      if (!live) return;
       const elapsed = performance.now() - startedAt;
       const doneNow = Object.keys(state.done!).length;
       const eta = doneCost ? elapsed * (left - doneCost) / doneCost : null;
+      playedNow++;
+      liveProgress = {
+        done: doneNow,
+        total,
+        unit: "pairs",
+        games: doneNow * 2,
+        gamesPerSec: (playedNow * 2) / (elapsed / 1000),
+        etaMs: eta,
+      };
+      refreshUi();
+      if (!live) return;
       const line =
         `Adaptive · ${doneNow}/${total} pairs · ${clock(elapsed)} elapsed · ETA ${
           eta === null ? "--:--" : clock(eta)
@@ -271,10 +308,69 @@ async function playAdaptive(): Promise<void> {
   await saving;
 }
 
+/** The results so far, with this round's finished pairings: what the dashboard shows. */
+function liveResults(): { results: number[][][]; think: typeof think; firstWon: number; decided: number } {
+  if (ADAPTIVE) {
+    rebuild();
+    return { results: state.results, think, firstWon: state.firstWon, decided: state.decided };
+  }
+  const results = state.results.map((row) => row.map((games) => games.slice()));
+  const t = think.map((x) => ({ ...x }));
+  let { firstWon, decided } = state;
+  for (const r of pending) {
+    results[r.i][r.j].push(...r.results);
+    results[r.j][r.i].push(...r.results.map((x) => 1 - x));
+    for (const [k, bot] of [r.i, r.j].entries()) {
+      [t[bot].ms, t[bot].moves] = [t[bot].ms + r.thinkMs[k], t[bot].moves + r.moves[k]];
+    }
+    firstWon += r.firstWon;
+    decided += r.decided;
+  }
+  return { results, think: t, firstWon, decided };
+}
+
+let uiTimer: ReturnType<typeof setTimeout> | undefined;
+let finishedMs: number | null = null;
+/** Sends the dashboard a snapshot, and asks for new ranges when they're due. */
+function publishUi(status: Progress["status"] = stopping ? "stopping" : "running"): void {
+  if (!dash || !snapshots) return;
+  const { results, think: t, firstWon, decided } = liveResults();
+  const games = sum(results.map((row) => sum(row.map((g) => g.length)))) / 2;
+  if (status !== "done" && snapshots.rangesDue(games, dash.samplesGames, performance.now() - dash.askedAt)) {
+    dash.requestRanges(results, games);
+  }
+  dash.publish(snapshots.buildSnapshot({
+    bots: ids.map((id, i) => ({ id, label: labels[i], level: (isDormantId(id) ? DORMANT[id] : BOTS[id]).level })),
+    results,
+    previous: ids.map((id) => RATINGS[id] ?? null),
+    think: t,
+    samples: dash.samples,
+    samplesRating: dash.samplesRating,
+    samplesGames: dash.samplesGames,
+    firstWon,
+    decided,
+    progress: { ...liveProgress, status, elapsedMs: finishedMs ?? performance.now() - startedAt },
+    run: { opening: OPENING, workers: WORKERS, adaptive: ADAPTIVE, gamesPerPairing: GAMES },
+    planned: PLANNED,
+  }));
+}
+/** At most one snapshot a second, and none while no page is open. */
+function refreshUi(): void {
+  if (!dash?.watching || uiTimer) return;
+  uiTimer = setTimeout(() => {
+    uiTimer = undefined;
+    publishUi();
+  }, 1000);
+}
+if (dash) dash.onRanges = dash.onWatch = () => publishUi();
+
 if (ADAPTIVE) await playAdaptive();
 else {while (state.rounds < ROUNDS && !stopping && performance.now() - startedAt < BUDGET) {
     const round = await playRound(state.rounds);
-    if (!round) break;
+    if (!round) {
+      pending.length = 0;
+      break;
+    }
     const recorded: string[] = [];
     for (const r of round) addThink(r);
     for (const { i, j, results, firstWon, decided, games } of round) {
@@ -284,6 +380,7 @@ else {while (state.rounds < ROUNDS && !stopping && performance.now() - startedAt
       state.decided += decided;
       recorded.push(...games);
     }
+    pending.length = 0;
     state.rounds++;
     if (RECORD) await appendFile(RECORD, recorded.join("\n") + "\n");
     await save(state);
@@ -412,3 +509,16 @@ try {
     JSON.stringify({ workers: WORKERS, rows }, null, 2),
   );
 } catch { /* data/ isn't writable: the table above has the same numbers */ }
+
+// The dashboard's last snapshot: the same ratings and ranges as the table above. It stays up.
+if (dash) {
+  clearTimeout(uiTimer);
+  finishedMs = performance.now() - startedAt;
+  [dash.samples, dash.samplesRating, dash.samplesGames] = [samples, fit(results), allGames];
+  liveProgress = { ...liveProgress, etaMs: 0 };
+  dash.stopRanges();
+  publishUi("done");
+  console.error(`
+The dashboard stays open at ${dash.url}. Ctrl+C to quit.`);
+  dash.stayOpen();
+}
