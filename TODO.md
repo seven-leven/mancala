@@ -136,9 +136,11 @@ profile` and `npm run bench`; keep a change only if the tournament still prints 
 - [x] **Re-rated after the speed-ups**, with 240 games a pairing (4× as many) in 5 minutes: every 90% range within ±25
       (was ±40), three neighbouring pairs too close to call (was five). `npm run rate -- 4`: 37 s → 10 s (16 cores);
       bench 1220k → 1769k positions/s; rating fit 55 s → 0.7 s. Next: Pushover below.
-- [x] **A truthful ETA.** It counts rounds, not games: the median of the last five round times, plus what's left of this
-      round weighted by each pairing's last time. Pairings also run slowest first, so a round no longer ends with one
-      long Minimax pairing while the other cores wait. Same results.
+- [x] **A truthful ETA.** It counts rounds, not games, and pairings run slowest first, so a round no longer ends with
+      one long Minimax pairing while the other cores wait. Same results. Since replaced by `tools/tournament/eta.ts`,
+      chosen and calibrated on the ETA logs, with an 80% range: the median it used ran 23% short (docs/ETA.md).
+- [ ] **ETA 2.0**, the roadmap in [docs/ETA.md](docs/ETA.md#eta-20-the-roadmap): better than ~34% off when a run has no
+      earlier twin to learn from.
 - [x] **Adaptive allocation** (`--adaptive`). Done, with the virtual draw scaled to each pairing's games: from 480, ±27
       in 49 s against a plain 240-game run's ±22 in 220 s, 16 of 18 bots inside its ranges (docs/RATING.md, "Adaptive
       allocation"). Kept for quick re-rates; plain runs still write the menu ratings. Was: Lopsided pairings carry
