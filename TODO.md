@@ -213,9 +213,9 @@ Ideas for the rating dashboard (`npm run rate -- --ui`, `tools/dashboard/`), rou
 one must keep the rule the first version kept: a run plays and prints the same with the page open or closed, at no
 measurable cost.
 
-- [ ] **Ratings converging.** Each bot's rating and range over the games played, narrowing as the run goes. It answers
+- [x] **Ratings converging.** Each bot's rating and range over the games played, narrowing as the run goes. It answers
       "is this run long enough?" by eye, and shows a bot still moving when the run ends.
-- [ ] **A game viewer.** Click a head-to-head cell to replay that pairing's games on the game's own board, move by move
+- [x] **A game viewer.** Click a head-to-head cell to replay that pairing's games on the game's own board, move by move
       from the MGN. Most useful for pairings the model check flags: see _why_ Striker scores against DFS.
 - [ ] **Run history.** Save each run's results (`data/runs/<date>.json`) and compare any two: which bots moved, and was
       it more than their ranges? Today "before" only means the ratings in `src/bots/ratings.ts`.

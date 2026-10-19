@@ -19,6 +19,19 @@ export interface PairJob {
   opening: Opening;
   /** Return both games in MGN too. */
   record: boolean;
+  /** Return both games as moves too, for the dashboard's game viewer. */
+  keep?: boolean;
+}
+
+/** A game as moves from the start (the opening's included), for the dashboard's game viewer. */
+export interface PlayedGame {
+  first: Player;
+  /** Pits 0–13 at the start, when it isn't the standard board. */
+  layout?: number[];
+  moves: number[];
+  /** The bots in each seat, by their index in the run. */
+  seats: [number, number];
+  winner: Player | null;
 }
 
 export interface PairResult {
@@ -33,6 +46,8 @@ export interface PairResult {
    * time per move. Wall-clock, so it varies from run to run; results don't. */
   thinkMs: [number, number];
   moves: [number, number];
+  /** Both games as moves, when the job asked to `keep` them. */
+  kept: PlayedGame[];
 }
 
 /** Each pairing's seed, from the round and the two bots: the same however the work is split up. */
@@ -73,7 +88,7 @@ export function playPair(job: PairJob): PairResult {
   // Alternate who moves first from round to round; within a pair, the seats swap.
   const first = job.round % 2 ? P2 : P1;
   const start = opening(job.opening, first, rng);
-  const results: number[] = [], games: string[] = [];
+  const results: number[] = [], games: string[] = [], kept: PlayedGame[] = [];
   let firstWon = 0, decided = 0;
   for (const [p1, p2] of [[0, 1], [1, 0]]) {
     const { winner, moves } = game(bots[p1], bots[p2], start.state);
@@ -87,11 +102,31 @@ export function playPair(job: PairJob): PairResult {
         moves: [...start.moves, ...moves],
       }));
     }
+    if (job.keep) {
+      const seat = (k: number) => (k === 0 ? job.i : job.j);
+      kept.push({
+        first,
+        layout: start.layout,
+        moves: [...start.moves, ...moves],
+        seats: [seat(p1), seat(p2)],
+        winner,
+      });
+    }
     results.push(winner === null ? 0.5 : (winner === P1 ? p1 : p2) === 0 ? 1 : 0);
     if (winner !== null) {
       decided++;
       if (winner === first) firstWon++;
     }
   }
-  return { i: job.i, j: job.j, results: [results[0], results[1]], firstWon, decided, games, thinkMs, moves: chosen };
+  return {
+    i: job.i,
+    j: job.j,
+    results: [results[0], results[1]],
+    firstWon,
+    decided,
+    games,
+    thinkMs,
+    moves: chosen,
+    kept,
+  };
 }

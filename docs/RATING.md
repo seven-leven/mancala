@@ -171,6 +171,11 @@ time elapsed and an ETA. The ETA counts rounds, not games: every round plays the
 while single pairings differ a thousandfold. It says "after round 1" until one round is timed, then uses the median of
 the last five rounds plus what's left of this one, weighted by each pairing's last time.
 
+**The ETA log.** Every run writes its predictions to `data/eta/<start time>.jsonl` (git-ignored): a line about once a
+second with the time elapsed, the ETA, the rounds or pairs done and the games, then a last line with the actual total.
+For each prediction, the remaining time it should have said is the total minus the time elapsed, so the logs show how
+far off the ETA runs, and when, for calibrating it.
+
 ## Watching a run
 
 `--ui` serves a dashboard at http://localhost:8020/ (the next free port if that's taken), in the game's own design. It
@@ -181,9 +186,15 @@ updates as the run goes:
   change. A neighbouring pair whose order holds in under 90% of resampled fits is marked red, as on the docs' ladder
   chart. Click a bot to see its results against each of the others: its score, and what the ratings predict, with
   pairings the model check flags marked.
+- **Converging:** each bot's rating over the games played, and how wide the ranges still are (the widest and the median,
+  against the ±25 of a full 240-game run). Pick a bot to follow its line with its 90% range around it. Ranges narrow
+  about as 1/√games, so this answers "is the run long enough?" by eye.
 - **Bots:** the same table the run prints, plus the rating before and the change.
 - **Head to head:** each pairing's score, or (Games) its games played against the plan. In an adaptive run the Games
   view shows the allocation at work: the close pairings planned in the hundreds, the lopsided ones near the floor of 10.
+- **Watch the games:** click a head-to-head cell (or a bot's name in the panel for one bot) to replay that pairing's
+  games on the game's own board, move by move or played through, with the game in MGN underneath. The dashboard keeps
+  each pairing's first 10 matched pairs, 20 games; a pairing the model check flags is the place to look.
 - **Model check:** the pairings the ratings don't explain, as the run prints them.
 
 When the run ends, the page shows exactly the printed table's numbers and stays up until Ctrl+C.

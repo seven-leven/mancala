@@ -10,6 +10,7 @@ import { createServer, type ServerResponse } from "node:http";
 import { extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Worker } from "node:worker_threads";
+import type { PlayedGame } from "../tournament/play.ts";
 import type { Snapshot } from "./snapshot.ts";
 
 const HERE = new URL("./", import.meta.url);
@@ -45,6 +46,8 @@ export class Dashboard {
   /** Called when new ranges arrive, and when a page opens: both want a fresh snapshot. */
   onRanges: () => void = () => {};
   onWatch: () => void = () => {};
+  /** The game viewer's games for a pairing, by the two bots' indices. */
+  gamesFor: (i: number, j: number) => PlayedGame[] = () => [];
 
   private constructor(url: string) {
     this.url = url;
@@ -65,6 +68,12 @@ export class Dashboard {
     const server = createServer(async (req, res) => {
       const path = new URL(req.url ?? "/", "http://localhost").pathname;
       if (path === "/events") return dashboard.current!.subscribe(res);
+      if (path === "/games") {
+        const q = new URL(req.url ?? "/", "http://localhost").searchParams;
+        const games = dashboard.current!.gamesFor(Number(q.get("i")), Number(q.get("j")));
+        return void res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" })
+          .end(JSON.stringify(games));
+      }
       if (path === "/app.js") return void res.writeHead(200, { "content-type": TYPES[".js"] }).end(app);
       const file = FILES[path];
       if (!file) return void res.writeHead(404).end("Not found");

@@ -5,6 +5,12 @@ release has a section here; work since the last one sits under _Unreleased_.
 
 ## Unreleased
 
+- **The dashboard, two more views.** _Converging_ draws every bot's rating over the games played and how wide the ranges
+  still are, so you can see when a run has played enough. _Watch the games_ replays any pairing's games on the game's
+  own board: click a cell in the head-to-head table. The run keeps each pairing's first 20 games for it, and only with
+  `--ui`.
+- **An ETA log.** Every rating run writes its ETA predictions, about once a second, and its actual total time to
+  `data/eta/`, so the ETA can be checked against what really happened and calibrated.
 - **Watch a rating run live**: `npm run rate -- 240 --ui` serves a dashboard at http://localhost:8020/, in the game's
   own design. It shows the ladder with each bot's 90% range over its rating before the run, with pairs too close to call
   in red; each bot's results against the others, next to what the ratings predict; the head-to-head table, by score or

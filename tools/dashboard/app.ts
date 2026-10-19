@@ -3,6 +3,10 @@
  * bots' table, one bot against each of the others, the head-to-head table and the model check.
  * The clock ticks on its own between snapshots.
  */
+import { DEFAULT_RULES, type GameState } from "../../src/game/types.ts";
+import { formatGame, pitName, replay } from "../../src/game/notation.ts";
+import { BoardView } from "../../src/ui/board.ts";
+import type { PlayedGame } from "../tournament/play.ts";
 import type { BotRow, Snapshot } from "./snapshot.ts";
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -190,7 +194,7 @@ function renderDetail(s: Snapshot): void {
         z === undefined ? "" : ` · off by ${Math.abs(z).toFixed(1)} SE`
       }`
       : "not played yet";
-    return `<li><span>${nameOf(o)}</span>
+    return `<li data-o="${o.i}"><span>${nameOf(o)}</span>
       <span class="track"><span class="fill" style="width:${(score ?? 0) * 100}%"></span>
       <span class="expect" style="left:calc(${expected * 100}% - 1px)"></span></span>
       <span class="note${z === undefined ? "" : " off"}">${note}</span></li>`;
@@ -201,7 +205,7 @@ function renderDetail(s: Snapshot): void {
   } ms a move</p></div>
     <ul class="bars">${bars}</ul>
     <p class="dash-legend" style="margin:1rem 0 0">Bar: its score against each bot, strongest first.
-    Mark: what the ratings predict. Click the bot again to close.</p>`;
+    Mark: what the ratings predict. Click a bot's name to watch their games; click this bot again to close.</p>`;
 }
 
 // --- Head to head --------------------------------------------------------------------------
@@ -211,7 +215,7 @@ function gamesCell(s: Snapshot, r: BotRow, c: BotRow, most: number): string {
   const played = s.games[r.i][c.i], planned = s.planned[r.i][c.i];
   const share = planned / most, along = Math.min(100, (played / Math.max(1, planned)) * 100);
   const title = `${r.label} against ${c.label}: ${played} of ${planned} games planned`;
-  return `<td class="games${share > 0.6 ? " strong" : ""}" title="${
+  return `<td data-r="${r.i}" data-c="${c.i}" class="games${share > 0.6 ? " strong" : ""}" title="${
     esc(title)
   }" style="background-color:color-mix(in srgb, var(--text) ${
     Math.round(share * 70)
@@ -240,7 +244,7 @@ function renderMatrix(s: Snapshot): void {
       const title = `${r.label} against ${c.label}: ${pct(score)} of ${games} games; the ratings predict ${
         pct(s.expected[r.i][c.i])
       }`;
-      return `<td class="${score > 0.6 ? "strong" : ""}" title="${esc(title)}"
+      return `<td data-r="${r.i}" data-c="${c.i}" class="${score > 0.6 ? "strong" : ""}" title="${esc(title)}"
         style="background:color-mix(in srgb, var(--text) ${Math.round(score * 70)}%, transparent)">${
         Math.round(score * 100)
       }</td>`;
@@ -249,6 +253,250 @@ function renderMatrix(s: Snapshot): void {
   }).join("");
   $("matrix").innerHTML = `<thead><tr><th></th>${cols}</tr></thead><tbody>${body}</tbody>`;
 }
+
+// --- Converging ----------------------------------------------------------------------------
+
+/** Spreads labels apart vertically, keeping their order, at least `gap` apart and inside [lo, hi]. */
+function spread(ys: number[], gap: number, lo: number, hi: number): number[] {
+  const order = ys.map((y, k) => [y, k]).sort((a, b) => a[0] - b[0]);
+  const out = ys.slice();
+  let last = -Infinity;
+  for (const [y, k] of order) last = out[k] = Math.max(y, last + gap);
+  // Pushed past the bottom: shift the stack back up.
+  const over = last - hi;
+  if (over > 0) { for (const [, k] of order) out[k] = Math.max(lo, out[k] - over); }
+  return out;
+}
+
+const path = (pts: [number, number][]) =>
+  pts.map(([x, y], k) => `${k ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join("");
+
+/** Gridlines and labels for games along the bottom. */
+function axisX(svg: SVGSVGElement, x: (g: number) => number, max: number, y0: number, y1: number): void {
+  const steps = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10_000, 20_000, 50_000];
+  const step = steps.find((s) => max / s <= 6) ?? 100_000;
+  for (let g = 0; g <= max; g += step) {
+    svg.append(
+      el("line", { class: "grid", x1: x(g), x2: x(g), y1: y0, y2: y1 }),
+      el("text", { x: x(g), y: y1 + 16, "text-anchor": "middle" }, thousands(g)),
+    );
+  }
+}
+
+/** Every bot's rating over the games played; the selected bot on top, with its 90% range. */
+function renderConverge(s: Snapshot): void {
+  const svg = $("converge") as unknown as SVGSVGElement;
+  const { points, ranges } = s.history;
+  const W = 1000, H = 380, left = 52, right = 150, top = 12, bottom = 30;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.replaceChildren();
+  if (points.length < 2) {
+    svg.append(el("text", { x: W / 2, y: H / 2, "text-anchor": "middle" }, "Drawn from the second round on"));
+    return;
+  }
+  const max = points.at(-1)!.games;
+  const all = points.flatMap((p) => p.elo);
+  const lo = Math.floor((Math.min(...all) - 20) / 100) * 100, hi = Math.ceil((Math.max(...all) + 20) / 100) * 100;
+  const x = (g: number) => left + (g / max) * (W - left - right);
+  const y = (e: number) => top + ((hi - e) / (hi - lo)) * (H - top - bottom);
+  axisX(svg, x, max, top, H - bottom);
+  const step = hi - lo > 1000 ? 400 : 200;
+  for (let e = Math.ceil(lo / step) * step; e <= hi; e += step) {
+    svg.append(
+      el("line", { class: "grid", x1: left, x2: W - right, y1: y(e), y2: y(e) }),
+      el("text", { x: left - 8, y: y(e) + 4, "text-anchor": "end" }, String(e)),
+    );
+  }
+  if (selected !== null && ranges.length > 1) {
+    const i = selected;
+    const upper = ranges.map((r): [number, number] => [x(Math.min(r.games, max)), y(r.high[i])]);
+    const lower = ranges.map((r): [number, number] => [x(Math.min(r.games, max)), y(r.low[i])]).reverse();
+    svg.append(el("path", { class: "band", d: path([...upper, ...lower]) + "Z" }));
+  }
+  const bots = s.rows.map((r) => r.i);
+  // The others first, so the selected bot's line draws on top.
+  for (const i of [...bots.filter((b) => b !== selected), ...bots.filter((b) => b === selected)]) {
+    svg.append(el("path", {
+      class: `line${i === selected ? " selected" : ""}`,
+      d: path(points.map((p) => [x(p.games), y(p.elo[i])])),
+    }));
+  }
+  const ends = spread(bots.map((i) => y(points.at(-1)!.elo[i]) + 4), 14, top + 8, H - bottom);
+  bots.forEach((i, k) => {
+    const r = s.rows.find((row) => row.i === i)!;
+    const label = el(
+      "text",
+      { class: `name${i === selected ? " selected" : ""}`, x: W - right + 8, y: ends[k] },
+      r.level,
+    );
+    label.addEventListener("click", () => select(i));
+    svg.append(label);
+  });
+}
+
+/** The widest and the median 90% range (±, half its width) over the games played. */
+function renderWidths(s: Snapshot): void {
+  const svg = $("widths") as unknown as SVGSVGElement;
+  const W = 600, H = 380, left = 44, right = 16, top = 12, bottom = 30;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.replaceChildren();
+  // Every bot but the anchor, whose range is its rating.
+  const rows = s.history.ranges.map((r) => {
+    const half = r.low.map((low, i) => (r.high[i] - low) / 2).filter((_, i) => i !== 0).sort((a, b) => a - b);
+    return { games: r.games, widest: half.at(-1)!, median: half[Math.floor(half.length / 2)] };
+  });
+  const goal = 25;
+  const follow = "Click a bot (here, on the ladder or in the table) to follow it, with its 90% range.";
+  if (rows.length < 2) {
+    svg.append(el("text", { x: W / 2, y: H / 2, "text-anchor": "middle" }, "Drawn from the second resample on"));
+    $("convergeNote").textContent =
+      `Ratings are drawn every round (every 50 pairs, adaptive), the ranges about every 10 seconds. ${follow}`;
+    return;
+  }
+  const max = Math.max(...rows.map((r) => r.games));
+  const ceiling = Math.max(goal * 2, ...rows.map((r) => r.widest));
+  const x = (g: number) => left + (g / max) * (W - left - right);
+  const y = (v: number) => top + ((ceiling - v) / ceiling) * (H - top - bottom);
+  axisX(svg, x, max, top, H - bottom);
+  for (let v = 0; v <= ceiling; v += ceiling > 150 ? 50 : 25) {
+    svg.append(
+      el("line", { class: "grid", x1: left, x2: W - right, y1: y(v), y2: y(v) }),
+      el("text", { x: left - 8, y: y(v) + 4, "text-anchor": "end" }, String(v)),
+    );
+  }
+  svg.append(
+    el("line", { class: "goal", x1: left, x2: W - right, y1: y(goal), y2: y(goal) }),
+    el("text", { x: W - right, y: y(goal) - 6, "text-anchor": "end" }, "±25: a full 240-game run"),
+    el("path", { class: "median", d: path(rows.map((r) => [x(r.games), y(r.median)])) }),
+    el("path", { class: "widest", d: path(rows.map((r) => [x(r.games), y(r.widest)])) }),
+  );
+  const last = rows.at(-1)!;
+  $("convergeNote").textContent =
+    `Now the widest range is ±${Math.round(last.widest)} and the median ±${
+      Math.round(last.median)
+    } (right: solid is the widest, dashed the median). Ranges narrow about as 1/√games: half as wide takes four times ` +
+    `the games. ${follow}`;
+}
+
+// --- Watching the games --------------------------------------------------------------------
+
+const viewer = {
+  games: [] as PlayedGame[],
+  game: 0,
+  step: 0,
+  states: [] as GameState[],
+  results: [] as ReturnType<typeof replay>["results"],
+  timer: undefined as ReturnType<typeof setInterval> | undefined,
+};
+let board: BoardView | null = null;
+const level = (i: number) => snap?.rows.find((row) => row.i === i)?.level ?? `Bot ${i}`;
+const botName = (i: number) => {
+  const r = snap?.rows.find((row) => row.i === i);
+  return r ? `${r.level} (${r.label})` : `Bot ${i}`;
+};
+
+/** Opens the viewer on a pairing's kept games (the first 10 matched pairs, as they're played). */
+async function openViewer(a: number, b: number): Promise<void> {
+  const games = (await (await fetch(`games?i=${a}&j=${b}`)).json()) as PlayedGame[];
+  stopPlaying();
+  Object.assign(viewer, { games, game: 0, step: 0 });
+  const section = $("viewer");
+  section.hidden = false;
+  $("viewerTitle").textContent = `${botName(a)} against ${botName(b)}`;
+  board ??= new BoardView($("board"));
+  if (!games.length) {
+    $("viewerInfo").textContent =
+      "No games kept for this pairing yet: the viewer keeps each pairing's first 10 matched pairs, as they're played.";
+    $("viewerMove").textContent = "";
+    $("viewerMgn").textContent = "";
+    board.render(new Array(16).fill(0));
+  } else showGame(0);
+  section.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function showGame(k: number): void {
+  const g = viewer.games[k];
+  const record = { tags: {}, rules: { ...DEFAULT_RULES }, first: g.first, layout: g.layout, moves: g.moves };
+  const { states, results } = replay(record);
+  Object.assign(viewer, { game: k, step: 0, states, results });
+  const end = states.at(-1)!;
+  const [s1, s2] = g.seats;
+  const result = g.winner === null ? "a draw" : `${level(g.winner === 1 ? s1 : s2)} won`;
+  const opening = snap?.run.opening === "random-moves" ? " Moves 1 and 2 are the opening's random moves." : "";
+  $("viewerInfo").textContent = `Game ${k + 1} of ${viewer.games.length} · Player 1: ${botName(s1)} · Player 2: ${
+    botName(s2)
+  } · ${result}, ${end.pits[14]}–${end.pits[15]}.${opening}`;
+  $("viewerMgn").textContent = formatGame(record);
+  board!.setStoreLabels({ 1: level(s1), 2: level(s2) });
+  showStep(0);
+}
+
+function showStep(step: number): void {
+  const { states, results } = viewer;
+  viewer.step = Math.max(0, Math.min(step, states.length - 1));
+  const state = states[viewer.step];
+  board!.render(state.pits);
+  // A replay: no pit can be played, and each reads its count to a screen reader.
+  board!.setPlayable(new Set(), (pit, seeds) => `Pit ${pitName(pit)}: ${seeds} seeds`, state.pits);
+  board!.setTurn(state.gameOver ? null : state.current);
+  const r = viewer.step ? results[viewer.step - 1] : null;
+  board!.sowingFrom(r ? r.move : null);
+  const seat = (p: number) => level(viewer.games[viewer.game].seats[p - 1]);
+  $("viewerMove").textContent = !r
+    ? `The start: Player ${state.current} (${seat(state.current)}) to move.`
+    : `Move ${viewer.step} of ${results.length}: ${seat(r.player)} plays pit ${pitName(r.move)}` +
+      (r.relays ? `, relays ${r.relays} ${r.relays === 1 ? "time" : "times"}` : "") +
+      (r.captured ? `, captures ${r.captured}` : "") +
+      (r.freeTurn && !state.gameOver ? ", and moves again" : "") +
+      (state.gameOver ? `. Game over, ${state.pits[14]}–${state.pits[15]}.` : ".");
+  if (viewer.step === states.length - 1) stopPlaying();
+}
+
+function stopPlaying(): void {
+  clearInterval(viewer.timer);
+  viewer.timer = undefined;
+  const play = document.querySelector<HTMLButtonElement>('[data-go="play"]');
+  if (play) play.textContent = "Play";
+}
+
+function go(action: string): void {
+  if (!viewer.games.length) return;
+  if (action === "play") {
+    if (viewer.timer) return stopPlaying();
+    if (viewer.step === viewer.states.length - 1) showStep(0);
+    viewer.timer = setInterval(() => showStep(viewer.step + 1), 600);
+    document.querySelector<HTMLButtonElement>('[data-go="play"]')!.textContent = "Pause";
+    return;
+  }
+  stopPlaying();
+  if (action === "start") showStep(0);
+  else if (action === "back") showStep(viewer.step - 1);
+  else if (action === "forward") showStep(viewer.step + 1);
+  else if (action === "end") showStep(viewer.states.length - 1);
+  else if (action === "prevGame") showGame((viewer.game - 1 + viewer.games.length) % viewer.games.length);
+  else if (action === "nextGame") showGame((viewer.game + 1) % viewer.games.length);
+}
+
+for (const b of document.querySelectorAll<HTMLButtonElement>("[data-go]")) {
+  b.addEventListener("click", () => go(b.dataset.go!));
+}
+document.addEventListener("keydown", (e) => {
+  if ($("viewer").hidden || (e.target as HTMLElement).closest("input, select, textarea")) return;
+  const action = ({ ArrowLeft: "back", ArrowRight: "forward", Home: "start", End: "end" } as Record<string, string>)[
+    e.key
+  ];
+  if (!action) return;
+  e.preventDefault();
+  go(action);
+});
+$("matrix").addEventListener("click", (e) => {
+  const td = (e.target as HTMLElement).closest<HTMLElement>("td[data-c]");
+  if (td) void openViewer(Number(td.dataset.r), Number(td.dataset.c));
+});
+$("detailBody").addEventListener("click", (e) => {
+  const li = (e.target as HTMLElement).closest<HTMLElement>("li[data-o]");
+  if (li && selected !== null) void openViewer(selected, Number(li.dataset.o));
+});
 
 // --- Model check and footer ----------------------------------------------------------------
 
@@ -286,6 +534,8 @@ function render(): void {
   if (!snap) return;
   renderStatus();
   renderLadder(snap);
+  renderConverge(snap);
+  renderWidths(snap);
   renderTable(snap);
   renderDetail(snap);
   renderMatrix(snap);

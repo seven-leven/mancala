@@ -42,6 +42,14 @@ export interface Run {
   gamesPerPairing: number;
 }
 
+/** How the ratings settled as the run went, for the convergence charts. */
+export interface History {
+  /** Every bot's rating (by index) after `games` games. */
+  points: { games: number; elo: number[] }[];
+  /** Every bot's 90% range at the times it was resampled. */
+  ranges: { games: number; low: number[]; high: number[] }[];
+}
+
 export interface SnapshotInput {
   bots: BotInfo[];
   /** results[i][j]: bot i's result in each game against bot j (1, ½ or 0). Bot 0 is the anchor. */
@@ -59,6 +67,7 @@ export interface SnapshotInput {
   run: Run;
   /** By bot index: the games planned for each pairing (adaptive runs plan more for close ones). */
   planned: number[][];
+  history: History;
 }
 
 export interface BotRow {
@@ -90,6 +99,7 @@ export interface Snapshot {
   score: (number | null)[][];
   games: number[][];
   planned: number[][];
+  history: History;
   /** By bot index: the result the ratings predict for i against j. */
   expected: number[][];
   misfits: { i: number; j: number; observed: number; expected: number; z: number }[];
@@ -138,6 +148,7 @@ export function buildSnapshot(input: SnapshotInput): Snapshot {
     score: results.map((row) => row.map(mean)),
     games: results.map((row) => row.map((games) => games.length)),
     planned: input.planned,
+    history: input.history,
     expected,
     misfits: played ? misfits(results, rating) : [],
     rangesGames: samples ? input.samplesGames : null,
