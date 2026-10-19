@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rating run · Mancala</title>
+    <meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#161514" media="(prefers-color-scheme: dark)">
+    <link rel="icon" href="svg/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    >
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+  </head>
+  <body>
+    <main class="dash">
+      <header>
+        <p class="eyebrow label">Mancala · the bots' rating run</p>
+        <h1 class="serif dash-title">Rating run</h1>
+        <p class="dash-status" id="status" aria-live="polite">Waiting for the first results…</p>
+        <div class="dash-progress" aria-hidden="true"><span id="bar"></span></div>
+        <p class="dash-meta" id="meta"></p>
+      </header>
+
+      <section aria-labelledby="ladder-h">
+        <h2 class="label dash-h" id="ladder-h">Ladder</h2>
+        <p class="dash-legend">
+          <span class="key key-now"></span> this run, with its 90% range
+          <span class="key key-before"></span> before this run
+          <span class="key key-close"></span> too close to call: their order holds in under 90% of resamples
+          <span id="rangesNote"></span>
+        </p>
+        <div class="card scroll"><svg id="ladder" role="img" aria-label="The bots' ratings"></svg></div>
+      </section>
+
+      <section id="detail" aria-labelledby="detail-h" hidden>
+        <h2 class="label dash-h" id="detail-h">Against each bot</h2>
+        <div class="card" id="detailBody"></div>
+      </section>
+
+      <section aria-labelledby="bots-h">
+        <h2 class="label dash-h" id="bots-h">Bots</h2>
+        <div class="card scroll">
+          <table class="dash-table" id="bots"></table>
+        </div>
+      </section>
+
+      <section aria-labelledby="matrix-h">
+        <h2 class="label dash-h" id="matrix-h">Head to head</h2>
+        <div class="dash-views" role="group" aria-label="Show">
+          <button class="btn btn--ghost" type="button" data-view="score" aria-pressed="true">Scores</button>
+          <button class="btn btn--ghost" type="button" data-view="games" aria-pressed="false">Games</button>
+        </div>
+        <p class="dash-legend" id="matrixLegend"></p>
+        <div class="card scroll">
+          <table class="dash-matrix" id="matrix"></table>
+        </div>
+      </section>
+
+      <section aria-labelledby="check-h">
+        <h2 class="label dash-h" id="check-h">Model check</h2>
+        <div class="card" id="check"></div>
+      </section>
+
+      <footer class="dash-foot" id="foot"></footer>
+    </main>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

@@ -1,7 +1,7 @@
 # Docs
 
 The guides behind the game, by what you're about to do. The [README](../README.md) is the way in: how to play, the bots'
-ratings, and how the site is built.
+ratings, and how the site is built. Notes on the game itself, as posts, are in [research/](../research/README.md).
 
 ## Changing how it looks
 

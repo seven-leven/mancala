@@ -5,6 +5,12 @@ release has a section here; work since the last one sits under _Unreleased_.
 
 ## Unreleased
 
+- **Watch a rating run live**: `npm run rate -- 240 --ui` serves a dashboard at http://localhost:8020/, in the game's
+  own design. It shows the ladder with each bot's 90% range over its rating before the run, with pairs too close to call
+  in red; each bot's results against the others, next to what the ratings predict; the head-to-head table, by score or
+  by games against the plan, so adaptive allocation can be seen at work; and the model check. It costs the run nothing
+  measurable: the ranges are resampled on a thread of their own. [RATING.md](docs/RATING.md) has it, and a new
+  step-by-step account of what happens in every run, round, matched pair and game.
 - **Node instead of Deno.** Node 24 runs the TypeScript as it is (it strips the types), so nothing gained a compile
   step. `npm install` once, then `npm run dev`, `npm test`, `npm run rate -- 240 --write` and so on; README has the
   list. Tests run on Node's test runner, the rating harness on `worker_threads`, and esbuild comes from npm (a build
