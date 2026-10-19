@@ -112,9 +112,10 @@ it fails if any figure drops below. It runs the tests under [c8](https://github.
 coverage data; open `coverage/index.html` to see each file, with anything no test reaches marked in red.
 
 New code comes with the tests that keep it at 100%. The one exception is code that can't run: mark it `/* c8 ignore next
-*/` (or `start` … `stop` for a block) with the reason on the same line. Five guards are marked today: the `if
-(r.invalid)` checks on moves taken from `validMoves` (they only narrow the type) and minimax passing on an error that
-isn't `OutOfTime` (only a bug reaches it). If a test could reach it, it gets a test, not an ignore.
+*/` (or `start` … `stop` for a block) with the reason on the same line. Two guards are marked today: Minimax's `if
+(r.invalid)` on a root move it already knows is legal (it only narrows the type), and Minimax passing on an error that
+isn't `OutOfTime` (only a bug reaches it). If a test could reach it, it gets a test, not an ignore; better still, code
+that can't run is written away (the bots that look ahead play moves with `playOn`, which has no such case).
 
 What no test loads, and so isn't counted:
 

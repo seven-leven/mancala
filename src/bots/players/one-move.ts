@@ -1,8 +1,9 @@
 /** Family "one-move": play each pit once, score the position after it, and stop there. */
-import { playTurn, validMoves } from "../../game/engine.ts";
+import { validMoves } from "../../game/engine.ts";
 import type { GameState } from "../../game/types.ts";
 import type { Bot, Evaluator, Rng } from "../contracts.ts";
 import { banked, exposed, onSide, threats } from "../search/evaluate.ts";
+import { Boards, playOn } from "../search/moves.ts";
 
 export interface OneMoveOptions {
   /** Play the move that scores best (the default), or the worst. */
@@ -16,6 +17,7 @@ export class OneMoveBot implements Bot {
   private evaluate: Evaluator;
   private opts: OneMoveOptions;
   private rng: Rng;
+  private boards = new Boards();
   constructor(evaluate: Evaluator, opts: OneMoveOptions = {}, rng: Rng = Math.random) {
     [this.evaluate, this.opts, this.rng] = [evaluate, opts, rng];
   }
@@ -24,11 +26,10 @@ export class OneMoveBot implements Bot {
     const sign = this.opts.aim === "worst" ? -1 : 1;
     let best: number[] = [];
     let bestScore = -Infinity;
+    const after = this.boards.at(0, state);
     for (const move of validMoves(state)) {
-      const r = playTurn(state, move, { record: false });
-      /* c8 ignore next: the move came from validMoves; the check only narrows the type */
-      if (r.invalid) continue;
-      const s = sign * this.evaluate(r.state, me);
+      playOn(after, state, move);
+      const s = sign * this.evaluate(after, me);
       if (s > bestScore) [best, bestScore] = [[move], s];
       else if (s === bestScore) best.push(move);
     }

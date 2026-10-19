@@ -13,9 +13,10 @@
  * Speed-ups that keep the same moves are checked against the moves before them (600 decisions
  * on seeded positions, at depths 4 and 6); `npm run bench` measures them.
  */
-import { FREE_TURN, INVALID, pitsOf, playTurn, storeOf, turn, validMoves } from "../../game/engine.ts";
+import { FREE_TURN, INVALID, pitsOf, playTurn, storeOf, validMoves } from "../../game/engine.ts";
 import type { GameState } from "../../game/types.ts";
 import { evaluate, WIN } from "./evaluate.ts";
+import { playOn } from "./moves.ts";
 
 export interface SearchOptions {
   /** Stop after this many milliseconds (keeps the deepest finished search). */
@@ -194,10 +195,7 @@ export function search(
     for (const move of pitsOf(s.current)) {
       if (s.gameOver || s.pits[move] === 0) continue;
       const board = at.boards[n];
-      for (let i = 0; i < 16; i++) board.pits[i] = s.pits[i];
-      board.current = s.current;
-      board.gameOver = s.gameOver;
-      const flags = turn(board, move);
+      const flags = playOn(board, s, move);
       const free = flags !== INVALID && (flags & FREE_TURN) !== 0;
       at.moves[n] = move;
       at.free[n] = free ? 1 : 0;

@@ -1,7 +1,8 @@
 /** Family "chain": follow your own free turns as far as they go, and never look at the replies. */
-import { playTurn, score, validMoves } from "../../game/engine.ts";
+import { FREE_TURN, score, validMoves } from "../../game/engine.ts";
 import type { GameState } from "../../game/types.ts";
 import type { Bot } from "../contracts.ts";
+import { Boards, playOn } from "../search/moves.ts";
 
 /**
  * Depth-first search through its own free-turn chains, up to `maxDepth` moves in a row, keeping the
@@ -11,6 +12,7 @@ import type { Bot } from "../contracts.ts";
  */
 export class DfsBot implements Bot {
   private maxDepth: number;
+  private boards = new Boards();
   constructor(maxDepth = 8) {
     this.maxDepth = maxDepth;
   }
@@ -27,12 +29,12 @@ export class DfsBot implements Bot {
   }
 
   private chain(state: GameState, move: number, depth: number, me: GameState["current"]): number {
-    const r = playTurn(state, move, { record: false });
-    /* c8 ignore next: the move came from validMoves; the check only narrows the type */
-    if (r.invalid) return -Infinity;
-    if (!r.freeTurn || depth + 1 >= this.maxDepth) return score(r.state, me);
-    let best = score(r.state, me);
-    for (const next of validMoves(r.state)) best = Math.max(best, this.chain(r.state, next, depth + 1, me));
+    // One board per depth: a chain's deeper moves never touch the boards above them.
+    const after = this.boards.at(depth, state);
+    const flags = playOn(after, state, move);
+    if (!(flags & FREE_TURN) || depth + 1 >= this.maxDepth) return score(after, me);
+    let best = score(after, me);
+    for (const next of validMoves(after)) best = Math.max(best, this.chain(after, next, depth + 1, me));
     return best;
   }
 }

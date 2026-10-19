@@ -9,6 +9,11 @@ release has a section here; work since the last one sits under _Unreleased_.
   (no strings or objects per node), ties in the move order go to the pit with the better history, and big hands sow
   whole laps at once. 600 decisions on seeded positions: the same moves and scores in 5.9 s instead of 10.4 s. In the
   game it searches deeper in the same time; rating runs finish sooner.
+- **Every bot that looks ahead shares one way of trying moves**: `playOn()` plays a move on a reused board, one per
+  depth, without the copy and event log `playTurn()` makes for the screen (`src/bots/search/moves.ts`). DFS is about 15%
+  faster, Planner, Spoiler and Chainer about 10%, and every bot plays exactly the same moves as before (checked on 400
+  positions for each of the 19). Rewriting the scoring pieces as plain loops was measured too, and made no difference,
+  so they stayed as they were.
 - **The gap to the next bot, with its 90% range**, in the rating table and the dashboard: how far apart two neighbours
   are, and how sure.
 - **Openings, measured.** Sharing one opening a round across every pairing made the ranges wider, not narrower, and

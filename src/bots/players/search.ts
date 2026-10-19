@@ -1,9 +1,10 @@
 /** Family "search": bots built on the Minimax search (search/minimax.ts), each asking it something different. */
-import { playTurn, validMoves } from "../../game/engine.ts";
+import { validMoves } from "../../game/engine.ts";
 import type { GameState } from "../../game/types.ts";
 import type { Bot, Evaluator, Rng } from "../contracts.ts";
 import { search, type SearchResult } from "../search/minimax.ts";
 import { WIN } from "../search/evaluate.ts";
+import { Boards, playOn } from "../search/moves.ts";
 
 /** How a search bot describes what it saw. */
 function describe(r: SearchResult): string | null {
@@ -78,6 +79,7 @@ export class PushoverBot implements Bot {
  */
 export class TwoMoveBot implements Bot {
   private evaluate: Evaluator;
+  private boards = new Boards();
   constructor(evaluate: Evaluator) {
     this.evaluate = evaluate;
   }
@@ -85,16 +87,15 @@ export class TwoMoveBot implements Bot {
     const me = state.current;
     let best: number | null = null;
     let bestValue = -Infinity;
+    const after = this.boards.at(0, state), replied = this.boards.at(1, state);
     for (const move of validMoves(state)) {
-      const r = playTurn(state, move, { record: false });
-      /* c8 ignore next: the move came from validMoves; the check only narrows the type */
-      if (r.invalid) continue;
-      let value = this.evaluate(r.state, me);
-      if (!r.state.gameOver && r.state.current !== me) {
+      playOn(after, state, move);
+      let value = this.evaluate(after, me);
+      if (!after.gameOver && after.current !== me) {
         let worst = Infinity;
-        for (const reply of validMoves(r.state)) {
-          const rr = playTurn(r.state, reply, { record: false });
-          if (!rr.invalid) worst = Math.min(worst, this.evaluate(rr.state, me));
+        for (const reply of validMoves(after)) {
+          playOn(replied, after, reply);
+          worst = Math.min(worst, this.evaluate(replied, me));
         }
         if (worst < Infinity) value = worst;
       }

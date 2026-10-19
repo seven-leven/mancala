@@ -31,8 +31,10 @@ The menus, the Web Worker, saved games and the tournament all read it.
 
 ## Rules every bot follows
 
-1. **Ask the engine; never re-implement the rules.** A bot learns what a move does from `playTurn()` (with `{ record:
-   false }`), and what it may play from `validMoves()`.
+1. **Ask the engine; never re-implement the rules.** A bot learns what it may play from `validMoves()`, and what a move
+   does from the engine. To try many moves, play them with `playOn()` on a reused board (`Boards`, one per depth, in
+   [src/bots/search/moves.ts](../src/bots/search/moves.ts)): it's the engine's own `turn()` without the copy and the
+   event log `playTurn()` makes for the screen. Every bot that looks ahead does this, so speeding it up speeds them all.
 2. **Always legal.** `choose` returns one of `validMoves(state)`, and returns null only when that's empty. The tests
    play every bot through whole games to check.
 3. **Plays either side.** A bot plays for `state.current`, whichever player that is.
