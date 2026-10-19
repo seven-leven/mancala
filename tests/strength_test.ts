@@ -6,11 +6,11 @@
  */
 import { test } from "node:test";
 import { assert } from "./assert.ts";
-import type { BotId } from "../src/bots/bots.ts";
+import type { BotId, DormantId } from "../src/bots/bots.ts";
 import { playPair } from "../tools/tournament/play.ts";
 
 /** How many of `pairs` matched pairs' games `a` wins against `b` (draws count half). */
-function score(a: BotId, b: BotId, pairs: number): number {
+function score(a: BotId | DormantId, b: BotId | DormantId, pairs: number): number {
   let won = 0;
   for (let round = 0; round < pairs; round++) {
     const r = playPair({ round, i: 0, j: 1, a, b, opening: "random-moves", record: false });
@@ -19,7 +19,7 @@ function score(a: BotId, b: BotId, pairs: number): number {
   return won;
 }
 
-const checks: [BotId, BotId, number, number][] = [
+const checks: [BotId | DormantId, BotId | DormantId, number, number][] = [
   // a, b, matched pairs, games a must win (of 2 × pairs)
   ["lookahead", "random", 6, 10],
   ["greedy", "pushover", 6, 11],
@@ -27,6 +27,7 @@ const checks: [BotId, BotId, number, number][] = [
   ["minimax", "pushover", 4, 8],
   ["minimax", "random", 4, 8],
   ["minimax", "greedy", 4, 7],
+  ["montecarlo", "random", 4, 8],
 ];
 
 for (const [a, b, pairs, need] of checks) {

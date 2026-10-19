@@ -98,7 +98,10 @@ in `src/bots/players/`.
       method: fit the weights so the evaluation predicts game results). Keep a weight set only if it wins a matched-pair
       match against the old one.
 - [ ] [#16](https://github.com/seven-leven/mancala/issues/16) Try an MCTS bot (UCB1, random playouts). If it rates above
-      Minimax, it becomes the new top level.
+      Minimax, it becomes the new top level. Built (`src/bots/players/montecarlo.ts`, dormant): 10 ms a move, 2000
+      playouts when rated. Placed over 40 games a pairing at 1759 (1689–1832), between Lookahead and Shrewd; it lost all
+      40 games to Minimax, and DFS beats it at a twentieth of the time, so not a new top level. Next: a full rating to
+      bring it into the menus in the Lookahead–Shrewd gap, and maybe playouts guided by the evaluation.
 - [ ] **A sequential test (SPRT) for "does the new version beat the old one?"** For #15 and #16: play matched pairs
       until the evidence is strong enough either way, then stop, as chess engines are tested. A clear yes or no in the
       fewest games, instead of guessing that 240 is enough. Its formulas go in RATING.md's maths.

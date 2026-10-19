@@ -3,6 +3,13 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `package.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
+## Unreleased
+
+- **A Monte Carlo bot** (dormant for now): Monte Carlo tree search with random playouts, 10 ms a move in the game and
+  2000 playouts when rated. Placed at about 1760, between Lookahead and Shrewd, so it could fill that gap; it never beat
+  Minimax in 40 games, and DFS is stronger at a twentieth of the time. Random games are a poor guide in a game this
+  tactical. A new family, `montecarlo`, in docs/BOTS.md.
+
 ## v2.4.0 · 2026-10-19
 
 - **A better ETA, with an error range.** The rating run's ETA is its own module (`tools/tournament/eta.ts`), chosen and

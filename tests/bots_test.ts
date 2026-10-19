@@ -16,6 +16,7 @@ import {
   TurtleBot,
   TwoMoveBot,
 } from "../src/bots/bots.ts";
+import { MonteCarloBot } from "../src/bots/players/montecarlo.ts";
 import { exposed, freeTurnsReady, lead, mobility, threats } from "../src/bots/search/evaluate.ts";
 import { search } from "../src/bots/search/minimax.ts";
 import { Boards, playOn } from "../src/bots/search/moves.ts";
@@ -246,4 +247,47 @@ test("playOn plays a move on a reused board exactly as playTurn does, and Boards
   // New rules (house rules, a new game): a new board for them.
   const house = newGame({ ...DEFAULT_RULES, seeds: 5 }, P1);
   assert(boards.at(0, house) !== board && boards.at(0, house).rules === house.rules);
+});
+
+test("monte carlo stops after its playouts, or its time, and says how it did", () => {
+  const start = newGame(DEFAULT_RULES, P1);
+  assertEquals(new MonteCarloBot({ playouts: 5 }).note(), null, "before any move there's no note");
+  const fixed = new MonteCarloBot({ playouts: 50 }, seeded(1));
+  assert(validMoves(start).includes(fixed.choose(start)!));
+  assert(/^played 50 random games, won \d+%$/.test(fixed.note() ?? ""), fixed.note() ?? "");
+  // Out of time at once: it still plays one game, so it always has a move to give.
+  const rushed = new MonteCarloBot({ timeMs: 0 }, seeded(2));
+  assert(validMoves(start).includes(rushed.choose(start)!));
+  assert(/^played 1 random game, won \d+%$/.test(rushed.note() ?? ""), rushed.note() ?? "");
+});
+
+test("monte carlo plays a lone move without searching, and nothing when there's no move", () => {
+  // Player 1 has one pit with seeds left.
+  //                    0  1  2  3  4  5  6  7  8  9 10 11 12 13  M1  M2
+  const forced = position([0, 0, 0, 0, 0, 0, 3, 5, 5, 5, 5, 5, 5, 5, 30, 30]);
+  const bot = new MonteCarloBot({ playouts: 20 }, seeded(3));
+  assertEquals(bot.choose(forced), 6);
+  assertEquals(bot.note(), null);
+  assertEquals(bot.choose({ ...forced, gameOver: true }), null);
+});
+
+test("monte carlo takes the move that wins on the spot", () => {
+  // Player 1 has 49 banked. Pit 6 sows its seed into the store: 50 of 98, a clinched majority, and
+  // the game is over. Pit 1 keeps it going, against a side with every other seed. Many tries end
+  // on the finished game, which the search must keep scoring as a win.
+  //                    0  1  2  3  4  5  6  7  8  9 10 11 12 13  M1  M2
+  const win = position([0, 1, 0, 0, 0, 0, 1, 6, 6, 6, 6, 6, 6, 6, 49, 5]);
+  const bot = new MonteCarloBot({ playouts: 300 }, seeded(4));
+  assertEquals(bot.choose(win), 6);
+  assertEquals(bot.note(), "played 300 random games, won 100%");
+});
+
+test("createBot makes monte carlo with a fixed number of playouts when rated, a 10 ms clock in the game", () => {
+  const start = newGame(DEFAULT_RULES, P1);
+  const rated = createBot("montecarlo", { mode: "rate", rng: seeded(5) });
+  rated.choose(start);
+  const note = rated.note?.() ?? "";
+  assert(note.startsWith("played 2000 random games"), note);
+  const played = createBot("montecarlo", { rng: seeded(6) });
+  assert(validMoves(start).includes(played.choose(start)!));
 });

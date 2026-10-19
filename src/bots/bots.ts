@@ -6,6 +6,7 @@ import type { Bot, BotContext, BotSpec } from "./contracts.ts";
 import { FirstBot, RandomBot } from "./players/basic.ts";
 import { DfsBot } from "./players/chain.ts";
 import { MixedBot } from "./players/mixed.ts";
+import { MonteCarloBot } from "./players/montecarlo.ts";
 import { GenerousBot, GreedyBot, HoarderBot, OneMoveBot, StrikerBot, TurtleBot } from "./players/one-move.ts";
 import { LookaheadBot, MinimaxBot, PushoverBot, TwoMoveBot } from "./players/search.ts";
 import { lead, planned } from "./search/evaluate.ts";
@@ -184,6 +185,16 @@ export const BOTS = {
  * See docs/BOTS.md, "Dormant bots".
  */
 export const DORMANT = {
+  // Monte Carlo tree search with random playouts (TODO, #16): 10 ms a move in the game, and in
+  // rating the 2000 playouts that 10 ms buys from the opening. Dormant until it's placed on the
+  // ladder (docs/RATING.md, "Placing a new bot").
+  montecarlo: {
+    label: "Monte Carlo",
+    level: "Lucky",
+    blurb: "Plays thousands of random games from each move and picks the one that won most.",
+    family: "montecarlo",
+    create: ({ mode, rng }) => new MonteCarloBot(mode === "rate" ? { playouts: 2000 } : { timeMs: 10 }, rng),
+  },
   // Rated level with Random (999 against 1000 over 240 games, too close to call), so it adds no
   // step to the ladder, and a player can't tell the two apart. Kept as the simplest fixed
   // strategy for tests and research.
