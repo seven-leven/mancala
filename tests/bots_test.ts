@@ -4,6 +4,7 @@ import {
   BOTS,
   createBot,
   DfsBot,
+  DfsReplyBot,
   FirstBot,
   GenerousBot,
   GreedyBot,
@@ -39,6 +40,7 @@ test("every bot only plays legal pits", () => {
     new GreedyBot(),
     new LookaheadBot(2, 3, seeded(2)),
     new DfsBot(),
+    new DfsReplyBot(),
     new MinimaxBot({ depth: 3 }),
   ];
   let g = newGame(DEFAULT_RULES, P1);
@@ -290,4 +292,37 @@ test("createBot makes monte carlo with a fixed number of playouts when rated, a 
   assert(note.startsWith("played 2000 random games"), note);
   const played = createBot("montecarlo", { rng: seeded(6) });
   assert(validMoves(start).includes(played.choose(start)!));
+});
+
+test("dfs v2 sees the capture dfs walks into", () => {
+  // Player 1 to move, found by searching random games. DFS plays pit 0 and leaves Player 2 a capture
+  // of 9 seeds; DFS v2 looks at Player 2's answer and plays pit 2, which leaves nothing to capture.
+  //                    0  1  2  3  4  5  6  7  8  9 10 11 12 13  M1  M2
+  const trap = position([1, 1, 8, 8, 1, 0, 3, 1, 3, 1, 6, 0, 1, 3, 25, 36]);
+  /** The most seeds the side to move can capture with one move. */
+  const most = (s: GameState) => {
+    let n = 0;
+    for (const m of validMoves(s)) {
+      const r = playTurn(s, m);
+      if (!r.invalid) { for (const e of r.events) if (e.type === "capture") n = Math.max(n, e.captured); }
+    }
+    return n;
+  };
+  assertEquals(new DfsBot().choose(trap), 0);
+  assertEquals(most(playTurn(trap, 0).state), 9);
+  assertEquals(new DfsReplyBot().choose(trap), 2);
+  assertEquals(most(playTurn(trap, 2).state), 0);
+});
+
+test("dfs v2 takes a move that wins on the spot, and scores a chain where its limit stops it", () => {
+  // Either move clinches a majority for Player 1: pit 6 sows into the store, pit 1 captures 6.
+  //                    0  1  2  3  4  5  6  7  8  9 10 11 12 13  M1  M2
+  const win = position([0, 1, 0, 0, 0, 0, 1, 6, 6, 6, 6, 6, 6, 6, 49, 5]);
+  const after = playTurn(win, new DfsReplyBot().choose(win)!).state;
+  assert(after.gameOver && after.pits[14] > 49, "it ends the game, won");
+  // Chains of one move: a free turn is scored where it stands, without playing on.
+  const start = newGame(DEFAULT_RULES, P1);
+  assert(validMoves(start).includes(new DfsReplyBot(1).choose(start)!));
+  assertEquals(new DfsReplyBot().choose({ ...start, gameOver: true }), null);
+  assert(createBot("dfs2") instanceof DfsReplyBot);
 });

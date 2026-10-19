@@ -49,14 +49,14 @@ The menus, the Web Worker, saved games and the tournament all read it.
 
 ## Families and files
 
-| Family       | How it decides                                                   | File                             | Bots                                                                         |
-| ------------ | ---------------------------------------------------------------- | -------------------------------- | ---------------------------------------------------------------------------- |
-| `basic`      | Doesn't look at what a move does                                 | `src/bots/players/basic.ts`      | Random, First                                                                |
-| `one-move`   | Plays each pit once and scores the position after                | `src/bots/players/one-move.ts`   | Greedy, Generous, Turtle, Hoarder, Striker                                   |
-| `chain`      | Follows its own free turns, ignores replies                      | `src/bots/players/chain.ts`      | DFS, Chainer (mixed with Greedy)                                             |
-| `search`     | Looks at the opponent's replies                                  | `src/bots/players/search.ts`     | Minimax, Lookahead, Shrewd, Pushover; Planner and Spoiler (the two-move bot) |
-| `mixed`      | Another bot's move some of the time, else a random one           | `src/bots/players/mixed.ts`      | Sometimes greedy, Sometimes generous                                         |
-| `montecarlo` | Plays random games from each move, keeps the move that wins most | `src/bots/players/montecarlo.ts` | Monte Carlo (dormant)                                                        |
+| Family       | How it decides                                                    | File                             | Bots                                                                         |
+| ------------ | ----------------------------------------------------------------- | -------------------------------- | ---------------------------------------------------------------------------- |
+| `basic`      | Doesn't look at what a move does                                  | `src/bots/players/basic.ts`      | Random, First                                                                |
+| `one-move`   | Plays each pit once and scores the position after                 | `src/bots/players/one-move.ts`   | Greedy, Generous, Turtle, Hoarder, Striker                                   |
+| `chain`      | Follows its own free turns (DFS v2: and the opponent's in answer) | `src/bots/players/chain.ts`      | DFS, Chainer (mixed with Greedy), DFS v2 (dormant)                           |
+| `search`     | Looks at the opponent's replies                                   | `src/bots/players/search.ts`     | Minimax, Lookahead, Shrewd, Pushover; Planner and Spoiler (the two-move bot) |
+| `mixed`      | Another bot's move some of the time, else a random one            | `src/bots/players/mixed.ts`      | Sometimes greedy, Sometimes generous                                         |
+| `montecarlo` | Plays random games from each move, keeps the move that wins most  | `src/bots/players/montecarlo.ts` | Monte Carlo (dormant)                                                        |
 
 Scoring pieces (store lead, seeds on your side, exposure, threats, free turns set up, mobility) live in
 [src/bots/search/evaluate.ts](../src/bots/search/evaluate.ts) as `Evaluator`s, so one-move bots and the search share
@@ -98,7 +98,9 @@ something changes. Say why next to it.
 
 Dormant now: Grandmaster (Minimax searching to depth 10; level with Minimax for five times the time), and First (always
 its leftmost pit; level with Random, 999 against 1000 over 240 games, so it added no step to the ladder), and Monte
-Carlo (random playouts, 10 ms a move; placed near 1760, between Lookahead and Shrewd, waiting for a full rating).
+Carlo (random playouts, 10 ms a move; placed near 1760, between Lookahead and Shrewd, waiting for a full rating), and
+DFS v2 (DFS's chains, then the opponent's best chain in answer; beats DFS by about 42 Elo at 3 ms a move, waiting for a
+full rating).
 
 ## Retiring a bot
 

@@ -92,6 +92,13 @@ in `src/bots/players/`.
 
 ## [v2.4 · A stronger Expert](https://github.com/seven-leven/mancala/milestone/3)
 
+**Measured 2026-10-19: Minimax can't be beaten under the standard rules.** Against Minimax at depth 6, a sharper
+evaluation, depth 8 and depth 4 each split every matched pair 1–1 (200 of 200 pairs, standard and symmetric openings
+alike), and depth 2 lost only 7 pairs in 100. From these openings the seat decides the game, and Minimax already wins
+every won position. So #15 and #16 can't show a gain at the top by rating, and the SPRT below has nothing to detect,
+until the rules make the start contestable: the **pie rule (#17) comes first**, then measure the rest under it. DFS v2
+(dormant, +42 over DFS) shows a better bot still can win where games aren't decided yet.
+
 - [ ] [#13](https://github.com/seven-leven/mancala/issues/13) Capture extension: like the free-turn extension (12 in a
       row today), keep searching past the depth limit after a capture, so the search doesn't stop just before the reply.
 - [ ] [#15](https://github.com/seven-leven/mancala/issues/15) Tune the evaluation weights from self-play (Texel's

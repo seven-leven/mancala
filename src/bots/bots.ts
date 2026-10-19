@@ -4,7 +4,7 @@
  */
 import type { Bot, BotContext, BotSpec } from "./contracts.ts";
 import { FirstBot, RandomBot } from "./players/basic.ts";
-import { DfsBot } from "./players/chain.ts";
+import { DfsBot, DfsReplyBot } from "./players/chain.ts";
 import { MixedBot } from "./players/mixed.ts";
 import { MonteCarloBot } from "./players/montecarlo.ts";
 import { GenerousBot, GreedyBot, HoarderBot, OneMoveBot, StrikerBot, TurtleBot } from "./players/one-move.ts";
@@ -14,6 +14,7 @@ import { lead, planned } from "./search/evaluate.ts";
 export type { Bot, BotContext, BotSpec };
 export {
   DfsBot,
+  DfsReplyBot,
   FirstBot,
   GenerousBot,
   GreedyBot,
@@ -185,6 +186,16 @@ export const BOTS = {
  * See docs/BOTS.md, "Dormant bots".
  */
 export const DORMANT = {
+  // DFS v2: DFS's own chains, then the opponent's best chain in answer, with alpha-beta and
+  // Minimax's evaluation. Beat DFS 56% over 400 games (+42 Elo, 90%: +13 to +71) at about 3 ms a
+  // move. Dormant until a full rating places it (between DFS and Minimax, if it holds).
+  dfs2: {
+    label: "DFS v2",
+    level: "Hard v2",
+    blurb: "Chains free turns like DFS, then checks your best chain in answer before it commits.",
+    family: "chain",
+    create: () => new DfsReplyBot(8),
+  },
   // Monte Carlo tree search with random playouts (TODO, #16): 10 ms a move in the game, and in
   // rating the 2000 playouts that 10 ms buys from the opening. Dormant until it's placed on the
   // ladder (docs/RATING.md, "Placing a new bot").
