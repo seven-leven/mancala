@@ -3,7 +3,7 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `package.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
-## Unreleased
+## v2.4.0 · 2026-10-19
 
 - **A better ETA, with an error range.** The rating run's ETA is its own module (`tools/tournament/eta.ts`), chosen and
   calibrated on the ETA logs: from the last run with the same settings when there is one (about 9% off), otherwise from
