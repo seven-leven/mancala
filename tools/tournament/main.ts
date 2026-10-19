@@ -43,6 +43,7 @@ import { isOpening, type Opening, OPENINGS } from "./openings.ts";
 import type { PairJob, PairResult, PlayedGame } from "./play.ts";
 import { Pool } from "./pool.ts";
 import { plan, weight } from "./adaptive.ts";
+import { type Eta, fromHistory, fromRounds, lastTimeline, runKey, withBand } from "./eta.ts";
 import { RATINGS } from "../../src/bots/ratings.ts";
 import type { History, Progress } from "../dashboard/snapshot.ts";
 
@@ -134,6 +135,8 @@ let liveProgress: Omit<Progress, "status" | "elapsedMs"> = {
   games: 0,
   gamesPerSec: 0,
   etaMs: null,
+  etaLowMs: null,
+  etaHighMs: null,
 };
 
 let state: Checkpoint = {
@@ -170,6 +173,17 @@ const live = process.stderr.isTTY === true;
 const startedAt = performance.now();
 const startRounds = state.rounds;
 
+// The last finished run with the same settings, if this one starts fresh: it played the same games,
+// so it's the ETA's best guide (eta.ts).
+const pastRun = state.rounds === 0
+  ? await lastTimeline(
+    new URL("../../data/eta/", import.meta.url),
+    runKey({ games: GAMES, bots: names, opening: OPENING, adaptive: ADAPTIVE }),
+  )
+  : null;
+/** The latest ETA, for the log. */
+let lastEta: Eta | null = null;
+
 // Every ETA the run predicts, with when it predicted it, for calibrating the ETA: a JSON line about
 // once a second, and the actual total at the end (data/eta/<start time>.jsonl, git-ignored).
 const etaLog = await (async () => {
@@ -189,9 +203,12 @@ let etaLoggedAt = -Infinity;
 function logEta(elapsed: number): void {
   if (!etaLog || elapsed - etaLoggedAt < 1000) return;
   etaLoggedAt = elapsed;
-  const { done, total, unit, games, etaMs } = liveProgress;
-  const eta = etaMs === null ? null : Math.round(etaMs);
-  etaLog.write(JSON.stringify({ elapsedMs: Math.round(elapsed), etaMs: eta, done, total, unit, games }) + "\n");
+  const { done, total, unit, games } = liveProgress;
+  const e = lastEta;
+  const eta = e
+    ? { etaMs: Math.round(e.ms), lowMs: Math.round(e.low), highMs: Math.round(e.high), from: e.from }
+    : { etaMs: null };
+  etaLog.write(JSON.stringify({ elapsedMs: Math.round(elapsed), ...eta, done, total, unit, games }) + "\n");
 }
 const perRound = (n * (n - 1)) / 2;
 const clock = (ms: number) => {
@@ -199,33 +216,38 @@ const clock = (ms: number) => {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 };
 const columns = () => process.stderr.columns || 80;
-// Every round plays the same pairings, so rounds take about as long as each other, while single
-// pairings differ a thousandfold (Random against First, or anything with Minimax). So the ETA
-// counts rounds, not games: the rounds left at the recent round time, plus what's left of this
-// round, weighted by how long each of its pairings took last time.
-const cost: number[] = []; // each pairing's last time, in ms, by its index in the round
-const roundTimes: number[] = []; // complete rounds this run, in ms
-let finished: boolean[] = []; // this round's pairings that are done
-const median = (xs: number[]) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
-function eta(elapsed: number): number | null {
-  if (!roundTimes.length) return null;
-  const round = median(roundTimes.slice(-5));
-  const total = sum(cost);
-  const unfinished = sum(cost.filter((_, k) => !finished[k]));
-  const left = (ROUNDS - state.rounds - 1) * round + (total > 0 ? round * unfinished / total : round);
-  return Math.max(0, Math.min(left, BUDGET - elapsed));
+const cost: number[] = []; // each pairing's last time, in ms, by its index in the round: slowest first
+const roundEnds: number[] = []; // when each of this run's rounds ended, in ms since the start
+/** The ETA with its 80% range (eta.ts): from the last run like this one, else from this run's rounds. */
+function eta(elapsed: number, games: number): Eta | null {
+  const budget = BUDGET - elapsed;
+  const past = pastRun ? fromHistory(pastRun, games, elapsed) : null;
+  if (past !== null) return withBand(past, "history", budget);
+  const ms = fromRounds(roundEnds, ROUNDS - state.rounds, elapsed);
+  return ms === null ? null : withBand(ms, "rounds", budget);
 }
+const etaText = (e: Eta | null, none: string) =>
+  e === null ? none : `${clock(e.ms)} (${clock(e.low)}–${clock(e.high)})`;
 function progress(pairsThisRound: number) {
   const elapsed = performance.now() - startedAt;
   const games = ((state.rounds - startRounds) * perRound + pairsThisRound) * 2;
   const rate = games / (elapsed / 1000);
-  const left = eta(elapsed);
-  liveProgress = { done: state.rounds, total: ROUNDS, unit: "rounds", games, gamesPerSec: rate, etaMs: left };
+  const left = lastEta = eta(elapsed, games);
+  liveProgress = {
+    done: state.rounds,
+    total: ROUNDS,
+    unit: "rounds",
+    games,
+    gamesPerSec: rate,
+    etaMs: left?.ms ?? null,
+    etaLowMs: left?.low ?? null,
+    etaHighMs: left?.high ?? null,
+  };
   refreshUi();
   logEta(elapsed);
   if (!live) return;
   const line = `Round ${state.rounds + 1}/${ROUNDS} · ${games} games · ${rate.toFixed(1)} games/s · ` +
-    `${clock(elapsed)} elapsed · ETA ${left === null ? "after round 1" : clock(left)}` +
+    `${clock(elapsed)} elapsed · ETA ${etaText(left, "after round 1")}` +
     (stopping ? " · stopping" : "");
   // Clear the line and rewrite it, cut to the terminal's width so it never wraps.
   process.stderr.write(`\r\x1b[2K${line.slice(0, columns() - 1)}`);
@@ -255,20 +277,18 @@ async function playRound(round: number): Promise<PairResult[] | null> {
   // pairing running while the other workers wait. Results don't change: each pairing has its own
   // seed and its own slot.
   const order = jobs.map((_, k) => k).sort((a, b) => (cost[b] ?? 0) - (cost[a] ?? 0));
-  finished = jobs.map(() => false);
-  const startedRound = performance.now();
+
   let done = 0;
   const out = await pool.run(jobs, order, {
     stop: () => stopping,
     done: (k, ms, result) => {
       cost[k] = ms;
-      finished[k] = true;
       pending.push(result);
       keep(result);
       progress(++done);
     },
   });
-  if (out) roundTimes.push(performance.now() - startedRound);
+  if (out) roundEnds.push(performance.now() - startedAt);
   return out;
 }
 
@@ -342,7 +362,13 @@ async function playAdaptive(): Promise<void> {
       }
       const elapsed = performance.now() - startedAt;
       const doneNow = Object.keys(state.done!).length;
-      const eta = doneCost ? elapsed * (left - doneCost) / doneCost : null;
+      // From the last run like this one if there is one, else from the planned costs still to play.
+      const past = pastRun ? fromHistory(pastRun, doneNow * 2, elapsed) : null;
+      const eta = lastEta = past !== null
+        ? withBand(past, "history")
+        : doneCost
+        ? withBand(elapsed * (left - doneCost) / doneCost, "costs")
+        : null;
       playedNow++;
       liveProgress = {
         done: doneNow,
@@ -350,15 +376,15 @@ async function playAdaptive(): Promise<void> {
         unit: "pairs",
         games: doneNow * 2,
         gamesPerSec: (playedNow * 2) / (elapsed / 1000),
-        etaMs: eta,
+        etaMs: eta?.ms ?? null,
+        etaLowMs: eta?.low ?? null,
+        etaHighMs: eta?.high ?? null,
       };
       refreshUi();
       logEta(elapsed);
       if (!live) return;
-      const line =
-        `Adaptive · ${doneNow}/${total} pairs · ${clock(elapsed)} elapsed · ETA ${
-          eta === null ? "--:--" : clock(eta)
-        }` + (stopping ? " · stopping" : "");
+      const line = `Adaptive · ${doneNow}/${total} pairs · ${clock(elapsed)} elapsed · ETA ${etaText(eta, "--:--")}` +
+        (stopping ? " · stopping" : "");
       process.stderr.write(`\r\x1b[2K${line.slice(0, columns() - 1)}`);
     },
   });
@@ -609,7 +635,7 @@ if (dash) {
   clearTimeout(uiTimer);
   finishedMs = performance.now() - startedAt;
   [dash.samples, dash.samplesRating, dash.samplesGames] = [samples, fit(results), allGames];
-  liveProgress = { ...liveProgress, etaMs: 0 };
+  liveProgress = { ...liveProgress, etaMs: 0, etaLowMs: 0, etaHighMs: 0 };
   recordHistory();
   recordRanges();
   dash.stopRanges();

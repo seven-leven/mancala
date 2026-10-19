@@ -48,6 +48,8 @@ One file per area. A new test goes in the file for the code it tests.
   MGN.
 - **`storage_test.ts`**: what the browser keeps: saved games (rated or not and why, backup and restore, the 500-game
   cap, corrupt storage, storage that refuses to write) and settings (defaults, bad values falling back one by one).
+- **`eta_test.ts`**: the rating run's ETA: reading an earlier run's timeline, estimating from history and from rounds,
+  and the 80% range.
 - **`dashboard_test.ts`**: the rating dashboard's snapshot: before any game, during a run, at the end (where it must
   match the printed table), and ranges moved to the latest ratings.
 - **`docs_test.ts`**: every relative link and `#anchor` in the Markdown docs resolves.

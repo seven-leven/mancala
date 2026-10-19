@@ -33,6 +33,9 @@ export interface Progress {
   gamesPerSec: number;
   elapsedMs: number;
   etaMs: number | null;
+  /** The ETA's 80% range (tools/tournament/eta.ts). */
+  etaLowMs: number | null;
+  etaHighMs: number | null;
 }
 
 export interface Run {

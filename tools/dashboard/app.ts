@@ -50,9 +50,13 @@ function renderStatus(): void {
   const unit = p.unit === "rounds"
     ? `round ${Math.min(p.done + 1, p.total)} of ${p.total}`
     : `${p.done} of ${p.total} pairs`;
+  // The ETA, and the range that holds the real finish 80% of the time (tools/tournament/eta.ts).
+  const range = p.etaLowMs === null || p.etaHighMs === null
+    ? ""
+    : ` (${clock(p.etaLowMs - since)}–${clock(p.etaHighMs - since)})`;
   const eta = p.status === "done"
     ? ""
-    : ` · ETA ${p.etaMs === null ? "after the first round" : clock(p.etaMs - since)}`;
+    : ` · ETA ${p.etaMs === null ? "after the first round" : clock(p.etaMs - since) + range}`;
   const status = $("status");
   status.dataset.status = p.status;
   status.innerHTML = `<span class="dot"></span> <strong>${what}</strong> <span class="mono">${

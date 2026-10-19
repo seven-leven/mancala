@@ -182,14 +182,10 @@ worker runs it and in whatever order. Search bots use a fixed depth here (`mode:
 results don't depend on the machine either.
 
 **The progress line** (on a terminal only, so piped output stays a clean table) shows the round, games, games a second,
-time elapsed and an ETA. The ETA counts rounds, not games: every round plays the same pairings and takes about as long,
-while single pairings differ a thousandfold. It says "after round 1" until one round is timed, then uses the median of
-the last five rounds plus what's left of this one, weighted by each pairing's last time.
-
-**The ETA log.** Every run writes its predictions to `data/eta/<start time>.jsonl` (git-ignored): a line about once a
-second with the time elapsed, the ETA, the rounds or pairs done and the games, then a last line with the actual total.
-For each prediction, the remaining time it should have said is the total minus the time elapsed, so the logs show how
-far off the ETA runs, and when, for calibrating it.
+time elapsed and an ETA with its 80% range, `ETA 02:10 (01:50–02:40)`. The ETA comes from the last finished run with the
+same settings when there is one (it played the same games), and otherwise from this run's mean round. Every run logs its
+predictions to `data/eta/` for calibrating them. [ETA.md](ETA.md) has the methods, how well each does, and the roadmap
+for doing better.
 
 ## Watching a run
 

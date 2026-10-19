@@ -5,6 +5,11 @@ release has a section here; work since the last one sits under _Unreleased_.
 
 ## Unreleased
 
+- **A better ETA, with an error range.** The rating run's ETA is its own module (`tools/tournament/eta.ts`), chosen and
+  calibrated on the ETA logs: from the last run with the same settings when there is one (about 9% off), otherwise from
+  the mean round leaving out the first (about 34% off; the old median ran 23% short). It now shows the range that held
+  the real finish 80% of the time, as `ETA 02:10 (01:50–02:40)`, in the terminal and the dashboard.
+  [docs/ETA.md](docs/ETA.md) has the numbers and the roadmap for ETA 2.0.
 - **Minimax 1.75× faster, playing the same moves.** Positions are keyed by 64-bit Zobrist hashes in a typed-array table
   (no strings or objects per node), ties in the move order go to the pit with the better history, and big hands sow
   whole laps at once. 600 decisions on seeded positions: the same moves and scores in 5.9 s instead of 10.4 s. In the

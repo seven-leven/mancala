@@ -39,6 +39,8 @@ function input(over: Partial<SnapshotInput> = {}): SnapshotInput {
       gamesPerSec: 0,
       elapsedMs: 0,
       etaMs: null,
+      etaLowMs: null,
+      etaHighMs: null,
     },
     run: { opening: "random-moves", workers: 4, adaptive: false, gamesPerPairing: 40 },
     planned: [[0, 40, 40], [40, 0, 40], [40, 40, 0]],
