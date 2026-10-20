@@ -50,10 +50,14 @@ export class DfsBot implements Bot {
  */
 export class DfsReplyBot implements Bot {
   private maxDepth: number;
+  private score: (s: GameState, me: Player) => number;
   private boards = new Boards();
-  /** `maxDepth`: the longest chain it follows, its own or the opponent's. */
-  constructor(maxDepth = 8) {
-    this.maxDepth = maxDepth;
+  /**
+   * `maxDepth`: the longest chain it follows, its own or the opponent's. `score`: how it judges
+   * the end of a line (Minimax's evaluation; the learned bot passes its net's).
+   */
+  constructor(maxDepth = 8, score: (s: GameState, me: Player) => number = evaluate) {
+    [this.maxDepth, this.score] = [maxDepth, score];
   }
 
   choose(state: GameState): number | null {
@@ -76,12 +80,12 @@ export class DfsReplyBot implements Bot {
   private chain(state: GameState, move: number, ply: number, link: number, me: Player, alpha: number, beta: number) {
     const after = this.boards.at(ply, state);
     const free = (playOn(after, state, move) & FREE_TURN) !== 0;
-    if (after.gameOver) return evaluate(after, me);
+    if (after.gameOver) return this.score(after, me);
     const mine = state.current === me;
     // The turn passes: after `me`'s chain the opponent answers; after theirs, the line is done.
-    if (!free && !mine) return evaluate(after, me);
+    if (!free && !mine) return this.score(after, me);
     const next = free ? link + 1 : 0;
-    if (next >= this.maxDepth) return evaluate(after, me);
+    if (next >= this.maxDepth) return this.score(after, me);
     if (after.current === me) {
       // `me`'s own chain comes before any answer, where nothing bounds it from above (beta is
       // Infinity), so only the opponent's moves can be cut short.
