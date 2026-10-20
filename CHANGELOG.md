@@ -3,7 +3,7 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `package.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
-## Unreleased
+## v2.5.0 · 2026-10-20
 
 - **A learned bot: Wise (Learned DFS) ties Minimax at about a quarter of its time.** DFS v2's search, judged by a small
   neural network (16 inputs, two layers of 16, 561 weights) trained on Minimax's scores for 200,000 positions. The net
