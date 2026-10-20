@@ -240,6 +240,16 @@ Steps, cheapest first:
       (66% of the net's opinion, 92.5% of its verdicts) and five if/then rules (95% of its verdicts). Coded as bots on
       the same search, they play at DFS v2's level (formula −22 against Minimax, seed table −31; the net: −3): the net's
       edge is in what the formula leaves out, its thresholds and how pieces combine. Not kept.
+- [x] **Recovering what the formula loses** (`tools/learn/residual.ts`, `tools/learn/ranking.ts`). Where the first
+      formula misjudges the net: near the clinch line (over 45 banked, the net is 4–21 seeds more hopeful), the opponent
+      over 42 late (8 less), and big deficits (3 more: lost is lost). Adding those as terms explains 75% of the net, but
+      plays no better (−27 against Minimax): a fit across unrelated positions spends itself telling games apart, while a
+      search compares positions reachable from one. Fitted instead to those comparisons, a formula gets −13 against
+      Minimax, about halfway from DFS v2 (−25) to the net (−3). Its strongest pieces: −17.7 a seed for running your side
+      below 6, +9.3 for each empty pit of yours (a landing spot for captures), the clinch line at ±8.
+- [ ] **A ranking formula worth keeping:** more roots, leaves the search really reaches (chains included), and pieces
+      that don't overlap (seeds on board and stores always total 98), until it matches the net; then it could replace
+      the net where a readable judgement matters.
 - [ ] **One-hot inputs** (as chess's NNUE does), if the small net plateaus: "pit 3 holds exactly 8" as its own input
       (~350, nearly all zero), so the remainder arithmetic of free turns (seeds mod 15 against the distance to the
       store) becomes single weights instead of something to work out. The first layer stays a sum of 16 rows, so it
