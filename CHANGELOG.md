@@ -5,6 +5,13 @@ release has a section here; work since the last one sits under _Unreleased_.
 
 ## Unreleased
 
+- **A learned bot: Wise (Learned DFS) ties Minimax at about a quarter of its time.** DFS v2's search, judged by a small
+  neural network (16 inputs, two layers of 16, 561 weights) trained on Minimax's scores for 200,000 positions. The net
+  calls the winner right 91% of the time, against 71% for Minimax's own evaluation, and runs in plain TypeScript in
+  about half a microsecond. Re-rated over 240 games a pairing with 21 bots: Learned DFS and Minimax level at 2074, 6.5
+  ms a move against 23.3. A tie is the most any bot can get against Minimax under these rules. Training is two tools,
+  `tools/learn/data.ts` and `tools/learn/train.ts`, seeded, a few minutes in all; bigger nets (32 and 64 wide) were no
+  stronger.
 - **Twenty bots: Very hard (DFS v2) and Lucky (Monte Carlo) join the ladder**, in the two gaps under Minimax. Re-rated
   over 240 games a pairing (45,600 games in 3 minutes 44): DFS v2 at 2064, between DFS and Minimax, and Monte Carlo at
   1848, between Lookahead and Shrewd. Every bot is above the next one down in at least 98% of resampled fits, and the

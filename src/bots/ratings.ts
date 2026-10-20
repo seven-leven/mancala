@@ -3,27 +3,28 @@
  * in matched pairs). Generated: don't edit. Random is pinned at 1000; low and high bound the 90% range;
  * above is the share of resampled fits in which the bot rates above the next one down.
  */
-export const RATINGS_VERSION = "2026-10-19";
+export const RATINGS_VERSION = "2026-10-20";
 
 export const RATINGS: Record<string, { elo: number; low: number; high: number; above?: number }> = {
-  minimax: { elo: 2092, low: 2073, high: 2115, above: 1.00 },
-  dfs2: { elo: 2064, low: 2042, high: 2088, above: 1.00 },
-  dfs: { elo: 2005, low: 1983, high: 2028, above: 1.00 },
-  shrewd: { elo: 1918, low: 1896, high: 1942, above: 1.00 },
-  montecarlo: { elo: 1848, low: 1829, high: 1868, above: 1.00 },
-  lookahead: { elo: 1737, low: 1717, high: 1758, above: 1.00 },
-  planner: { elo: 1686, low: 1669, high: 1708, above: 1.00 },
-  sometimesPlanner: { elo: 1568, low: 1552, high: 1588, above: 1.00 },
-  chainer: { elo: 1487, low: 1471, high: 1510, above: 0.98 },
-  spoiler: { elo: 1466, low: 1448, high: 1485, above: 1.00 },
-  greedy: { elo: 1312, low: 1295, high: 1331, above: 0.98 },
-  turtle: { elo: 1295, low: 1279, high: 1312, above: 1.00 },
-  sometimesGreedy: { elo: 1196, low: 1178, high: 1214, above: 1.00 },
-  striker: { elo: 1137, low: 1118, high: 1155, above: 1.00 },
+  learned: { elo: 2074, low: 2056, high: 2097, above: 0.54 },
+  minimax: { elo: 2074, low: 2054, high: 2098, above: 0.99 },
+  dfs2: { elo: 2057, low: 2038, high: 2079, above: 1.00 },
+  dfs: { elo: 2004, low: 1988, high: 2024, above: 1.00 },
+  shrewd: { elo: 1919, low: 1900, high: 1941, above: 1.00 },
+  montecarlo: { elo: 1840, low: 1823, high: 1859, above: 1.00 },
+  lookahead: { elo: 1737, low: 1721, high: 1756, above: 1.00 },
+  planner: { elo: 1683, low: 1664, high: 1702, above: 1.00 },
+  sometimesPlanner: { elo: 1564, low: 1547, high: 1582, above: 1.00 },
+  chainer: { elo: 1485, low: 1467, high: 1503, above: 0.98 },
+  spoiler: { elo: 1465, low: 1447, high: 1483, above: 1.00 },
+  greedy: { elo: 1311, low: 1295, high: 1329, above: 0.98 },
+  turtle: { elo: 1294, low: 1277, high: 1310, above: 1.00 },
+  sometimesGreedy: { elo: 1195, low: 1179, high: 1213, above: 1.00 },
+  striker: { elo: 1138, low: 1122, high: 1155, above: 1.00 },
   random: { elo: 1000, low: 1000, high: 1000, above: 1.00 },
-  hoarder: { elo: 926, low: 907, high: 945, above: 1.00 },
-  fickle: { elo: 831, low: 813, high: 853, above: 1.00 },
-  sometimesGenerous: { elo: 742, low: 723, high: 762, above: 1.00 },
-  generous: { elo: 571, low: 547, high: 594, above: 1.00 },
-  pushover: { elo: 503, low: 481, high: 529 },
+  hoarder: { elo: 926, low: 906, high: 946, above: 1.00 },
+  fickle: { elo: 832, low: 813, high: 847, above: 1.00 },
+  sometimesGenerous: { elo: 743, low: 724, high: 761, above: 1.00 },
+  generous: { elo: 572, low: 549, high: 592, above: 1.00 },
+  pushover: { elo: 504, low: 481, high: 525 },
 };

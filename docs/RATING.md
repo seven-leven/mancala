@@ -294,6 +294,7 @@ first rating (v2.0, 14 October 2026) there were four named levels with no number
 | First made dormant (v2.2.3)   |   16 |             240 | Matched pairs     |               ±21 |    ±26 |
 | Eighteen bots (v2.3.0)        |   18 |             240 | Matched pairs     |               ±19 |    ±23 |
 | Monte Carlo and DFS v2 (next) |   20 |             240 | Matched pairs     |               ±20 |    ±24 |
+| The learned bot (next)        |   21 |             240 | Matched pairs     |               ±18 |    ±22 |
 
 What it taught:
 
@@ -303,19 +304,20 @@ What it taught:
 - **With seventeen bots, games are the cheaper lever.** Four times the games did more in 5 minutes than five more bots
   would. Giving the games to close pairings (adaptive allocation, in [TODO.md](../TODO.md)) should do better still.
 
-### The ladder's shape, twenty bots
+### The ladder's shape, twenty-one bots
 
-The ladder runs from 503 (Pushover) to 2092 (Minimax), twenty bots. The average step is about 84 Elo, so each bot beats
-the one below it about 62% of the time: each step up is noticeably harder, and none is a wall. Every bot is above the
-next one down in at least 98% of resampled fits, so no neighbours are too close to call.
+The ladder runs from 504 (Pushover) to 2074 (Learned DFS and Minimax, level), twenty-one bots. The average step is about
+79 Elo, so each bot beats the one below it about 61% of the time: each step up is noticeably harder, and none is a wall.
 
-- **Closest neighbours:** Greedy and Turtle (17 apart), Chainer and Spoiler (21), Minimax and DFS v2 (28). They earn
-  their place as styles more than as steps.
-- **The widest gaps:** Sometimes generous to Generous (171), Spoiler to Greedy (154), Striker to Random (137), Planner
-  to Sometimes planner (118), Monte Carlo to Lookahead (111).
-- **The top:** DFS v2 and Monte Carlo filled the two gaps under Minimax. Minimax itself can't be beaten under the
-  standard rules: from these openings the seat decides the game, and it already wins every won position (TODO, v2.4). A
-  contest at the top waits for the pie rule (#17).
+- **Too close to call:** Learned DFS and Minimax, level at 2074 (the order holds in 54% of resamples). That's the
+  ceiling under these rules: from these openings the seat decides the game, so the best any bot can do against Minimax
+  is a tie. Learned DFS gets it at about 28% of Minimax's time a move (6.5 ms against 23.3).
+- **Closest neighbours after that:** Greedy and Turtle (17 apart), Minimax and DFS v2 (17), Chainer and Spoiler (20).
+  They earn their place as styles more than as steps.
+- **The widest gaps:** Sometimes generous to Generous (171), Spoiler to Greedy (154), Striker to Random (138), Planner
+  to Sometimes planner (119), Monte Carlo to Lookahead (103).
+- **The top:** a contest above Minimax waits for the pie rule (#17), where strong-against-strong games aren't decided by
+  the seat.
 
 Update this section after each full rating that changes the shape.
 

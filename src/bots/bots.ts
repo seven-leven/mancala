@@ -187,6 +187,15 @@ export const BOTS = {
     family: "chain",
     create: () => new DfsReplyBot(8),
   },
+  learned: {
+    label: "Learned DFS",
+    level: "Wise",
+    blurb: "DFS v2's search, judged by a small neural network that learned from Minimax.",
+    family: "chain",
+    // A 16-16-16-1 value net (561 weights, src/bots/search/weights.ts) trained on Minimax's scores
+    // (tools/learn/); it ties Minimax at about a third of its time.
+    create: () => new DfsReplyBot(8, netScore(new ValueNet(WEIGHTS))),
+  },
   minimax: {
     label: "Minimax",
     level: "Expert",
@@ -203,16 +212,6 @@ export const BOTS = {
  * See docs/BOTS.md, "Dormant bots".
  */
 export const DORMANT = {
-  // The learned bot (TODO.md, "A learned bot"): DFS v2's search, judged by a 16-16-16-1 value net
-  // (561 weights) trained on Minimax's scores (tools/learn/). Ties Minimax (49.5% over 800 games)
-  // at about a third of its time, and beats DFS v2 by about 17 Elo. Dormant until a full rating.
-  learned: {
-    label: "Learned DFS",
-    level: "Wise",
-    blurb: "DFS v2's search, judged by a small neural network that learned from Minimax.",
-    family: "chain",
-    create: () => new DfsReplyBot(8, netScore(new ValueNet(WEIGHTS))),
-  },
   // Rated level with Random (999 against 1000 over 240 games, too close to call), so it adds no
   // step to the ladder, and a player can't tell the two apart. Kept as the simplest fixed
   // strategy for tests and research.

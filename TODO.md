@@ -230,16 +230,18 @@ Steps, cheapest first:
       beat.
 - [ ] **Training data where the search looks.** The net is only asked about the ends of DFS v2's lines (after a chain
       and an answer), so label those positions, not just positions from games.
-- [ ] **The small net**, distilled from Minimax, trained in TypeScript (`tools/learn/`), weights in
-      `src/bots/search/weights.json`.
-- [ ] **The hybrid bot:** DFS v2's search with the net at the leaves. Measure it in matched pairs against DFS v2 and
-      Minimax, and by time a move. Goal: a tie with Minimax at about 1.5 ms.
+- [x] **The small net**, distilled from Minimax, trained in TypeScript (`tools/learn/`), weights in
+      `src/bots/search/weights.ts`. 16-16-16-1, 561 weights: winner right 90.8% on held-out positions (Minimax's
+      evaluation: 71.1%). 32 and 64 wide were no stronger, and slower.
+- [x] **The hybrid bot:** DFS v2's search with the net at the leaves, in the menus as Wise (Learned DFS). Rated level
+      with Minimax at 2074, at 6.5 ms a move against Minimax's 23.3 (about 28%), and 49.5% head to head over 800 games;
+      +17 over DFS v2. Not the 1.5 ms hoped for: the search reaches about a thousand leaves a move.
 - [ ] **One-hot inputs** (as chess's NNUE does), if the small net plateaus: "pit 3 holds exactly 8" as its own input
       (~350, nearly all zero), so the remainder arithmetic of free turns (seeds mod 15 against the distance to the
       store) becomes single weights instead of something to work out. The first layer stays a sum of 16 rows, so it
       stays fast.
-- [ ] **The cheap variant:** train the net on the value after the opponent's best answer, so the search needs only its
-      own chains (DFS's 0.4 ms). Keep it only if it doesn't start giving away captures.
+- [x] **The cheap variant:** tried with the same net (its depth-6 labels already include the answer): own chains only,
+      about half the time, but 26 Elo weaker than the full search and no better than DFS v2, so not kept.
 - [ ] **The net as a guide**, if speed matters more: rank moves for better pruning (the same moves, faster), or flag
       unsettled positions for the search to follow further (a learned capture extension, #13).
 - [ ] **Self-play under the pie rule (#17)**, once strong-against-strong games are contestable: the net plays itself and
