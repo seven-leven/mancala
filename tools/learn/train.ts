@@ -1,6 +1,8 @@
 /**
  * Trains the learned bot's value net (src/bots/search/net.ts) on positions from data.ts, and writes
- * its weights to src/bots/search/weights.ts.
+ * its weights to src/bots/search/weights.ts. Given a loser's positions (loser-data.ts), it trains the
+ * loser's net instead (17 inputs, from the loser's side; target tanh(final lead / 10)) and writes
+ * src/bots/search/loser-weights.ts.
  *
  *   node tools/learn/train.ts data/learn/positions.jsonl [epochs, default 20] [hidden sizes, default 64,64]
  *
@@ -10,7 +12,7 @@
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { evaluate, WIN } from "../../src/bots/search/evaluate.ts";
-import { encode, INPUTS, ValueNet, type Weights } from "../../src/bots/search/net.ts";
+import { encode, encodeFor, INPUTS, ValueNet, type Weights } from "../../src/bots/search/net.ts";
 import { DEFAULT_RULES, type GameState, type Player } from "../../src/game/types.ts";
 import { seeded } from "../match.ts";
 
@@ -24,15 +26,19 @@ const [H1, H2] = (sizesArg ?? "64,64").split(",").map(Number);
 const rng = seeded(2026);
 
 // --- Data -------------------------------------------------------------------------------------
-type Row = { pits: number[]; toMove: Player; score: number };
+type Row = { pits: number[]; toMove: Player; score: number; q?: Player; lead?: number };
 const rows: Row[] = readFileSync(file, "utf8").trim().split("\n").map((l) => JSON.parse(l));
-const target = (score: number) => (score >= WIN ? 1 : score <= -WIN ? -1 : Math.tanh(score / 10));
+/** A loser's positions: judged from the loser's side, at either side's move, by how the game ended. */
+const LOSER = rows[0].q !== undefined;
+const NIN = LOSER ? INPUTS + 1 : INPUTS;
+const target = (r: Row) =>
+  LOSER ? Math.tanh(r.lead! / 10) : r.score >= WIN ? 1 : r.score <= -WIN ? -1 : Math.tanh(r.score / 10);
 const state = (r: Row): GameState => ({ rules: DEFAULT_RULES, pits: r.pits, current: r.toMove, gameOver: false });
 const n = rows.length;
-const X = new Float64Array(n * INPUTS), Y = new Float64Array(n);
+const X = new Float64Array(n * NIN), Y = new Float64Array(n);
 rows.forEach((r, k) => {
-  X.set(encode(state(r)), k * INPUTS);
-  Y[k] = target(r.score);
+  X.set(LOSER ? encodeFor(state(r), r.q!) : encode(state(r)), k * NIN);
+  Y[k] = target(r);
 });
 const order = Array.from({ length: n }, (_, k) => k);
 for (let k = n - 1; k > 0; k--) {
@@ -42,7 +48,7 @@ for (let k = n - 1; k > 0; k--) {
 const held = order.slice(0, Math.floor(n / 10)), train = order.slice(Math.floor(n / 10));
 
 // --- The net, flat, with Adam's moments for each parameter ---------------------------------------
-const sizes = { w1: H1 * INPUTS, b1: H1, w2: H2 * H1, b2: H2, w3: H2, b3: 1 };
+const sizes = { w1: H1 * NIN, b1: H1, w2: H2 * H1, b2: H2, w3: H2, b3: 1 };
 const total = Object.values(sizes).reduce((a, b) => a + b, 0);
 const P = new Float64Array(total),
   G = new Float64Array(total),
@@ -54,7 +60,7 @@ const at: Record<keyof typeof sizes, number> = {} as never;
   for (const [k, size] of Object.entries(sizes)) [at[k as keyof typeof sizes], o] = [o, o + size];
 }
 const gauss = () => Math.sqrt(-2 * Math.log(rng() || 1e-12)) * Math.cos(2 * Math.PI * rng());
-for (let i = 0; i < sizes.w1; i++) P[at.w1 + i] = gauss() * Math.sqrt(2 / INPUTS);
+for (let i = 0; i < sizes.w1; i++) P[at.w1 + i] = gauss() * Math.sqrt(2 / NIN);
 for (let i = 0; i < sizes.w2; i++) P[at.w2 + i] = gauss() * Math.sqrt(2 / H1);
 for (let i = 0; i < sizes.w3; i++) P[at.w3 + i] = gauss() * Math.sqrt(1 / H2);
 
@@ -63,10 +69,10 @@ const d2 = new Float64Array(H2), d1 = new Float64Array(H1);
 
 /** Forward pass for sample k; leaves the activations in a1, h1, a2, h2 and returns the output. */
 function forward(k: number): number {
-  const x = k * INPUTS;
+  const x = k * NIN;
   for (let j = 0; j < H1; j++) {
     let a = P[at.b1 + j];
-    for (let i = 0; i < INPUTS; i++) a += P[at.w1 + j * INPUTS + i] * X[x + i];
+    for (let i = 0; i < NIN; i++) a += P[at.w1 + j * NIN + i] * X[x + i];
     a1[j] = a;
     h1[j] = a > 0 ? a : 0;
   }
@@ -99,11 +105,11 @@ function backward(k: number, y: number): number {
       d1[i] += d2[j] * P[at.w2 + j * H1 + i];
     }
   }
-  const x = k * INPUTS;
+  const x = k * NIN;
   for (let i = 0; i < H1; i++) {
     if (a1[i] <= 0) continue;
     G[at.b1 + i] += d1[i];
-    for (let c = 0; c < INPUTS; c++) G[at.w1 + i * INPUTS + c] += d1[i] * X[x + c];
+    for (let c = 0; c < NIN; c++) G[at.w1 + i * NIN + c] += d1[i] * X[x + c];
   }
   return (v - y) ** 2;
 }
@@ -144,10 +150,10 @@ function check(value: (k: number) => number) {
 }
 const baseline = (k: number) => {
   const r = rows[k];
-  return Math.tanh(evaluate(state(r), r.toMove) / 10);
+  return Math.tanh(evaluate(state(r), LOSER ? r.q! : r.toMove) / 10);
 };
 console.log(
-  `${n} positions: ${train.length} to train on, ${held.length} held out; ${INPUTS}-${H1}-${H2}-1, ${total} weights`,
+  `${n} positions: ${train.length} to train on, ${held.length} held out; ${NIN}-${H1}-${H2}-1, ${total} weights`,
 );
 console.log(`Minimax's evaluation alone (no search): ${check(baseline)}`);
 
@@ -174,7 +180,7 @@ const r5 = (v: number) => Math.round(v * 1e5) / 1e5;
 const rowsOf = (o: number, rowsN: number, cols: number) =>
   Array.from({ length: rowsN }, (_, j) => Array.from(P.subarray(o + j * cols, o + (j + 1) * cols), r5));
 const weights: Weights = {
-  w1: rowsOf(at.w1, H1, INPUTS),
+  w1: rowsOf(at.w1, H1, NIN),
   b1: Array.from(P.subarray(at.b1, at.b1 + H1), r5),
   w2: rowsOf(at.w2, H2, H1),
   b2: Array.from(P.subarray(at.b2, at.b2 + H2), r5),
@@ -183,12 +189,16 @@ const weights: Weights = {
 };
 // The rounded weights, checked the way the bot will run them.
 const net = new ValueNet(weights);
-console.log(`rounded, as the bot runs it: ${check((k) => net.value(state(rows[k])))}`);
+const asRun = (k: number) => (LOSER ? net.valueFor(state(rows[k]), rows[k].q!) : net.value(state(rows[k])));
+console.log(`rounded, as the bot runs it: ${check(asRun)}`);
+const [out, name, what] = LOSER
+  ? ["loser-weights.ts", "LOSER_WEIGHTS", "The loser's value net"]
+  : ["weights.ts", "WEIGHTS", "The learned bot's value net"];
 writeFileSync(
-  new URL("../../src/bots/search/weights.ts", import.meta.url),
-  `/** The learned bot's value net, as tools/learn/train.ts wrote it from ${n} positions. Generated: don't edit. */\n` +
-    `import type { Weights } from "./net.ts";\n\n// dprint-ignore\nexport const WEIGHTS: Weights = ${
+  new URL(`../../src/bots/search/${out}`, import.meta.url),
+  `/** ${what} (${NIN}-${H1}-${H2}-1), as tools/learn/train.ts wrote it from ${n} positions. Generated: don't edit. */\n` +
+    `import type { Weights } from "./net.ts";\n\n// dprint-ignore\nexport const ${name}: Weights = ${
       JSON.stringify(weights)
     };\n`,
 );
-console.log("wrote src/bots/search/weights.ts");
+console.log(`wrote src/bots/search/${out}`);

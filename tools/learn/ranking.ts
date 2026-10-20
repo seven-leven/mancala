@@ -5,17 +5,22 @@
  * and the formula is fitted to those differences. Then: how often the formula picks the net's move.
  *
  *   node tools/learn/ranking.ts data/learn/positions.jsonl
+ *   node tools/learn/ranking.ts data/learn/loser.jsonl     (the loser's net, from the loser's moves)
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { exposed, freeTurnsReady } from "../../src/bots/search/evaluate.ts";
+import { LOSER_WEIGHTS } from "../../src/bots/search/loser-weights.ts";
 import { ValueNet } from "../../src/bots/search/net.ts";
 import { WEIGHTS } from "../../src/bots/search/weights.ts";
 import { other, playTurn, validMoves } from "../../src/game/engine.ts";
 import { DEFAULT_RULES, type GameState, type Player } from "../../src/game/types.ts";
 
-type Row = { pits: number[]; toMove: Player; score: number };
-const roots: Row[] = readFileSync(process.argv[2], "utf8").trim().split("\n").slice(0, 6000).map((l) => JSON.parse(l));
-const net = new ValueNet(WEIGHTS);
+type Row = { pits: number[]; toMove: Player; score: number; q?: Player };
+const all: Row[] = readFileSync(process.argv[2], "utf8").trim().split("\n").map((l) => JSON.parse(l));
+/** A loser's positions: use the loser's net, at the loser's own moves. */
+const LOSER = all[0].q !== undefined;
+const roots = (LOSER ? all.filter((r) => r.toMove === r.q) : all).slice(0, 6000);
+const net = new ValueNet(LOSER ? LOSER_WEIGHTS : WEIGHTS);
 const state = (r: Row): GameState => ({ rules: DEFAULT_RULES, pits: r.pits, current: r.toMove, gameOver: false });
 const side = (s: GameState, p: Player) => {
   const o = p === 1 ? 0 : 7;
@@ -47,7 +52,9 @@ const FEATURES: [string, (s: GameState, me: Player) => number][] = [
 ];
 /** The net's opinion of a leaf for `me`. */
 const opinion = (s: GameState, me: Player) => {
-  const v = Math.atanh(Math.max(-0.999999, Math.min(0.999999, net.value(s))));
+  const clamp = (v: number) => Math.atanh(Math.max(-0.999999, Math.min(0.999999, v)));
+  if (LOSER) return clamp(net.valueFor(s, me));
+  const v = clamp(net.value(s));
   return s.current === me ? v : -v;
 };
 
@@ -130,4 +137,7 @@ console.log(
 );
 console.log("The ranking formula, in seeds of store lead (what makes one reachable position better than another):");
 FEATURES.forEach(([name], i) => console.log(`  ${(w[i] / w[0] >= 0 ? "+" : "") + (w[i] / w[0]).toFixed(2)} × ${name}`));
-writeFileSync("data/learn/ranking-weights.json", JSON.stringify({ names: FEATURES.map(([n]) => n), w }));
+writeFileSync(
+  LOSER ? "data/learn/loser-ranking-weights.json" : "data/learn/ranking-weights.json",
+  JSON.stringify({ names: FEATURES.map(([n]) => n), w }),
+);
