@@ -205,6 +205,50 @@ Small additions to the rating harness's output, each an hour or so. Document eac
       that miss by more than chance: a bot that isn't transitive (beats strong bots, loses to weak ones) shows up here.
       A safeguard for adaptive allocation, which plays fewer lopsided games.
 
+## A learned bot
+
+DFS's chain search with a small neural network as its judgement: the 2024 bot learns to check your answer (DFS v2), then
+learns judgement from Minimax. The aim is Minimax's results at a fraction of its time; under the standard rules a tie is
+the most any bot can get against it (v2.4 above), so beating it waits for the pie rule (#17).
+
+![A learned bot: training offline, and play every move](docs/images/learned-bot.svg)
+
+How it fits together:
+
+- **Play:** DFS v2 follows its own chains and the opponent's best answer (the tactics: chains, captures); the net scores
+  the position at the end of each line (the judgement). About 1.5 ms a move, against Minimax's 15.
+- **Training:** distillation. Positions from recorded games (`data/games.mgn`, ~1.5 million), each labelled by Minimax
+  at depth 6–8, or exactly where a small endgame can be solved. The net learns to match the labels.
+- **The net:** 17 inputs (14 pits, 2 stores, whose turn), two hidden layers of 64, one value for the side to move: about
+  5,000 weights, committed as JSON, microseconds a position in plain TypeScript.
+- **The stack:** train in TypeScript too, seeded, so the repo stays Node-only and runs repeat. PyTorch only if
+  experiments outgrow a net this size.
+
+Steps, cheapest first:
+
+- [ ] **Texel-tuned evaluation** (#15): fit the existing pieces' weights to the same labels. The baseline any net must
+      beat.
+- [ ] **Training data where the search looks.** The net is only asked about the ends of DFS v2's lines (after a chain
+      and an answer), so label those positions, not just positions from games.
+- [ ] **The small net**, distilled from Minimax, trained in TypeScript (`tools/learn/`), weights in
+      `src/bots/search/weights.json`.
+- [ ] **The hybrid bot:** DFS v2's search with the net at the leaves. Measure it in matched pairs against DFS v2 and
+      Minimax, and by time a move. Goal: a tie with Minimax at about 1.5 ms.
+- [ ] **One-hot inputs** (as chess's NNUE does), if the small net plateaus: "pit 3 holds exactly 8" as its own input
+      (~350, nearly all zero), so the remainder arithmetic of free turns (seeds mod 15 against the distance to the
+      store) becomes single weights instead of something to work out. The first layer stays a sum of 16 rows, so it
+      stays fast.
+- [ ] **The cheap variant:** train the net on the value after the opponent's best answer, so the search needs only its
+      own chains (DFS's 0.4 ms). Keep it only if it doesn't start giving away captures.
+- [ ] **The net as a guide**, if speed matters more: rank moves for better pruning (the same moves, faster), or flag
+      unsettled positions for the search to follow further (a learned capture extension, #13).
+- [ ] **Self-play under the pie rule (#17)**, once strong-against-strong games are contestable: the net plays itself and
+      learns from the results, to go past its teacher.
+
+Skipped on purpose: bigger architectures (transformers, graph nets) and a policy-only bot with no search. The net runs
+at every leaf, so a bigger one costs its size in speed, and a tie is already the ceiling; a bot without search walks
+into the captures this game turns on.
+
 ## Interface
 
 - [x] **One icon set, written into DESIGN.md.** Done: `public/svg/icons.svg` (with the favicon in `public/svg/`),
