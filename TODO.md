@@ -236,6 +236,10 @@ Steps, cheapest first:
 - [x] **The hybrid bot:** DFS v2's search with the net at the leaves, in the menus as Wise (Learned DFS). Rated level
       with Minimax at 2074, at 6.5 ms a move against Minimax's 23.3 (about 28%), and 49.5% head to head over 800 games;
       +17 over DFS v2. Not the 1.5 ms hoped for: the search reaches about a thousand leaves a move.
+- [x] **The net's logic, written out** (`tools/learn/explain.ts`): what a seed in each pit is worth, a fitted formula
+      (66% of the net's opinion, 92.5% of its verdicts) and five if/then rules (95% of its verdicts). Coded as bots on
+      the same search, they play at DFS v2's level (formula −22 against Minimax, seed table −31; the net: −3): the net's
+      edge is in what the formula leaves out, its thresholds and how pieces combine. Not kept.
 - [ ] **One-hot inputs** (as chess's NNUE does), if the small net plateaus: "pit 3 holds exactly 8" as its own input
       (~350, nearly all zero), so the remainder arithmetic of free turns (seeds mod 15 against the distance to the
       store) becomes single weights instead of something to work out. The first layer stays a sum of 16 rows, so it
