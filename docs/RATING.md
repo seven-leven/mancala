@@ -284,17 +284,18 @@ Each rating so far, from `src/bots/ratings.ts` in git history. "Typical" is the 
 first rating (v2.0, 14 October 2026) there were four named levels with no numbers behind them: Easy (Random), Medium
 (Greedy), Hard (DFS) and Expert (Minimax).
 
-| Ratings                       | Bots | Games a pairing | Openings          | Typical 90% range | Widest |
-| ----------------------------- | ---: | --------------: | ----------------- | ----------------: | -----: |
-| Difficulty levels only (v2.0) |    4 |               – | –                 |         not rated |      – |
-| First Elo ladder (v2.1)       |    8 |              40 | Each game its own |               ±75 |   ±105 |
-| Bot standard (v2.2.0)         |   12 |              40 | Matched pairs     |               ±50 |    ±63 |
-| Seventeen bots (v2.2.0)       |   17 |              60 | Matched pairs     |               ±36 |    ±41 |
-| After the speed-ups (v2.2.2)  |   17 |             240 | Matched pairs     |               ±20 |    ±25 |
-| First made dormant (v2.2.3)   |   16 |             240 | Matched pairs     |               ±21 |    ±26 |
-| Eighteen bots (v2.3.0)        |   18 |             240 | Matched pairs     |               ±19 |    ±23 |
-| Monte Carlo and DFS v2 (next) |   20 |             240 | Matched pairs     |               ±20 |    ±24 |
-| The learned bot (next)        |   21 |             240 | Matched pairs     |               ±18 |    ±22 |
+| Ratings                        | Bots | Games a pairing | Openings          | Typical 90% range | Widest |
+| ------------------------------ | ---: | --------------: | ----------------- | ----------------: | -----: |
+| Difficulty levels only (v2.0)  |    4 |               – | –                 |         not rated |      – |
+| First Elo ladder (v2.1)        |    8 |              40 | Each game its own |               ±75 |   ±105 |
+| Bot standard (v2.2.0)          |   12 |              40 | Matched pairs     |               ±50 |    ±63 |
+| Seventeen bots (v2.2.0)        |   17 |              60 | Matched pairs     |               ±36 |    ±41 |
+| After the speed-ups (v2.2.2)   |   17 |             240 | Matched pairs     |               ±20 |    ±25 |
+| First made dormant (v2.2.3)    |   16 |             240 | Matched pairs     |               ±21 |    ±26 |
+| Eighteen bots (v2.3.0)         |   18 |             240 | Matched pairs     |               ±19 |    ±23 |
+| Monte Carlo and DFS v2 (next)  |   20 |             240 | Matched pairs     |               ±20 |    ±24 |
+| The learned bot (v2.5.0)       |   21 |             240 | Matched pairs     |               ±18 |    ±22 |
+| Two bots below Pushover (next) |   23 |             240 | Matched pairs     |               ±21 |    ±23 |
 
 What it taught:
 
@@ -304,20 +305,20 @@ What it taught:
 - **With seventeen bots, games are the cheaper lever.** Four times the games did more in 5 minutes than five more bots
   would. Giving the games to close pairings (adaptive allocation, in [TODO.md](../TODO.md)) should do better still.
 
-### The ladder's shape, twenty-one bots
+### The ladder's shape, twenty-three bots
 
-The ladder runs from 504 (Pushover) to 2074 (Learned DFS and Minimax, level), twenty-one bots. The average step is about
-79 Elo, so each bot beats the one below it about 61% of the time: each step up is noticeably harder, and none is a wall.
+The ladder runs from 456 (Learned pushover) to 2068 (Minimax), twenty-three bots. The average step is about 73 Elo, so
+each bot beats the one below it about 60% of the time.
 
-- **Too close to call:** Learned DFS and Minimax, level at 2074 (the order holds in 54% of resamples). That's the
-  ceiling under these rules: from these openings the seat decides the game, so the best any bot can do against Minimax
-  is a tie. Learned DFS gets it at about 28% of Minimax's time a move (6.5 ms against 23.3).
-- **Closest neighbours after that:** Greedy and Turtle (17 apart), Minimax and DFS v2 (17), Chainer and Spoiler (20).
-  They earn their place as styles more than as steps.
-- **The widest gaps:** Sometimes generous to Generous (171), Spoiler to Greedy (154), Striker to Random (138), Planner
-  to Sometimes planner (119), Monte Carlo to Lookahead (103).
-- **The top:** a contest above Minimax waits for the pie rule (#17), where strong-against-strong games aren't decided by
-  the seat.
+- **Too close to call:** Pushover and Decompiled pushover, 9 apart (Pushover is above in 81% of resamples). The
+  decompiled formula loses about as hard as Pushover; the network it came from (Learned pushover, 456) loses clearly
+  harder.
+- **The top:** Minimax 2068, Learned DFS 2058 (93% sure, though they split their games exactly), DFS v2 2041. A contest
+  above Minimax waits for the pie rule (#17), where strong-against-strong games aren't decided by the seat.
+- **Closest neighbours otherwise:** Minimax and Learned DFS (10), Learned DFS and DFS v2 (17), Sometimes greedy and
+  Striker (22), Chainer and Spoiler (24).
+- **The widest gaps:** Sometimes generous to Generous (164), Striker to Random (163), Spoiler to Greedy (144), Monte
+  Carlo to Lookahead (115), Planner to Sometimes planner (114).
 
 Update this section after each full rating that changes the shape.
 

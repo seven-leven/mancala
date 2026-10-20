@@ -250,6 +250,10 @@ Steps, cheapest first:
 - [ ] **A ranking formula worth keeping:** more roots, leaves the search really reaches (chains included), and pieces
       that don't overlap (seeds on board and stores always total 98), until it matches the net; then it could replace
       the net where a readable judgement matters.
+- [x] **Bots that lose harder than Pushover.** A winning net turned upside down lost no harder than Pushover, so a
+      loser's net was trained on how Pushover's games against winning bots really ended (`tools/learn/loser-data.ts`, 17
+      inputs). On Pushover's search it's Doomed (Learned pushover, 456), below Pushover's 489; its logic written out
+      (`tools/learn/ranking.ts` on the loser's data) is Helpless (Decompiled pushover, 480), level with Pushover.
 - [ ] **One-hot inputs** (as chess's NNUE does), if the small net plateaus: "pit 3 holds exactly 8" as its own input
       (~350, nearly all zero), so the remainder arithmetic of free turns (seeds mod 15 against the distance to the
       store) becomes single weights instead of something to work out. The first layer stays a sum of 16 rows, so it
