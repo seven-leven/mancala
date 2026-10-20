@@ -4,15 +4,19 @@
  */
 import type { Bot, BotContext, BotSpec } from "./contracts.ts";
 import { FirstBot, RandomBot } from "./players/basic.ts";
-import { DfsBot } from "./players/chain.ts";
+import { DfsBot, DfsReplyBot } from "./players/chain.ts";
 import { MixedBot } from "./players/mixed.ts";
+import { MonteCarloBot } from "./players/montecarlo.ts";
 import { GenerousBot, GreedyBot, HoarderBot, OneMoveBot, StrikerBot, TurtleBot } from "./players/one-move.ts";
 import { LookaheadBot, MinimaxBot, PushoverBot, TwoMoveBot } from "./players/search.ts";
 import { lead, planned } from "./search/evaluate.ts";
+import { netScore, ValueNet } from "./search/net.ts";
+import { WEIGHTS } from "./search/weights.ts";
 
 export type { Bot, BotContext, BotSpec };
 export {
   DfsBot,
+  DfsReplyBot,
   FirstBot,
   GenerousBot,
   GreedyBot,
@@ -153,6 +157,14 @@ export const BOTS = {
     family: "search",
     create: ({ rng }) => new LookaheadBot(2, 3, rng),
   },
+  montecarlo: {
+    label: "Monte Carlo",
+    level: "Lucky",
+    blurb: "Plays thousands of random games from each move and picks the one that won most.",
+    family: "montecarlo",
+    // 10 ms a move in the game; when rated, the 2000 playouts that 10 ms buys from the opening.
+    create: ({ mode, rng }) => new MonteCarloBot(mode === "rate" ? { playouts: 2000 } : { timeMs: 10 }, rng),
+  },
   shrewd: {
     label: "Shrewd",
     level: "Sharp",
@@ -167,6 +179,22 @@ export const BOTS = {
     blurb: "Chains free turns as far as they go. The original 2024 bot.",
     family: "chain",
     create: () => new DfsBot(8),
+  },
+  dfs2: {
+    label: "DFS v2",
+    level: "Very hard",
+    blurb: "Chains free turns like DFS, then checks your best chain in answer before it commits.",
+    family: "chain",
+    create: () => new DfsReplyBot(8),
+  },
+  learned: {
+    label: "Learned DFS",
+    level: "Wise",
+    blurb: "DFS v2's search, judged by a small neural network that learned from Minimax.",
+    family: "chain",
+    // A 16-16-16-1 value net (561 weights, src/bots/search/weights.ts) trained on Minimax's scores
+    // (tools/learn/); it ties Minimax at about a third of its time.
+    create: () => new DfsReplyBot(8, netScore(new ValueNet(WEIGHTS))),
   },
   minimax: {
     label: "Minimax",

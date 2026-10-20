@@ -92,13 +92,23 @@ in `src/bots/players/`.
 
 ## [v2.4 · A stronger Expert](https://github.com/seven-leven/mancala/milestone/3)
 
+**Measured 2026-10-19: Minimax can't be beaten under the standard rules.** Against Minimax at depth 6, a sharper
+evaluation, depth 8 and depth 4 each split every matched pair 1–1 (200 of 200 pairs, standard and symmetric openings
+alike), and depth 2 lost only 7 pairs in 100. From these openings the seat decides the game, and Minimax already wins
+every won position. So #15 and #16 can't show a gain at the top by rating, and the SPRT below has nothing to detect,
+until the rules make the start contestable: the **pie rule (#17) comes first**, then measure the rest under it. DFS v2
+(dormant, +42 over DFS) shows a better bot still can win where games aren't decided yet.
+
 - [ ] [#13](https://github.com/seven-leven/mancala/issues/13) Capture extension: like the free-turn extension (12 in a
       row today), keep searching past the depth limit after a capture, so the search doesn't stop just before the reply.
 - [ ] [#15](https://github.com/seven-leven/mancala/issues/15) Tune the evaluation weights from self-play (Texel's
       method: fit the weights so the evaluation predicts game results). Keep a weight set only if it wins a matched-pair
       match against the old one.
 - [ ] [#16](https://github.com/seven-leven/mancala/issues/16) Try an MCTS bot (UCB1, random playouts). If it rates above
-      Minimax, it becomes the new top level.
+      Minimax, it becomes the new top level. Built (`src/bots/players/montecarlo.ts`): 10 ms a move, 2000 playouts when
+      rated. Rated over 240 games a pairing at 1848 (1829–1868), between Lookahead and Shrewd, and now in the menus as
+      Lucky; it scored 8% against Minimax, so not a new top level. Left: playouts guided by the evaluation, and
+      measuring it again under the pie rule (#17), where the top is contestable.
 - [ ] **A sequential test (SPRT) for "does the new version beat the old one?"** For #15 and #16: play matched pairs
       until the evidence is strong enough either way, then stop, as chess engines are tested. A clear yes or no in the
       fewest games, instead of guessing that 240 is enough. Its formulas go in RATING.md's maths.
@@ -194,6 +204,52 @@ Small additions to the rating harness's output, each an hour or so. Document eac
 - [x] **A check that the model fits.** Compare each pairing's win rate with what the ratings predict, and flag pairings
       that miss by more than chance: a bot that isn't transitive (beats strong bots, loses to weak ones) shows up here.
       A safeguard for adaptive allocation, which plays fewer lopsided games.
+
+## A learned bot
+
+DFS's chain search with a small neural network as its judgement: the 2024 bot learns to check your answer (DFS v2), then
+learns judgement from Minimax. The aim is Minimax's results at a fraction of its time; under the standard rules a tie is
+the most any bot can get against it (v2.4 above), so beating it waits for the pie rule (#17).
+
+![A learned bot: training offline, and play every move](docs/images/learned-bot.svg)
+
+How it fits together:
+
+- **Play:** DFS v2 follows its own chains and the opponent's best answer (the tactics: chains, captures); the net scores
+  the position at the end of each line (the judgement). About 1.5 ms a move, against Minimax's 15.
+- **Training:** distillation. Positions from recorded games (`data/games.mgn`, ~1.5 million), each labelled by Minimax
+  at depth 6–8, or exactly where a small endgame can be solved. The net learns to match the labels.
+- **The net:** 17 inputs (14 pits, 2 stores, whose turn), two hidden layers of 64, one value for the side to move: about
+  5,000 weights, committed as JSON, microseconds a position in plain TypeScript.
+- **The stack:** train in TypeScript too, seeded, so the repo stays Node-only and runs repeat. PyTorch only if
+  experiments outgrow a net this size.
+
+Steps, cheapest first:
+
+- [ ] **Texel-tuned evaluation** (#15): fit the existing pieces' weights to the same labels. The baseline any net must
+      beat.
+- [ ] **Training data where the search looks.** The net is only asked about the ends of DFS v2's lines (after a chain
+      and an answer), so label those positions, not just positions from games.
+- [x] **The small net**, distilled from Minimax, trained in TypeScript (`tools/learn/`), weights in
+      `src/bots/search/weights.ts`. 16-16-16-1, 561 weights: winner right 90.8% on held-out positions (Minimax's
+      evaluation: 71.1%). 32 and 64 wide were no stronger, and slower.
+- [x] **The hybrid bot:** DFS v2's search with the net at the leaves, in the menus as Wise (Learned DFS). Rated level
+      with Minimax at 2074, at 6.5 ms a move against Minimax's 23.3 (about 28%), and 49.5% head to head over 800 games;
+      +17 over DFS v2. Not the 1.5 ms hoped for: the search reaches about a thousand leaves a move.
+- [ ] **One-hot inputs** (as chess's NNUE does), if the small net plateaus: "pit 3 holds exactly 8" as its own input
+      (~350, nearly all zero), so the remainder arithmetic of free turns (seeds mod 15 against the distance to the
+      store) becomes single weights instead of something to work out. The first layer stays a sum of 16 rows, so it
+      stays fast.
+- [x] **The cheap variant:** tried with the same net (its depth-6 labels already include the answer): own chains only,
+      about half the time, but 26 Elo weaker than the full search and no better than DFS v2, so not kept.
+- [ ] **The net as a guide**, if speed matters more: rank moves for better pruning (the same moves, faster), or flag
+      unsettled positions for the search to follow further (a learned capture extension, #13).
+- [ ] **Self-play under the pie rule (#17)**, once strong-against-strong games are contestable: the net plays itself and
+      learns from the results, to go past its teacher.
+
+Skipped on purpose: bigger architectures (transformers, graph nets) and a policy-only bot with no search. The net runs
+at every leaf, so a bigger one costs its size in speed, and a tie is already the ceiling; a bot without search walks
+into the captures this game turns on.
 
 ## Interface
 

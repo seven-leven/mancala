@@ -28,7 +28,7 @@ export interface BotContext {
 }
 
 /** How a bot decides, which is also where its file lives (src/bots/players/<family>.ts). */
-export type Family = "basic" | "one-move" | "chain" | "search" | "mixed";
+export type Family = "basic" | "one-move" | "chain" | "search" | "mixed" | "montecarlo";
 
 /** A bot as the game lists it: one entry in BOTS. */
 export interface BotSpec {

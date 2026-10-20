@@ -4,6 +4,7 @@ import {
   BOTS,
   createBot,
   DfsBot,
+  DfsReplyBot,
   FirstBot,
   GenerousBot,
   GreedyBot,
@@ -16,6 +17,7 @@ import {
   TurtleBot,
   TwoMoveBot,
 } from "../src/bots/bots.ts";
+import { MonteCarloBot } from "../src/bots/players/montecarlo.ts";
 import { exposed, freeTurnsReady, lead, mobility, threats } from "../src/bots/search/evaluate.ts";
 import { search } from "../src/bots/search/minimax.ts";
 import { Boards, playOn } from "../src/bots/search/moves.ts";
@@ -38,6 +40,7 @@ test("every bot only plays legal pits", () => {
     new GreedyBot(),
     new LookaheadBot(2, 3, seeded(2)),
     new DfsBot(),
+    new DfsReplyBot(),
     new MinimaxBot({ depth: 3 }),
   ];
   let g = newGame(DEFAULT_RULES, P1);
@@ -246,4 +249,80 @@ test("playOn plays a move on a reused board exactly as playTurn does, and Boards
   // New rules (house rules, a new game): a new board for them.
   const house = newGame({ ...DEFAULT_RULES, seeds: 5 }, P1);
   assert(boards.at(0, house) !== board && boards.at(0, house).rules === house.rules);
+});
+
+test("monte carlo stops after its playouts, or its time, and says how it did", () => {
+  const start = newGame(DEFAULT_RULES, P1);
+  assertEquals(new MonteCarloBot({ playouts: 5 }).note(), null, "before any move there's no note");
+  const fixed = new MonteCarloBot({ playouts: 50 }, seeded(1));
+  assert(validMoves(start).includes(fixed.choose(start)!));
+  assert(/^played 50 random games, won \d+%$/.test(fixed.note() ?? ""), fixed.note() ?? "");
+  // Out of time at once: it still plays one game, so it always has a move to give.
+  const rushed = new MonteCarloBot({ timeMs: 0 }, seeded(2));
+  assert(validMoves(start).includes(rushed.choose(start)!));
+  assert(/^played 1 random game, won \d+%$/.test(rushed.note() ?? ""), rushed.note() ?? "");
+});
+
+test("monte carlo plays a lone move without searching, and nothing when there's no move", () => {
+  // Player 1 has one pit with seeds left.
+  //                    0  1  2  3  4  5  6  7  8  9 10 11 12 13  M1  M2
+  const forced = position([0, 0, 0, 0, 0, 0, 3, 5, 5, 5, 5, 5, 5, 5, 30, 30]);
+  const bot = new MonteCarloBot({ playouts: 20 }, seeded(3));
+  assertEquals(bot.choose(forced), 6);
+  assertEquals(bot.note(), null);
+  assertEquals(bot.choose({ ...forced, gameOver: true }), null);
+});
+
+test("monte carlo takes the move that wins on the spot", () => {
+  // Player 1 has 49 banked. Pit 6 sows its seed into the store: 50 of 98, a clinched majority, and
+  // the game is over. Pit 1 keeps it going, against a side with every other seed. Many tries end
+  // on the finished game, which the search must keep scoring as a win.
+  //                    0  1  2  3  4  5  6  7  8  9 10 11 12 13  M1  M2
+  const win = position([0, 1, 0, 0, 0, 0, 1, 6, 6, 6, 6, 6, 6, 6, 49, 5]);
+  const bot = new MonteCarloBot({ playouts: 300 }, seeded(4));
+  assertEquals(bot.choose(win), 6);
+  assertEquals(bot.note(), "played 300 random games, won 100%");
+});
+
+test("createBot makes monte carlo with a fixed number of playouts when rated, a 10 ms clock in the game", () => {
+  const start = newGame(DEFAULT_RULES, P1);
+  const rated = createBot("montecarlo", { mode: "rate", rng: seeded(5) });
+  rated.choose(start);
+  const note = rated.note?.() ?? "";
+  assert(note.startsWith("played 2000 random games"), note);
+  const played = createBot("montecarlo", { rng: seeded(6) });
+  assert(validMoves(start).includes(played.choose(start)!));
+});
+
+test("dfs v2 sees the capture dfs walks into", () => {
+  // Player 1 to move, found by searching random games. DFS plays pit 0 and leaves Player 2 a capture
+  // of 9 seeds; DFS v2 looks at Player 2's answer and plays pit 2, which leaves nothing to capture.
+  //                    0  1  2  3  4  5  6  7  8  9 10 11 12 13  M1  M2
+  const trap = position([1, 1, 8, 8, 1, 0, 3, 1, 3, 1, 6, 0, 1, 3, 25, 36]);
+  /** The most seeds the side to move can capture with one move. */
+  const most = (s: GameState) => {
+    let n = 0;
+    for (const m of validMoves(s)) {
+      const r = playTurn(s, m);
+      if (!r.invalid) { for (const e of r.events) if (e.type === "capture") n = Math.max(n, e.captured); }
+    }
+    return n;
+  };
+  assertEquals(new DfsBot().choose(trap), 0);
+  assertEquals(most(playTurn(trap, 0).state), 9);
+  assertEquals(new DfsReplyBot().choose(trap), 2);
+  assertEquals(most(playTurn(trap, 2).state), 0);
+});
+
+test("dfs v2 takes a move that wins on the spot, and scores a chain where its limit stops it", () => {
+  // Either move clinches a majority for Player 1: pit 6 sows into the store, pit 1 captures 6.
+  //                    0  1  2  3  4  5  6  7  8  9 10 11 12 13  M1  M2
+  const win = position([0, 1, 0, 0, 0, 0, 1, 6, 6, 6, 6, 6, 6, 6, 49, 5]);
+  const after = playTurn(win, new DfsReplyBot().choose(win)!).state;
+  assert(after.gameOver && after.pits[14] > 49, "it ends the game, won");
+  // Chains of one move: a free turn is scored where it stands, without playing on.
+  const start = newGame(DEFAULT_RULES, P1);
+  assert(validMoves(start).includes(new DfsReplyBot(1).choose(start)!));
+  assertEquals(new DfsReplyBot().choose({ ...start, gameOver: true }), null);
+  assert(createBot("dfs2") instanceof DfsReplyBot);
 });
