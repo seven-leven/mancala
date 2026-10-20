@@ -3,7 +3,7 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `package.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
-## Unreleased
+## v2.6.0 · 2026-10-20
 
 - **Two bots below Pushover: Doomed (Learned pushover) and Helpless (Decompiled pushover).** Both use Pushover's own
   search to lose, with a different judgement. Doomed's is a small network trained on how 200,000 positions from
