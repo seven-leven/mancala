@@ -1,7 +1,7 @@
 # Mancala
 
 **Ohvalhugondi, the Maldivian mancala, in the browser.** Seven pits a side, seven seeds in each, and relay sowing. Play
-a friend on the same screen, or one of eighteen bots from Hopeless to Expert, and keep an Elo rating of your own.
+a friend on the same screen, or one of twenty-three bots from Doomed to Expert, and keep an Elo rating of your own.
 
 **Play: [seven-leven.github.io/mancala](https://seven-leven.github.io/mancala/)**
 
@@ -38,33 +38,35 @@ why Settings lets you choose who goes first.
 
 ![The bots' Elo ladder, each with its 90% range](docs/images/ladder.svg)
 
-| Level      | Bot                |  Elo | 90% range | How it plays                                                                     |
-| ---------- | ------------------ | ---: | :-------: | -------------------------------------------------------------------------------- |
-| Wise       | Learned DFS        | 2074 | 2056–2097 | DFS v2's search, judged by a small neural network trained on Minimax's scores    |
-| Expert     | Minimax            | 2074 | 2054–2098 | Alpha-beta search with a transposition table; follows free-turn chains           |
-| Very hard  | DFS v2             | 2057 | 2038–2079 | DFS's chains, then your best chain in answer: sees the captures DFS walks into   |
-| Hard       | DFS                | 2004 | 1988–2024 | Chains its own free turns as far as they go (the original 2024 bot)              |
-| Sharp      | Shrewd             | 1919 | 1900–1941 | Lookahead's method, three moves deep instead of two                              |
-| Lucky      | Monte Carlo        | 1840 | 1823–1859 | Plays thousands of random games from each move (10 ms a move) and keeps the best |
-| Tricky     | Lookahead          | 1737 | 1721–1756 | Two moves deep, and picks one of its better moves, not always the best           |
-| Thoughtful | Planner            | 1683 | 1664–1702 | Two moves deep, weighing free turns set up, captures threatened, open pits       |
-| Clever     | Sometimes planner  | 1564 | 1547–1582 | Planner's move most of the time; otherwise like Greedy                           |
-| Keen       | Chainer            | 1485 | 1467–1503 | Usually takes a free turn or two before banking; otherwise like Greedy           |
-| Crafty     | Spoiler            | 1465 | 1447–1483 | Often plays to leave your best reply weakest; otherwise like Greedy              |
-| Average    | Greedy             | 1311 | 1295–1329 | Takes whatever banks the most seeds this turn                                    |
-| Careful    | Turtle             | 1294 | 1277–1310 | Banks what it can, but won't leave a loaded pit open to capture                  |
-| Relaxed    | Sometimes greedy   | 1195 | 1179–1213 | Greedy's move half the time, any legal pit the rest                              |
-| Bold       | Striker            | 1138 | 1122–1155 | Banks what it can, but would rather line up a capture for next turn              |
-| Easy       | Random             | 1000 |  anchor   | Any legal pit                                                                    |
-| Thrifty    | Hoarder            |  926 |  906–946  | Keeps its seeds on its own side, banking only a little                           |
-| Mild       | Fickle             |  832 |  813–847  | Sometimes keeps its seeds at home like Hoarder; more often gives them away       |
-| Gentle     | Sometimes generous |  743 |  724–761  | Generous's move most of the time, any legal pit the rest                         |
-| Very easy  | Generous           |  572 |  549–592  | Greedy's opposite: banks as little as it can                                     |
-| Hopeless   | Pushover           |  504 |  481–525  | Searches ahead like Minimax, but to lose by as much as it can                    |
+| Level      | Bot                 |  Elo | 90% range | How it plays                                                                       |
+| ---------- | ------------------- | ---: | :-------: | ---------------------------------------------------------------------------------- |
+| Expert     | Minimax             | 2068 | 2050–2091 | Alpha-beta search with a transposition table; follows free-turn chains             |
+| Wise       | Learned DFS         | 2058 | 2036–2082 | DFS v2's search, judged by a small neural network trained on Minimax's scores      |
+| Very hard  | DFS v2              | 2041 | 2021–2064 | DFS's chains, then your best chain in answer: sees the captures DFS walks into     |
+| Hard       | DFS                 | 2007 | 1987–2031 | Chains its own free turns as far as they go (the original 2024 bot)                |
+| Sharp      | Shrewd              | 1925 | 1907–1948 | Lookahead's method, three moves deep instead of two                                |
+| Lucky      | Monte Carlo         | 1857 | 1837–1878 | Plays thousands of random games from each move (10 ms a move) and keeps the best   |
+| Tricky     | Lookahead           | 1742 | 1723–1764 | Two moves deep, and picks one of its better moves, not always the best             |
+| Thoughtful | Planner             | 1670 | 1652–1692 | Two moves deep, weighing free turns set up, captures threatened, open pits         |
+| Clever     | Sometimes planner   | 1556 | 1539–1578 | Planner's move most of the time; otherwise like Greedy                             |
+| Keen       | Chainer             | 1492 | 1477–1512 | Usually takes a free turn or two before banking; otherwise like Greedy             |
+| Crafty     | Spoiler             | 1468 | 1450–1487 | Often plays to leave your best reply weakest; otherwise like Greedy                |
+| Average    | Greedy              | 1324 | 1307–1342 | Takes whatever banks the most seeds this turn                                      |
+| Careful    | Turtle              | 1285 | 1268–1303 | Banks what it can, but won't leave a loaded pit open to capture                    |
+| Relaxed    | Sometimes greedy    | 1185 | 1169–1203 | Greedy's move half the time, any legal pit the rest                                |
+| Bold       | Striker             | 1163 | 1144–1182 | Banks what it can, but would rather line up a capture for next turn                |
+| Easy       | Random              | 1000 |  anchor   | Any legal pit                                                                      |
+| Thrifty    | Hoarder             |  909 |  888–925  | Keeps its seeds on its own side, banking only a little                             |
+| Mild       | Fickle              |  804 |  785–825  | Sometimes keeps its seeds at home like Hoarder; more often gives them away         |
+| Gentle     | Sometimes generous  |  731 |  711–749  | Generous's move most of the time, any legal pit the rest                           |
+| Very easy  | Generous            |  567 |  546–588  | Greedy's opposite: banks as little as it can                                       |
+| Hopeless   | Pushover            |  489 |  469–511  | Searches ahead like Minimax, but to lose by as much as it can                      |
+| Helpless   | Decompiled pushover |  480 |  460–501  | Pushover's search to lose, judged by that network's logic written out as a formula |
+| Doomed     | Learned pushover    |  456 |  434–476  | Pushover's search to lose, judged by a network trained on how games are lost       |
 
 Every bot played every other 240 times, in matched pairs, with Random pinned at 1000. Read the ratings as a ladder: the
-bars are 90% ranges, and red marks neighbours whose order is less than 90% sure (today one pair: Learned DFS and
-Minimax, level at 2074; every other bot is above the next one down in at least 98% of resampled fits).
+bars are 90% ranges, and red marks neighbours whose order is less than 90% sure (today one pair: Pushover and Decompiled
+pushover, 9 apart; every other bot is above the next one down in at least 93% of resampled fits).
 [RATING.md](docs/RATING.md) explains how they're made and how to read them; [BOTS.md](docs/BOTS.md) has the standard
 every bot follows.
 

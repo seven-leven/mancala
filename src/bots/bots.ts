@@ -10,7 +10,9 @@ import { MonteCarloBot } from "./players/montecarlo.ts";
 import { GenerousBot, GreedyBot, HoarderBot, OneMoveBot, StrikerBot, TurtleBot } from "./players/one-move.ts";
 import { LookaheadBot, MinimaxBot, PushoverBot, TwoMoveBot } from "./players/search.ts";
 import { lead, planned } from "./search/evaluate.ts";
-import { netScore, ValueNet } from "./search/net.ts";
+import { formulaScore, LOSER_RANKING_WEIGHTS } from "./search/decompiled.ts";
+import { loserNetScore, netScore, ValueNet } from "./search/net.ts";
+import { LOSER_WEIGHTS } from "./search/loser-weights.ts";
 import { WEIGHTS } from "./search/weights.ts";
 
 export type { Bot, BotContext, BotSpec };
@@ -38,6 +40,23 @@ export {
  * `npm run rate` (see the README). Keys are permanent: saved games refer to them.
  */
 export const BOTS = {
+  learnedPushover: {
+    label: "Learned pushover",
+    level: "Doomed",
+    blurb: "Pushover's search to lose, judged by a small neural network that learned how games are lost.",
+    family: "search",
+    // A 17-16-16-1 net (src/bots/search/loser-weights.ts) trained on how Pushover's games against
+    // bots that play to win really ended (tools/learn/loser-data.ts).
+    create: () => new PushoverBot(3, loserNetScore(new ValueNet(LOSER_WEIGHTS))),
+  },
+  decompiledPushover: {
+    label: "Decompiled pushover",
+    level: "Helpless",
+    blurb: "Pushover's search to lose, judged by a readable formula taken from the losing network.",
+    family: "search",
+    // The loser's net, written out as a weighted sum (search/decompiled.ts, tools/learn/ranking.ts).
+    create: () => new PushoverBot(3, formulaScore(LOSER_RANKING_WEIGHTS)),
+  },
   pushover: {
     label: "Pushover",
     level: "Hopeless",

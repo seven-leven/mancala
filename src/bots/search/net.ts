@@ -36,6 +36,17 @@ export function encode(s: GameState, out: Float64Array = new Float64Array(INPUTS
   return out;
 }
 
+/**
+ * The inputs for `s` from `side`'s view, whoever is to move: their pits and store first, as
+ * `encode` puts them, and a 17th input, 1 if it's `side`'s move and 0 if not. The loser's net uses
+ * this, since it judges one side's prospects at every ply of a search.
+ */
+export function encodeFor(s: GameState, side: Player, out: Float64Array = new Float64Array(INPUTS + 1)): Float64Array {
+  encode({ ...s, current: side }, out);
+  out[INPUTS] = s.current === side ? 1 : 0;
+  return out;
+}
+
 /** A network ready to score positions, with its buffers made once and reused. */
 export class ValueNet {
   private n1: number;
@@ -47,13 +58,15 @@ export class ValueNet {
   private b2: Float64Array;
   private w3: Float64Array;
   private b3: number;
-  private x = new Float64Array(INPUTS);
+  private nIn: number;
+  private x: Float64Array;
   private h1: Float64Array;
   private on: Int32Array;
   private a2: Float64Array;
 
   constructor(w: Weights) {
-    [this.n1, this.n2] = [w.b1.length, w.b2.length];
+    [this.n1, this.n2, this.nIn] = [w.b1.length, w.b2.length, w.w1[0].length];
+    this.x = new Float64Array(this.nIn);
     this.w1 = Float64Array.from(w.w1.flat());
     this.b1 = Float64Array.from(w.b1);
     this.w2t = new Float64Array(this.n1 * this.n2);
@@ -68,13 +81,21 @@ export class ValueNet {
 
   /** The position's value for the player to move, from -1 (lost) to +1 (won). */
   value(s: GameState): number {
-    const { x, h1, on, a2, w1, b1, w2t, b2, w3, n1, n2 } = this;
-    encode(s, x);
+    return this.run(encode(s, this.x));
+  }
+
+  /** For a net trained on `encodeFor`'s 17 inputs: the position's value for `side`. */
+  valueFor(s: GameState, side: Player): number {
+    return this.run(encodeFor(s, side, this.x));
+  }
+
+  private run(x: Float64Array): number {
+    const { h1, on, a2, w1, b1, w2t, b2, w3, n1, n2, nIn } = this;
     // First layer, noting which units are on: after ReLU about half are zero, and add nothing.
     let count = 0;
     for (let j = 0; j < n1; j++) {
       let a = b1[j];
-      for (let i = 0, r = j * INPUTS; i < INPUTS; i++) a += w1[r + i] * x[i];
+      for (let i = 0, r = j * nIn; i < nIn; i++) a += w1[r + i] * x[i];
       if (a > 0) {
         h1[j] = a;
         on[count++] = j;
@@ -99,3 +120,10 @@ export class ValueNet {
  */
 export const netScore = (net: ValueNet) => (s: GameState, me: Player): number =>
   s.gameOver ? evaluate(s, me) : 100 * (s.current === me ? net.value(s) : -net.value(s));
+
+/**
+ * The loser's search score from a net trained on how games ended (tools/learn/loser-data.ts): a
+ * finished game as `evaluate` scores it, anything else as 100 times the net's value for `me`.
+ */
+export const loserNetScore = (net: ValueNet) => (s: GameState, me: Player): number =>
+  s.gameOver ? evaluate(s, me) : 100 * net.valueFor(s, me);

@@ -14,7 +14,7 @@
  * on seeded positions, at depths 4 and 6); `npm run bench` measures them.
  */
 import { FREE_TURN, INVALID, pitsOf, playTurn, storeOf, validMoves } from "../../game/engine.ts";
-import type { GameState } from "../../game/types.ts";
+import type { GameState, Player } from "../../game/types.ts";
 import { evaluate, WIN } from "./evaluate.ts";
 import { playOn } from "./moves.ts";
 
@@ -33,6 +33,8 @@ export interface SearchOptions {
    * that. The worst possible player, for the Pushover bot.
    */
   aim?: "win" | "lose";
+  /** How a position is scored for the side searching (default `evaluate`); it must score a finished game as `evaluate` does. */
+  score?: (s: GameState, me: Player) => number;
 }
 
 export interface SearchResult {
@@ -155,11 +157,12 @@ const newLevel = (like: GameState): Level => ({
 
 export function search(
   root: GameState,
-  { timeMs = 700, depth, scoreAll = false, extensions = FREE_TURN_EXTENSIONS, aim = "win" }: SearchOptions = {},
+  { timeMs = 700, depth, scoreAll = false, extensions = FREE_TURN_EXTENSIONS, aim = "win", score = evaluate }:
+    SearchOptions = {},
 ): SearchResult {
   const me = root.current;
   const sign = aim === "lose" ? -1 : 1;
-  const value = (s: GameState) => sign * evaluate(s, me);
+  const value = (s: GameState) => sign * score(s, me);
   const moves = validMoves(root);
   if (moves.length === 0) return { move: null, score: value(root), depth: 0, nodes: 0 };
   if (moves.length === 1) return { move: moves[0], score: value(root), depth: 0, nodes: 1 };

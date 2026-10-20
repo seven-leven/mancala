@@ -2,7 +2,7 @@
 import { validMoves } from "../../game/engine.ts";
 import type { GameState } from "../../game/types.ts";
 import type { Bot, Evaluator, Rng } from "../contracts.ts";
-import { search, type SearchResult } from "../search/minimax.ts";
+import { search, type SearchOptions, type SearchResult } from "../search/minimax.ts";
 import { WIN } from "../search/evaluate.ts";
 import { Boards, playOn } from "../search/moves.ts";
 
@@ -61,13 +61,15 @@ export class LookaheadBot implements Bot {
  */
 export class PushoverBot implements Bot {
   private depth: number;
-  constructor(depth = 3) {
-    this.depth = depth;
+  private score: SearchOptions["score"];
+  /** `score`: how it judges a position (Minimax's evaluation; the learned losers pass their own). */
+  constructor(depth = 3, score?: SearchOptions["score"]) {
+    [this.depth, this.score] = [depth, score];
   }
   choose(state: GameState): number | null {
     // Nothing prunes a search where both sides want the same result, so it follows only short
     // free-turn chains (3), which keeps a move under ~0.1 s.
-    return search(state, { depth: this.depth, aim: "lose", extensions: 3 }).move;
+    return search(state, { depth: this.depth, aim: "lose", extensions: 3, score: this.score }).move;
   }
 }
 

@@ -49,14 +49,14 @@ The menus, the Web Worker, saved games and the tournament all read it.
 
 ## Families and files
 
-| Family       | How it decides                                                    | File                             | Bots                                                                         |
-| ------------ | ----------------------------------------------------------------- | -------------------------------- | ---------------------------------------------------------------------------- |
-| `basic`      | Doesn't look at what a move does                                  | `src/bots/players/basic.ts`      | Random, First                                                                |
-| `one-move`   | Plays each pit once and scores the position after                 | `src/bots/players/one-move.ts`   | Greedy, Generous, Turtle, Hoarder, Striker                                   |
-| `chain`      | Follows its own free turns (DFS v2: and the opponent's in answer) | `src/bots/players/chain.ts`      | DFS, Chainer (mixed with Greedy), DFS v2, Learned DFS (with a value net)     |
-| `search`     | Looks at the opponent's replies                                   | `src/bots/players/search.ts`     | Minimax, Lookahead, Shrewd, Pushover; Planner and Spoiler (the two-move bot) |
-| `mixed`      | Another bot's move some of the time, else a random one            | `src/bots/players/mixed.ts`      | Sometimes greedy, Sometimes generous                                         |
-| `montecarlo` | Plays random games from each move, keeps the move that wins most  | `src/bots/players/montecarlo.ts` | Monte Carlo                                                                  |
+| Family       | How it decides                                                    | File                             | Bots                                                                           |
+| ------------ | ----------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------ |
+| `basic`      | Doesn't look at what a move does                                  | `src/bots/players/basic.ts`      | Random, First                                                                  |
+| `one-move`   | Plays each pit once and scores the position after                 | `src/bots/players/one-move.ts`   | Greedy, Generous, Turtle, Hoarder, Striker                                     |
+| `chain`      | Follows its own free turns (DFS v2: and the opponent's in answer) | `src/bots/players/chain.ts`      | DFS, Chainer (mixed with Greedy), DFS v2, Learned DFS (with a value net)       |
+| `search`     | Looks at the opponent's replies                                   | `src/bots/players/search.ts`     | Minimax, Lookahead, Shrewd, Pushover and the two below it; Planner and Spoiler |
+| `mixed`      | Another bot's move some of the time, else a random one            | `src/bots/players/mixed.ts`      | Sometimes greedy, Sometimes generous                                           |
+| `montecarlo` | Plays random games from each move, keeps the move that wins most  | `src/bots/players/montecarlo.ts` | Monte Carlo                                                                    |
 
 Scoring pieces (store lead, seeds on your side, exposure, threats, free turns set up, mobility) live in
 [src/bots/search/evaluate.ts](../src/bots/search/evaluate.ts) as `Evaluator`s, so one-move bots and the search share

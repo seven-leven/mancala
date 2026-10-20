@@ -3,6 +3,17 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `package.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
+## v2.6.0 · 2026-10-20
+
+- **Two bots below Pushover: Doomed (Learned pushover) and Helpless (Decompiled pushover).** Both use Pushover's own
+  search to lose, with a different judgement. Doomed's is a small network trained on how 200,000 positions from
+  Pushover's games against bots that play to win really ended (17 inputs: the board from its side, and whose move it
+  is). Helpless's is that network's logic written out as a weighted sum. Rated over 240 games a pairing with 23 bots:
+  Doomed 456, clearly below Pushover (489); Helpless 480, too close to Pushover to call. A network trained to win and
+  turned upside down lost no harder than Pushover: losing has to be learned on its own.
+- `search()` and Pushover take a scoring option, and the learned net reads its input size from its weights; every
+  existing bot plays exactly as before.
+
 ## v2.5.0 · 2026-10-20
 
 - **A learned bot: Wise (Learned DFS) ties Minimax at about a quarter of its time.** DFS v2's search, judged by a small
