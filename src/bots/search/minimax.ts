@@ -120,6 +120,24 @@ function grow(): void {
     [tDepth[i], tValue[i], tFlag[i], tBest[i]] = [old.tDepth[j], old.tValue[j], old.tFlag[j], old.tBest[j]];
   }
 }
+/**
+ * Gives back the table's memory: back to its starting size, if a big search grew it. Searches are
+ * the same either way (each starts with the table empty); a tool that runs thousands of searches in
+ * a row calls this so one huge search doesn't keep its memory for the rest.
+ */
+export function shrinkTable(): void {
+  if (size === 1 << 16) return;
+  size = 1 << 16;
+  mask = size - 1;
+  used = 0;
+  [tLo, tHi, tGen] = [new Uint32Array(size), new Uint32Array(size), new Uint32Array(size)];
+  [tDepth, tValue, tFlag, tBest] = [
+    new Int16Array(size),
+    new Float64Array(size),
+    new Uint8Array(size),
+    new Int8Array(size),
+  ];
+}
 function remember(lo: number, hi: number, depth: number, value: number, flag: number, best: number): void {
   if (2 * (used + 1) > size) grow();
   const i = slot(lo, hi);

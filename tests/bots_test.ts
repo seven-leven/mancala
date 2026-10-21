@@ -19,7 +19,7 @@ import {
 } from "../src/bots/bots.ts";
 import { MonteCarloBot } from "../src/bots/players/montecarlo.ts";
 import { exposed, freeTurnsReady, lead, mobility, threats } from "../src/bots/search/evaluate.ts";
-import { search } from "../src/bots/search/minimax.ts";
+import { search, shrinkTable } from "../src/bots/search/minimax.ts";
 import { Boards, playOn } from "../src/bots/search/moves.ts";
 import { FREE_TURN, newGame, playTurn, validMoves } from "../src/game/engine.ts";
 import { DEFAULT_RULES, type GameState, P1, P2 } from "../src/game/types.ts";
@@ -97,6 +97,23 @@ test("minimax searches no deeper than it's told", () => {
   // It can stop sooner if it finds a forced result first.
   assert(r.depth >= 1 && r.depth <= 4, `depth ${r.depth}`);
   assert(r.nodes > 0);
+});
+
+test("shrinking the search's table gives back memory and changes no answer", () => {
+  shrinkTable(); // already small: nothing to do
+  // Deep enough to store far more positions than the table starts with, so it grows.
+  //                                 0  1  2  3  4  5  6  7  8  9 10 11 12 13  M1  M2
+  const s: GameState = {
+    rules: DEFAULT_RULES,
+    pits: [1, 0, 5, 1, 1, 11, 0, 2, 1, 8, 0, 0, 5, 8, 22, 33],
+    current: P1,
+    gameOver: false,
+  };
+  const big = search(s, { depth: 6 });
+  assert(big.nodes > 1 << 16, `searched ${big.nodes} positions`);
+  shrinkTable();
+  const again = search(s, { depth: 6 });
+  assertEquals([again.move, again.score], [big.move, big.score]);
 });
 
 test("minimax stops on time", () => {

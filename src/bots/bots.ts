@@ -3,16 +3,27 @@
  * entry is a BotSpec (contracts.ts); docs/BOTS.md has the rules every bot follows and how to add one.
  */
 import type { Bot, BotContext, BotSpec } from "./contracts.ts";
-import { FirstBot, RandomBot } from "./players/basic.ts";
+import { FirstBot, IntuitionBot, RandomBot } from "./players/basic.ts";
 import { DfsBot, DfsReplyBot } from "./players/chain.ts";
 import { MixedBot } from "./players/mixed.ts";
 import { MonteCarloBot } from "./players/montecarlo.ts";
-import { GenerousBot, GreedyBot, HoarderBot, OneMoveBot, StrikerBot, TurtleBot } from "./players/one-move.ts";
+import {
+  GenerousBot,
+  GreedyBot,
+  HoarderBot,
+  OneMoveBot,
+  RuleListBot,
+  StrikerBot,
+  TurtleBot,
+} from "./players/one-move.ts";
 import { LookaheadBot, MinimaxBot, PushoverBot, TwoMoveBot } from "./players/search.ts";
 import { lead, planned } from "./search/evaluate.ts";
 import { formulaScore, LOSER_RANKING_WEIGHTS } from "./search/decompiled.ts";
 import { loserNetScore, netScore, ValueNet } from "./search/net.ts";
 import { LOSER_WEIGHTS } from "./search/loser-weights.ts";
+import { PolicyNet } from "./search/policy.ts";
+import { POLICY_WEIGHTS } from "./search/policy-weights.ts";
+import { RULES } from "./search/rules.ts";
 import { WEIGHTS } from "./search/weights.ts";
 
 export type { Bot, BotContext, BotSpec };
@@ -23,12 +34,14 @@ export {
   GenerousBot,
   GreedyBot,
   HoarderBot,
+  IntuitionBot,
   LookaheadBot,
   MinimaxBot,
   MixedBot,
   OneMoveBot,
   PushoverBot,
   RandomBot,
+  RuleListBot,
   StrikerBot,
   TurtleBot,
   TwoMoveBot,
@@ -251,6 +264,25 @@ export const DORMANT = {
     family: "search",
     // Rated at depth 10 (Minimax: 6); in the game, twice Minimax's time.
     create: ({ mode, timeMs }) => new MinimaxBot(mode === "rate" ? { depth: 10 } : { timeMs: 2 * timeMs }),
+  },
+  // Waiting for a full rating (TODO.md, "Intuition and Rule list"). A 120-game placement run put
+  // Intuition near 1200 (between Striker and Greedy) and Rule list near 1680 (Planner to Lookahead).
+  ruleList: {
+    label: "Rule list",
+    level: "Methodical",
+    blurb: "Follows a short list of if/then rules, taken from Intuition's network.",
+    family: "one-move",
+    // Intuition's policy net decompiled into rules (search/rules.ts, tools/learn/rules.ts).
+    create: () => new RuleListBot(RULES),
+  },
+  intuition: {
+    label: "Intuition",
+    level: "Instinctive",
+    blurb: "Names a pit at a glance: a neural network that learned Minimax's moves, with no search at all.",
+    family: "basic",
+    // A 16-64-64-7 policy net (src/bots/search/policy-weights.ts) trained on Minimax's move in
+    // 100,000 positions (tools/learn/train-policy.ts); it plays that move 42% of the time.
+    create: () => new IntuitionBot(new PolicyNet(POLICY_WEIGHTS)),
   },
 } as const satisfies Record<string, BotSpec>;
 export type DormantId = keyof typeof DORMANT;

@@ -4,6 +4,7 @@ import type { GameState } from "../../game/types.ts";
 import type { Bot, Evaluator, Rng } from "../contracts.ts";
 import { banked, exposed, onSide, threats } from "../search/evaluate.ts";
 import { Boards, playOn } from "../search/moves.ts";
+import { factsOf, followRules, type Rule } from "../search/rules.ts";
 
 export interface OneMoveOptions {
   /** Play the move that scores best (the default), or the worst. */
@@ -83,5 +84,21 @@ export class HoarderBot extends OneMoveBot {
 export class StrikerBot extends OneMoveBot {
   constructor(aggression = 0.5, rng: Rng = Math.random) {
     super((s, me) => banked(s, me) + aggression * threats(s, me), { ties: "random" }, rng);
+  }
+}
+
+/**
+ * Rule list: Intuition's policy net decompiled into if/then rules a person could follow at the
+ * board (search/rules.ts). Each move is judged by what it does and the opponent's best answer to
+ * it; the first rule that some move passes picks among those that pass.
+ */
+export class RuleListBot implements Bot {
+  private rules: readonly Rule[];
+  private boards = new Boards();
+  constructor(rules: readonly Rule[]) {
+    this.rules = rules;
+  }
+  choose(state: GameState): number | null {
+    return followRules(this.rules, factsOf(state, this.boards));
   }
 }

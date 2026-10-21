@@ -1,0 +1,262 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1076 1233"
+  width="1076"
+  height="1233"
+  role="img"
+  aria-labelledby="t d"
+>
+  <title id="t">The bots, by family, and the gaps between them</title>
+  <desc id="d">A grid of the bots: rows are how a bot decides (no look-ahead, one move ahead, chains of free turns, fixed-depth search, search to lose, sampling a game tree, mixes) and columns are what it judges positions by (nothing, a hand-written score, a learned net, a decompiled formula, random playouts). Each filled cell lists its bots with their Elo; dashed cells are untried combinations such as a policy net, Net minimax, Decompiled DFS, net-guided MCTS and a strength dial. Below, new axes: learning without a teacher, exact play, strength for people, reading the opponent, style, rule variants and an LLM bot.</desc>
+  <style>svg { --ink: #161514; --muted: #6b6760; --rule: #dfdad0; --strong: #cbc4b6; --accent: #a8483f; --bg: #f6f4ef; --surface: #fffdf9; --tint: #f3e6e1; }
+  @media (prefers-color-scheme: dark) {
+    svg { --ink: #f6f4ef; --muted: rgba(246,244,239,0.62); --rule: rgba(246,244,239,0.14); --strong: rgba(246,244,239,0.3); --accent: #e39a86; --bg: #161514; --surface: #1f1d1b; --tint: rgba(227,154,134,0.12); }
+  }
+  text { font: 12px Inter, system-ui, sans-serif; fill: var(--ink); }
+  .title { font: 400 26px "Instrument Serif", Georgia, serif; }
+  .label { font-size: 10.5px; font-weight: 600; letter-spacing: 1.4px; fill: var(--muted); }
+  .h { font-size: 13px; font-weight: 600; }
+  .muted { fill: var(--muted); }
+  .small { font-size: 11px; }
+  .mono { font: 11px "IBM Plex Mono", ui-monospace, Consolas, monospace; fill: var(--muted); }
+  .gaptext { font-size: 11px; fill: var(--accent); }
+  .gaptext.b { font-weight: 600; }
+  .accent { fill: var(--accent); }
+  .page { fill: var(--bg); }
+  .cell { fill: var(--surface); stroke: var(--rule); stroke-width: 1; }
+  .head { fill: var(--tint); }
+  .gap { fill: none; stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 4 3; }
+  .gap.free { fill: var(--tint); stroke-dasharray: none; }
+  .card { fill: var(--surface); stroke: var(--strong); stroke-width: 1; }</style>
+  <rect class="page" width="1076" height="1233" />
+  <text class="title" x="24" y="52">The bots, by family</text>
+  <text
+    class="muted small"
+    x="24"
+    y="74"
+  >Rows: how a bot decides. Columns: what it judges positions by. Elo from the 240-game rating, Random pinned at 1000.</text>
+  <text
+    class="muted small"
+    x="24"
+    y="90"
+  >Dashed: a gap worth trying. Filled: the gaps that are cheapest (Decompiled DFS, the strength dial) or most promising (net-guided MCTS).</text>
+  <rect class="head" x="24" y="114" width="1028" height="46" rx="6" />
+  <text class="label" x="36" y="134">DECIDES BY ↓</text>
+  <text class="label" x="36" y="150">JUDGED BY →</text>
+  <text class="label" x="202" y="134">NOTHING</text>
+  <text class="muted small" x="202" y="150">no judgement at all</text>
+  <text class="label" x="374" y="134">A HAND-WRITTEN SCORE</text>
+  <text class="muted small" x="374" y="150">rules and evaluate()</text>
+  <text class="label" x="546" y="134">A LEARNED NET</text>
+  <text class="muted small" x="546" y="150">trained on games</text>
+  <text class="label" x="718" y="134">A DECOMPILED FORMULA</text>
+  <text class="muted small" x="718" y="150">the net's logic, written out</text>
+  <text class="label" x="890" y="134">RANDOM PLAYOUTS</text>
+  <text class="muted small" x="890" y="150">games played to the end</text>
+  <text class="h" x="36" y="189">No look-ahead</text>
+  <text class="muted small" x="36" y="206">picks from the board as it is</text>
+  <rect class="cell" x="194" y="166" width="168" height="85" rx="6" />
+  <text x="204" y="189">Random</text>
+  <text class="mono" x="352" y="189" text-anchor="end">1000</text>
+  <text x="204" y="207">First</text>
+  <text class="mono" x="352" y="207" text-anchor="end">dormant</text>
+  <rect class="cell" x="366" y="166" width="168" height="85" rx="6" />
+  <text class="muted" x="450.0" y="212.5" text-anchor="middle">—</text>
+  <rect class="cell" x="538" y="166" width="168" height="85" rx="6" />
+  <rect class="gap" x="544" y="178" width="156" height="59" rx="5" />
+  <text class="gaptext b" x="552" y="194">Intuition</text>
+  <text class="gaptext" x="552" y="209">a policy net picks the</text>
+  <text class="gaptext" x="552" y="224">move: no search at all</text>
+  <rect class="cell" x="710" y="166" width="168" height="85" rx="6" />
+  <rect class="gap" x="716" y="178" width="156" height="59" rx="5" />
+  <text class="gaptext b" x="724" y="194">Rule list</text>
+  <text class="gaptext" x="724" y="209">the policy net's choices</text>
+  <text class="gaptext" x="724" y="224">as if/then rules</text>
+  <rect class="cell" x="882" y="166" width="168" height="85" rx="6" />
+  <text class="muted" x="966.0" y="212.5" text-anchor="middle">—</text>
+  <text class="h" x="36" y="280">One move ahead</text>
+  <text class="muted small" x="36" y="297">scores each move's result</text>
+  <rect class="cell" x="194" y="257" width="168" height="110" rx="6" />
+  <text class="muted" x="278.0" y="316.0" text-anchor="middle">—</text>
+  <rect class="cell" x="366" y="257" width="168" height="110" rx="6" />
+  <text x="376" y="280">Greedy</text>
+  <text class="mono" x="524" y="280" text-anchor="end">1324</text>
+  <text x="376" y="298">Turtle</text>
+  <text class="mono" x="524" y="298" text-anchor="end">1285</text>
+  <text x="376" y="316">Striker</text>
+  <text class="mono" x="524" y="316" text-anchor="end">1163</text>
+  <text x="376" y="334">Hoarder</text>
+  <text class="mono" x="524" y="334" text-anchor="end">909</text>
+  <text x="376" y="352">Generous</text>
+  <text class="mono" x="524" y="352" text-anchor="end">567</text>
+  <rect class="cell" x="538" y="257" width="168" height="110" rx="6" />
+  <rect class="gap" x="544" y="269" width="156" height="59" rx="5" />
+  <text class="gaptext b" x="552" y="285">Net greedy</text>
+  <text class="gaptext" x="552" y="300">one move, judged by</text>
+  <text class="gaptext" x="552" y="315">the value net</text>
+  <rect class="cell" x="710" y="257" width="168" height="110" rx="6" />
+  <rect class="gap" x="716" y="269" width="156" height="59" rx="5" />
+  <text class="gaptext b" x="724" y="285">Formula greedy</text>
+  <text class="gaptext" x="724" y="300">one move, judged by</text>
+  <text class="gaptext" x="724" y="315">the ranking formula</text>
+  <rect class="cell" x="882" y="257" width="168" height="110" rx="6" />
+  <text class="muted" x="966.0" y="316.0" text-anchor="middle">—</text>
+  <text class="h" x="36" y="396">Chains of free turns</text>
+  <text class="muted small" x="36" y="413">its chains, then yours</text>
+  <rect class="cell" x="194" y="373" width="168" height="85" rx="6" />
+  <text class="muted" x="278.0" y="419.5" text-anchor="middle">—</text>
+  <rect class="cell" x="366" y="373" width="168" height="85" rx="6" />
+  <text x="376" y="396">DFS v2</text>
+  <text class="mono" x="524" y="396" text-anchor="end">2041</text>
+  <text x="376" y="414">DFS</text>
+  <text class="mono" x="524" y="414" text-anchor="end">2007</text>
+  <text x="376" y="432">Chainer</text>
+  <text class="mono" x="524" y="432" text-anchor="end">1492</text>
+  <rect class="cell" x="538" y="373" width="168" height="85" rx="6" />
+  <text x="548" y="396">Learned DFS</text>
+  <text class="mono" x="696" y="396" text-anchor="end">2058</text>
+  <rect class="cell" x="710" y="373" width="168" height="85" rx="6" />
+  <rect class="gap free" x="716" y="385" width="156" height="59" rx="5" />
+  <text class="gaptext b" x="724" y="401">Decompiled DFS</text>
+  <text class="gaptext" x="724" y="416">its weights are written:</text>
+  <text class="gaptext" x="724" y="431">one registry entry</text>
+  <rect class="cell" x="882" y="373" width="168" height="85" rx="6" />
+  <text class="muted" x="966.0" y="419.5" text-anchor="middle">—</text>
+  <text class="h" x="36" y="487">Fixed-depth search</text>
+  <text class="muted small" x="36" y="504">every line, a set depth</text>
+  <rect class="cell" x="194" y="464" width="168" height="128" rx="6" />
+  <text class="muted" x="278.0" y="532.0" text-anchor="middle">—</text>
+  <rect class="cell" x="366" y="464" width="168" height="128" rx="6" />
+  <text x="376" y="487">Minimax</text>
+  <text class="mono" x="524" y="487" text-anchor="end">2068</text>
+  <text x="376" y="505">Shrewd</text>
+  <text class="mono" x="524" y="505" text-anchor="end">1925</text>
+  <text x="376" y="523">Lookahead</text>
+  <text class="mono" x="524" y="523" text-anchor="end">1742</text>
+  <text x="376" y="541">Planner</text>
+  <text class="mono" x="524" y="541" text-anchor="end">1670</text>
+  <text x="376" y="559">Spoiler</text>
+  <text class="mono" x="524" y="559" text-anchor="end">1468</text>
+  <text x="376" y="577">Grandmaster</text>
+  <text class="mono" x="524" y="577" text-anchor="end">dormant</text>
+  <rect class="cell" x="538" y="464" width="168" height="128" rx="6" />
+  <rect class="gap" x="544" y="476" width="156" height="59" rx="5" />
+  <text class="gaptext b" x="552" y="492">Net minimax</text>
+  <text class="gaptext" x="552" y="507">Minimax's search,</text>
+  <text class="gaptext" x="552" y="522">the net at the leaves</text>
+  <rect class="cell" x="710" y="464" width="168" height="128" rx="6" />
+  <rect class="gap" x="716" y="476" width="156" height="59" rx="5" />
+  <text class="gaptext b" x="724" y="492">Formula minimax</text>
+  <text class="gaptext" x="724" y="507">Minimax's search,</text>
+  <text class="gaptext" x="724" y="522">the formula at the leaves</text>
+  <rect class="cell" x="882" y="464" width="168" height="128" rx="6" />
+  <text class="muted" x="966.0" y="532.0" text-anchor="middle">—</text>
+  <text class="h" x="36" y="621">Search to lose</text>
+  <text class="muted small" x="36" y="638">aims for the worst result</text>
+  <rect class="cell" x="194" y="598" width="168" height="85" rx="6" />
+  <text class="muted" x="278.0" y="644.5" text-anchor="middle">—</text>
+  <rect class="cell" x="366" y="598" width="168" height="85" rx="6" />
+  <text x="376" y="621">Pushover</text>
+  <text class="mono" x="524" y="621" text-anchor="end">489</text>
+  <rect class="cell" x="538" y="598" width="168" height="85" rx="6" />
+  <text x="548" y="621">Learned pushover</text>
+  <text class="mono" x="696" y="621" text-anchor="end">456</text>
+  <rect class="cell" x="710" y="598" width="168" height="85" rx="6" />
+  <text x="720" y="621">Decompiled pushover</text>
+  <text class="mono" x="868" y="621" text-anchor="end">480</text>
+  <rect class="cell" x="882" y="598" width="168" height="85" rx="6" />
+  <rect class="gap" x="888" y="610" width="156" height="59" rx="5" />
+  <text class="gaptext b" x="896" y="626">Monte Carlo to lose</text>
+  <text class="gaptext" x="896" y="641">playouts counted</text>
+  <text class="gaptext" x="896" y="656">as losses won</text>
+  <text class="h" x="36" y="712">Sampling a game tree</text>
+  <text class="muted small" x="36" y="729">tries the promising lines more</text>
+  <rect class="cell" x="194" y="689" width="168" height="85" rx="6" />
+  <text class="muted" x="278.0" y="735.5" text-anchor="middle">—</text>
+  <rect class="cell" x="366" y="689" width="168" height="85" rx="6" />
+  <rect class="gap" x="372" y="701" width="156" height="59" rx="5" />
+  <text class="gaptext b" x="380" y="717">Smart playouts</text>
+  <text class="gaptext" x="380" y="732">MCTS with Greedy</text>
+  <text class="gaptext" x="380" y="747">playing the games out</text>
+  <rect class="cell" x="538" y="689" width="168" height="85" rx="6" />
+  <rect class="gap free" x="544" y="701" width="156" height="59" rx="5" />
+  <text class="gaptext b" x="552" y="717">Net-guided MCTS</text>
+  <text class="gaptext" x="552" y="732">AlphaZero-lite: the net</text>
+  <text class="gaptext" x="552" y="747">steers and scores the tree</text>
+  <rect class="cell" x="710" y="689" width="168" height="85" rx="6" />
+  <text class="muted" x="794.0" y="735.5" text-anchor="middle">—</text>
+  <rect class="cell" x="882" y="689" width="168" height="85" rx="6" />
+  <text x="892" y="712">Monte Carlo</text>
+  <text class="mono" x="1040" y="712" text-anchor="end">1857</text>
+  <text class="h" x="36" y="803">Mixes</text>
+  <text class="muted small" x="36" y="820">another bot, some of the time</text>
+  <rect class="cell" x="194" y="780" width="168" height="157" rx="6" />
+  <text class="muted" x="278.0" y="862.5" text-anchor="middle">—</text>
+  <rect class="cell" x="366" y="780" width="168" height="157" rx="6" />
+  <text x="376" y="803">Sometimes planner</text>
+  <text class="mono" x="524" y="803" text-anchor="end">1556</text>
+  <text x="376" y="821">Sometimes greedy</text>
+  <text class="mono" x="524" y="821" text-anchor="end">1185</text>
+  <text x="376" y="839">Fickle</text>
+  <text class="mono" x="524" y="839" text-anchor="end">804</text>
+  <text x="376" y="857">Sometimes generous</text>
+  <text class="mono" x="524" y="857" text-anchor="end">731</text>
+  <rect class="gap free" x="372" y="864" width="156" height="59" rx="5" />
+  <text class="gaptext b" x="380" y="880">Strength dial</text>
+  <text class="gaptext" x="380" y="895">softmax over Minimax: one</text>
+  <text class="gaptext" x="380" y="910">bot, any Elo you set</text>
+  <rect class="cell" x="538" y="780" width="168" height="157" rx="6" />
+  <text class="muted" x="622.0" y="862.5" text-anchor="middle">—</text>
+  <rect class="cell" x="710" y="780" width="168" height="157" rx="6" />
+  <text class="muted" x="794.0" y="862.5" text-anchor="middle">—</text>
+  <rect class="cell" x="882" y="780" width="168" height="157" rx="6" />
+  <text class="muted" x="966.0" y="862.5" text-anchor="middle">—</text>
+  <text class="label" x="24" y="961">BEYOND THE GRID: NEW AXES NOBODY HAS TRIED YET</text>
+  <rect class="card" x="24.0" y="973" width="248.0" height="112" rx="8" />
+  <text class="h" x="38.0" y="997">Learning without a teacher</text>
+  <text class="muted small" x="38.0" y="1019">Self-play / TD learning: the only</text>
+  <text class="muted small" x="38.0" y="1035">way past Minimax's own labels</text>
+  <text class="muted small" x="38.0" y="1051">Evolved weights for evaluate()</text>
+  <text class="muted small" x="38.0" y="1067">Plays like you: trained on your games</text>
+  <rect class="card" x="284.0" y="973" width="248.0" height="112" rx="8" />
+  <text class="h" x="298.0" y="997">Exact play</text>
+  <text class="muted small" x="298.0" y="1019">Endgame tablebase: solve every</text>
+  <text class="muted small" x="298.0" y="1035">position with few seeds left</text>
+  <text class="muted small" x="298.0" y="1051">Opening book (pit 1 wins by force)</text>
+  <text class="muted small" x="298.0" y="1067">Proof-number search</text>
+  <rect class="card" x="544.0" y="973" width="248.0" height="112" rx="8" />
+  <text class="h" x="558.0" y="997">Strength for people</text>
+  <text class="muted small" x="558.0" y="1019">Rubber band: keeps the game close</text>
+  <text class="muted small" x="558.0" y="1035">Sandbagger: weak until it's behind</text>
+  <text class="muted small" x="558.0" y="1051">Teacher: points out your mistakes</text>
+  <text class="muted small" x="558.0" y="1067">Fills the gaps at 567–731, 1324–1468</text>
+  <rect class="card" x="804.0" y="973" width="248.0" height="112" rx="8" />
+  <text class="h" x="818.0" y="997">Reading the opponent</text>
+  <text class="muted small" x="818.0" y="1019">Exploiter: works out which bot it</text>
+  <text class="muted small" x="818.0" y="1035">faces, and plays to its weaknesses</text>
+  <text class="muted small" x="818.0" y="1051">Mirror: copies your pit</text>
+  <text class="muted small" x="818.0" y="1067">Ensemble: a vote of several bots</text>
+  <rect class="card" x="24.0" y="1097" width="248.0" height="112" rx="8" />
+  <text class="h" x="38.0" y="1121">Style</text>
+  <text class="muted small" x="38.0" y="1143">Showoff: the longest chains</text>
+  <text class="muted small" x="38.0" y="1159">Capture hunter</text>
+  <text class="muted small" x="38.0" y="1175">Draw-seeker: the closest result</text>
+  <text class="muted small" x="38.0" y="1191">Longest or shortest game</text>
+  <rect class="card" x="284.0" y="1097" width="248.0" height="112" rx="8" />
+  <text class="h" x="298.0" y="1121">Rule variants</text>
+  <text class="muted small" x="298.0" y="1143">Every bot is tuned for 7 seeds</text>
+  <text class="muted small" x="298.0" y="1159">Bots for the house rules (3–15</text>
+  <text class="muted small" x="298.0" y="1175">seeds, captures either side)</text>
+  <text class="muted small" x="298.0" y="1191">And for the pie rule (#17)</text>
+  <rect class="card" x="544.0" y="1097" width="248.0" height="112" rx="8" />
+  <text class="h" x="558.0" y="1121">Novelty</text>
+  <text class="muted small" x="558.0" y="1143">An LLM bot: Claude plays</text>
+  <text class="muted small" x="558.0" y="1159">through the API</text>
+  <text class="muted small" x="558.0" y="1175">Slow and needs a key,</text>
+  <text class="muted small" x="558.0" y="1191">but a fun rung to rate</text>
+  <text class="h" x="808.0" y="1121">A ceiling to remember</text>
+  <text class="muted small" x="808.0" y="1143">From these openings the seat decides</text>
+  <text class="muted small" x="808.0" y="1159">the game: nothing beats Minimax, only</text>
+  <text class="muted small" x="808.0" y="1175">ties it. New bots win on speed, on</text>
+  <text class="muted small" x="808.0" y="1191">filling rungs, or on style.</text>
+</svg>

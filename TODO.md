@@ -265,9 +265,27 @@ Steps, cheapest first:
 - [ ] **Self-play under the pie rule (#17)**, once strong-against-strong games are contestable: the net plays itself and
       learns from the results, to go past its teacher.
 
-Skipped on purpose: bigger architectures (transformers, graph nets) and a policy-only bot with no search. The net runs
-at every leaf, so a bigger one costs its size in speed, and a tie is already the ceiling; a bot without search walks
-into the captures this game turns on.
+Skipped on purpose: bigger architectures (transformers, graph nets). The net runs at every leaf, so a bigger one costs
+its size in speed, and a tie is already the ceiling. A policy-only bot can't be strong (it walks into the captures this
+game turns on), but it is now a bot of its own, below.
+
+### Intuition and Rule list (dormant, waiting for a rating)
+
+Two gaps in [the bots by family](docs/images/bot-families.svg): **Intuition**, a policy net that names a pit with no
+search (how much of Minimax is pattern), and **Rule list**, that net decompiled into if/then rules a person could
+follow. Both are written, tested and registered in DORMANT.
+
+- [x] **Label positions:** Minimax's move (depth 5) in 100,000 positions, `tools/learn/policy-data.ts`: 4 minutes on 4
+      low-priority workers, under 400 MB. (Scoring every move exactly took 50 times longer and swamped the machine.)
+- [x] **Train:** `tools/learn/train-policy.ts`, 16-64-64-7. It plays Minimax's move 42% of the time on positions it
+      never saw; a random legal move does 22%.
+- [x] **Mine the rules:** `tools/learn/rules.ts`. Eight rules, led by "if a move leaves them nothing to bank, play the
+      one furthest from your store". They copy the net only 36% of the time but play Minimax's move 54%: knowing what a
+      move does and the best answer to it beats reading the board.
+- [x] **Placement:** 120 games against neighbours put Intuition near 1200 (between Striker and Greedy) and Rule list
+      near 1680 (between Planner and Lookahead).
+- [ ] **Rate both** in a full rating, move them from DORMANT into BOTS at their places, and update the README, ladder,
+      CHANGELOG and the family diagram.
 
 ## Interface
 
