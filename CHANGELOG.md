@@ -3,6 +3,20 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `package.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
+## Unreleased
+
+- **The game solved on small boards** (`tools/solve/`): exact best play for 1–10 pits a side and 1–10 seeds a pit, with
+  the game's own rules. 75 of the 100 boards are solved exactly and 89 have the winner proved. **The standard game is a
+  first-player win, 96–2**, two seeds more than Minimax against itself. The second player wins by force on only a few
+  boards: 1×4, 3×5 and 3×6, 4×7 to 4×9, 5×9 and 5×10, and 6×10. 1×1 and 3×7 are draws.
+  [docs/images/solved-boards.svg](docs/images/solved-boards.svg) maps it, and
+  [docs/images/solver.svg](docs/images/solver.svg) shows how the solver works. It uses MTD(f) over alpha-beta, bounds
+  from the stores, and a fixed 8-byte-an-entry memo that replaces its cheapest entries and is shared by several workers.
+  It is tested against the engine and plain minimax.
+- **Two dormant bots, waiting for a rating:** Intuition, a policy network that names a pit with no search (about 1200),
+  and Rule list, that network decompiled into eight if/then rules (about 1680, between Planner and Lookahead).
+  [The bots by family](docs/images/bot-families.svg) shows where they fit, and the gaps left.
+
 ## v2.6.0 · 2026-10-20
 
 - **Two bots below Pushover: Doomed (Learned pushover) and Helpless (Decompiled pushover).** Both use Pushover's own

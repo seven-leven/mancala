@@ -1,0 +1,216 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 760 1178"
+  width="760"
+  height="1178"
+  role="img"
+  aria-labelledby="t d"
+>
+  <title id="t">The solver: any board, played perfectly</title>
+  <desc id="d">How the small-board solver works. 1: the board for any n, pits 0 to n−1 and store 2n for the first player, pits n to 2n−1 and store 2n+1 for the second, seeds travelling counter-clockwise past the opponent's store. 2: MTD(f) asks zero-window yes/no questions, first whether the first player wins, narrowing bounds on the margin until they meet or the budget runs out. 3: each search node looks the position up in the memo, returns if settled, orders moves (game-ending, free turns, the remembered best, most banked), recurses, and remembers the new bound. 4: the memo stores a check word and a packed value, 8 bytes a position, in a fixed table that replaces its cheapest entries. 5: the grid of 100 boards runs one board at a time on four low-priority workers sharing the memo, saved to data/solve/grid.json and drawn as a heat map.</desc>
+  <style>svg { --ink: #161514; --muted: #6b6760; --rule: #dfdad0; --strong: #cbc4b6; --accent: #a8483f; --bg: #f6f4ef; --surface: #fffdf9; --tint: #f3e6e1; }
+  @media (prefers-color-scheme: dark) {
+    svg { --ink: #f6f4ef; --muted: rgba(246,244,239,0.62); --rule: rgba(246,244,239,0.14); --strong: rgba(246,244,239,0.3); --accent: #e39a86; --bg: #161514; --surface: #1f1d1b; --tint: rgba(227,154,134,0.12); }
+  }
+  text { font: 12px Inter, system-ui, sans-serif; fill: var(--ink); }
+  .title { font: 400 26px "Instrument Serif", Georgia, serif; }
+  .label { font-size: 10.5px; font-weight: 600; letter-spacing: 1.4px; fill: var(--muted); }
+  .h { font-size: 13px; font-weight: 600; }
+  .muted { fill: var(--muted); }
+  .small { font-size: 11px; }
+  .mono { font: 11px "IBM Plex Mono", ui-monospace, Consolas, monospace; fill: var(--muted); }
+  .monoink { font: 11px "IBM Plex Mono", ui-monospace, Consolas, monospace; }
+  .accent { fill: var(--accent); }
+  .page { fill: var(--bg); }
+  .box { fill: var(--surface); stroke: var(--strong); stroke-width: 1; }
+  .box.key { stroke: var(--accent); stroke-width: 1.5; }
+  .tint { fill: var(--tint); }
+  .pit { fill: var(--surface); stroke: var(--muted); stroke-width: 1.2; }
+  .store { fill: var(--surface); stroke: var(--muted); stroke-width: 1.2; }
+  .arrow { stroke: var(--muted); stroke-width: 1.5; fill: none; marker-end: url(#a); }
+  .arrow.key { stroke: var(--accent); marker-end: url(#ak); }
+  .path { stroke: var(--accent); stroke-width: 1.5; fill: none; stroke-dasharray: 5 4; marker-end: url(#ak); }
+  .tip { fill: var(--muted); }
+  .tip.key { fill: var(--accent); }
+  .cell { fill: var(--surface); stroke: var(--strong); }</style>
+  <rect class="page" width="760" height="1178" />
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="tip" d="M 0 0 L 10 5 L 0 10 z" />
+    </marker>
+    <marker id="ak" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="tip key" d="M 0 0 L 10 5 L 0 10 z" />
+    </marker>
+  </defs>
+  <text class="title" x="24" y="50">The solver: any board, played perfectly</text>
+  <text
+    class="muted small"
+    x="24"
+    y="74"
+  >tools/solve/: n pits a side, s seeds in each, the game's own rules. The answer: the first player's final margin with best play by both.</text>
+  <text class="label" x="24" y="104">1  THE BOARD, FOR ANY n (HERE n = 5)</text>
+  <rect class="tint" x="24" y="116" width="712" height="150" rx="8" />
+  <rect class="pit" x="110" y="200" width="46" height="40" rx="10" />
+  <text class="monoink" x="133.0" y="225" text-anchor="middle">0</text>
+  <rect class="pit" x="110" y="140" width="46" height="40" rx="10" />
+  <text class="monoink" x="133.0" y="165" text-anchor="middle">5</text>
+  <rect class="pit" x="166" y="200" width="46" height="40" rx="10" />
+  <text class="monoink" x="189.0" y="225" text-anchor="middle">1</text>
+  <rect class="pit" x="166" y="140" width="46" height="40" rx="10" />
+  <text class="monoink" x="189.0" y="165" text-anchor="middle">6</text>
+  <rect class="pit" x="222" y="200" width="46" height="40" rx="10" />
+  <text class="monoink" x="245.0" y="225" text-anchor="middle">2</text>
+  <rect class="pit" x="222" y="140" width="46" height="40" rx="10" />
+  <text class="monoink" x="245.0" y="165" text-anchor="middle">7</text>
+  <rect class="pit" x="278" y="200" width="46" height="40" rx="10" />
+  <text class="monoink" x="301.0" y="225" text-anchor="middle">3</text>
+  <rect class="pit" x="278" y="140" width="46" height="40" rx="10" />
+  <text class="monoink" x="301.0" y="165" text-anchor="middle">8</text>
+  <rect class="pit" x="334" y="200" width="46" height="40" rx="10" />
+  <text class="monoink" x="357.0" y="225" text-anchor="middle">4</text>
+  <rect class="pit" x="334" y="140" width="46" height="40" rx="10" />
+  <text class="monoink" x="357.0" y="165" text-anchor="middle">9</text>
+  <rect class="store" x="48" y="140" width="56" height="100" rx="14" />
+  <text class="monoink" x="76" y="195" text-anchor="middle">11</text>
+  <rect class="store" x="396" y="140" width="56" height="100" rx="14" />
+  <text class="monoink" x="424" y="195" text-anchor="middle">10</text>
+  <path class="path" d="M 120 248 L 376 248 Q 424 248 424 240" />
+  <path class="path" d="M 424 134 Q 424 128 376 128 L 120 128" />
+  <text class="small" x="486" y="144">Pits 0..n−1: the first player's. Their store: 2n.</text>
+  <text class="small" x="486" y="160">Pits n..2n−1: the second's. Their store: 2n+1.</text>
+  <text class="muted small" x="486" y="180">Seeds travel 0 → n−1, store, 2n−1 → n,</text>
+  <text class="muted small" x="486" y="196">skipping the opponent's store. Pit i faces i+n.</text>
+  <text class="muted small" x="486" y="216">play(): relay sowing, free turns, captures,</text>
+  <text class="muted small" x="486" y="232">the early finish at a majority. At n = 7 it is</text>
+  <text class="muted small" x="486" y="248">the game's engine, seed for seed (tested).</text>
+  <text class="label" x="24" y="300">2  ONE BOARD: MTD(f), A FEW ZERO-WINDOW SEARCHES</text>
+  <rect class="box" x="24" y="314" width="200" height="92" rx="8" />
+  <text class="h" x="36" y="336">Start</text>
+  <text class="muted small" x="36" y="355">newBoard(n, s): s seeds in</text>
+  <text class="muted small" x="36" y="370">each pit, stores empty, the</text>
+  <text class="muted small" x="36" y="385">first player to move.</text>
+  <rect class="box key" x="268" y="314" width="224" height="92" rx="8" />
+  <text class="h" x="280" y="336">Ask one yes/no question</text>
+  <text class="mono" x="280" y="355">g = 1 first: does the first</text>
+  <text class="muted small" x="280" y="370">player win at all? Then the</text>
+  <text class="muted small" x="280" y="385">next guess between lo and hi.</text>
+  <rect class="box" x="536" y="314" width="200" height="92" rx="8" />
+  <text class="h" x="548" y="336">Narrow the bounds</text>
+  <text class="mono" x="548" y="355">lo ≤ margin ≤ hi, starting</text>
+  <text class="muted small" x="548" y="370">at ±all the seeds; each</text>
+  <text class="muted small" x="548" y="385">answer moves one of them.</text>
+  <path class="arrow" d="M 224 360 L 266 360" />
+  <path class="arrow key" d="M 492 346 L 534 346" />
+  <path class="arrow" d="M 536 380 L 494 380" />
+  <text class="muted small" x="514" y="432" text-anchor="middle">repeat until lo = hi</text>
+  <rect class="box" x="24" y="452" width="344" height="76" rx="8" />
+  <text class="h" x="36" y="474">Out of budget</text>
+  <text class="muted small" x="36" y="493">Stops after its budget of positions (200M a board) and</text>
+  <text class="muted small" x="36" y="508">keeps what's proved: lo &gt; 0 still means a forced win.</text>
+  <rect class="box" x="392" y="452" width="344" height="76" rx="8" />
+  <text class="h" x="404" y="474">Solved (lo = hi)</text>
+  <text class="muted small" x="404" y="493">The exact margin, and the opening that keeps it: each</text>
+  <text class="muted small" x="404" y="508">first move asked "does this one reach lo?"</text>
+  <path class="arrow" d="M 330 406 L 220 450" />
+  <path class="arrow" d="M 636 406 L 600 450" />
+  <text class="label" x="24" y="562">3  INSIDE THE SEARCH: FAIL-SOFT ALPHA-BETA, EVERY POSITION REMEMBERED</text>
+  <rect class="box" x="24" y="576" width="132" height="112" rx="8" />
+  <text class="h" x="36" y="598">Look it up</text>
+  <text class="muted small" x="36" y="617">The position's key:</text>
+  <text class="muted small" x="36" y="632">its bounds and its</text>
+  <text class="muted small" x="36" y="647">best move last time.</text>
+  <path class="arrow" d="M 156 632 L 167 632" />
+  <rect class="box" x="169" y="576" width="132" height="112" rx="8" />
+  <text class="h" x="181" y="598">Settled?</text>
+  <text class="muted small" x="181" y="617">The memo's bounds,</text>
+  <text class="muted small" x="181" y="632">and the stores'; or a</text>
+  <text class="muted small" x="181" y="647">child's bounds already</text>
+  <text class="muted small" x="181" y="662">beat beta: return.</text>
+  <path class="arrow" d="M 301 632 L 312 632" />
+  <rect class="box key" x="314" y="576" width="132" height="112" rx="8" />
+  <text class="h" x="326" y="598">Order moves</text>
+  <text class="muted small" x="326" y="617">Game-enders, free</text>
+  <text class="muted small" x="326" y="632">turns (a chain that</text>
+  <text class="muted small" x="326" y="647">clinches is a proof),</text>
+  <text class="muted small" x="326" y="662">memo's best, banked.</text>
+  <path class="arrow" d="M 446 632 L 457 632" />
+  <rect class="box" x="459" y="576" width="132" height="112" rx="8" />
+  <text class="h" x="471" y="598">Recurse</text>
+  <text class="muted small" x="471" y="617">Same side after a</text>
+  <text class="muted small" x="471" y="632">free turn, else the</text>
+  <text class="muted small" x="471" y="647">opponent's, negated.</text>
+  <text class="muted small" x="471" y="662">Stop at beta.</text>
+  <path class="arrow" d="M 591 632 L 602 632" />
+  <rect class="box" x="604" y="576" width="132" height="112" rx="8" />
+  <text class="h" x="616" y="598">Remember</text>
+  <text class="muted small" x="616" y="617">The new bound</text>
+  <text class="muted small" x="616" y="632">(upper if it failed</text>
+  <text class="muted small" x="616" y="647">low, lower if high)</text>
+  <text class="muted small" x="616" y="662">and the best move.</text>
+  <text
+    class="muted small"
+    x="24"
+    y="712"
+  >Stores never lose seeds, so the mover's margin is at least 2·(their store) − all, at most all − 2·(the opponent's): ten times fewer positions.</text>
+  <text
+    class="muted small"
+    x="24"
+    y="744"
+  >Why remembering everything is safe: seeds only move towards their side's store or into a store, so no position comes round twice;</text>
+  <text class="muted small" x="24" y="760">a position's value doesn't depend on how it was reached.</text>
+  <text class="label" x="24" y="794">4  THE MEMO: 8 BYTES A POSITION, A FIXED SIZE, SHARED BY THE WORKERS</text>
+  <rect class="cell" x="24" y="808" width="356" height="58" rx="6" />
+  <text class="h" x="36" y="830">check · 4 bytes</text>
+  <text class="muted small" x="36" y="850">the key's high half XOR the value: a torn write fails it</text>
+  <rect class="cell" x="380" y="808" width="356" height="58" rx="6" />
+  <text class="h" x="392" y="830">value · 4 bytes</text>
+  <text class="muted small" x="392" y="850">lo, hi, best move and work, packed in 32 bits</text>
+  <text
+    class="muted small"
+    x="24"
+    y="888"
+  >Buckets of two, picked by the key's low half (64-bit Zobrist keys, updated seed by seed as moves are played). When</text>
+  <text
+    class="muted small"
+    x="24"
+    y="904"
+  >both are full, a new entry replaces the one whose search did less work, so memory never grows (2^25 entries: 256 MB).</text>
+  <text
+    class="muted small"
+    x="24"
+    y="920"
+  >A board left unsolved can save its memo to disk, and the next run carries on from it.</text>
+  <text class="label" x="24" y="954">5  THE GRID: 100 BOARDS, LIGHT ON THE MACHINE</text>
+  <rect class="box" x="24" y="968" width="160" height="92" rx="8" />
+  <text class="h" x="36" y="990">Queue</text>
+  <text class="muted small" x="36" y="1009">1–10 pits × 1–10</text>
+  <text class="muted small" x="36" y="1024">seeds, smallest</text>
+  <text class="muted small" x="36" y="1039">boards first.</text>
+  <rect class="box key" x="214" y="968" width="170" height="92" rx="8" />
+  <text class="h" x="226" y="990">Workers</text>
+  <text class="muted small" x="226" y="1009">4 at low priority, all</text>
+  <text class="muted small" x="226" y="1024">on one board (lazy</text>
+  <text class="muted small" x="226" y="1039">SMP), one memo.</text>
+  <rect class="box" x="414" y="968" width="150" height="92" rx="8" />
+  <text class="h" x="426" y="990">data/solve/grid.json</text>
+  <text class="muted small" x="426" y="1009">Saved as each board</text>
+  <text class="muted small" x="426" y="1024">finishes; a rerun skips</text>
+  <text class="muted small" x="426" y="1039">boards already done.</text>
+  <rect class="box" x="594" y="968" width="142" height="92" rx="8" />
+  <text class="h" x="606" y="990">The heat map</text>
+  <text class="muted small" x="606" y="1009">docs/images/</text>
+  <text class="muted small" x="606" y="1024">solved-boards.svg</text>
+  <path class="arrow" d="M 184 1014 L 212 1014" />
+  <path class="arrow key" d="M 384 1014 L 412 1014" />
+  <path class="arrow" d="M 564 1014 L 592 1014" />
+  <text
+    class="mono"
+    x="24"
+    y="1086"
+  >node tools/solve/grid.ts [--budget] [--workers] [--bits] [--boards 10x2] [--save]   ·   tests/solver_test.ts: the engine</text>
+  <text
+    class="mono"
+    x="24"
+    y="1102"
+  >seed for seed at 7 pits; plain minimax on small boards; a memo of 64 entries still exact; workers agree with one core.</text>
+</svg>
