@@ -124,6 +124,22 @@ test("minimax stops on time", () => {
   assert(validMoves(newGame(DEFAULT_RULES, P2)).includes(r.move!));
 });
 
+test("quiescence looks past the depth limit at free turns and captures, and changes nothing when off", () => {
+  //                  0  1  2  3  4  5  6  7  8  9 10 11 12 13  M1  M2
+  const s = position([4, 1, 2, 6, 5, 1, 2, 0, 4, 2, 12, 5, 0, 0, 16, 38]);
+  // One move deep, it plays pit 1; following the noisy moves past that, it finds pit 2, as six deep does.
+  assertEquals(search(s, { depth: 1 }).move, 1);
+  assertEquals(search(s, { depth: 1, quiescence: 4 }).move, 2);
+  assertEquals(search(s, { depth: 6 }).move, 2);
+  assertEquals(search(s, { depth: 3, quiescence: 0 }), search(s, { depth: 3 }));
+  // Playing to lose, both sides want the same thing: quiescence still returns a legal move.
+  assert(validMoves(s).includes(search(s, { depth: 2, quiescence: 4, aim: "lose" }).move!));
+  // And it stops on time in the middle of it.
+  const started = performance.now();
+  const r = search(newGame(DEFAULT_RULES, P2), { timeMs: 30, quiescence: 12 });
+  assert(performance.now() - started < 1500 && validMoves(newGame(DEFAULT_RULES, P2)).includes(r.move!));
+});
+
 test("first plays the leftmost pit from its own side", () => {
   //                  0  1  2  3  4  5  6  7  8  9 10 11 12 13 M1 M2
   const s = position([0, 0, 4, 1, 0, 0, 0, 2, 0, 3, 0, 0, 5, 0, 0, 0]);

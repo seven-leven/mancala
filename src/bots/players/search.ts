@@ -18,8 +18,8 @@ function describe(r: SearchResult): string | null {
 /** Alpha-beta search that plans for the opponent's replies too. See search/minimax.ts. */
 export class MinimaxBot implements Bot {
   private last: SearchResult | null = null;
-  private opts: { timeMs?: number; depth?: number };
-  constructor(opts: { timeMs?: number; depth?: number } = { timeMs: 700 }) {
+  private opts: { timeMs?: number; depth?: number; quiescence?: number };
+  constructor(opts: { timeMs?: number; depth?: number; quiescence?: number } = { timeMs: 700 }) {
     this.opts = opts;
   }
   choose(state: GameState): number | null {

@@ -99,8 +99,12 @@ every won position. So #15 and #16 can't show a gain at the top by rating, and t
 until the rules make the start contestable: the **pie rule (#17) comes first**, then measure the rest under it. DFS v2
 (dormant, +42 over DFS) shows a better bot still can win where games aren't decided yet.
 
-- [ ] [#13](https://github.com/seven-leven/mancala/issues/13) Capture extension: like the free-turn extension (12 in a
-      row today), keep searching past the depth limit after a capture, so the search doesn't stop just before the reply.
+- [x] [#13](https://github.com/seven-leven/mancala/issues/13) Capture extension: tried as quiescence search (the
+      `quiescence` option in search/minimax.ts, off by default). Measured against perfect play on positions the solver
+      can check (`node tools/solve/accuracy.ts`): on the standard board it adds almost nothing past depth 1, since the
+      free-turn extension already follows the noise that matters, and costs 66–130 ms a move in the early game.
+      Following captures alone is slightly worse than nothing. It helps clearly with 4 seeds a pit (depth 3: 88% → 93%
+      perfect moves). Depth 3 with it tied Minimax in a placement rating, at ten times the time, so no bot was kept.
 - [ ] [#15](https://github.com/seven-leven/mancala/issues/15) Tune the evaluation weights from self-play (Texel's
       method: fit the weights so the evaluation predicts game results). Keep a weight set only if it wins a matched-pair
       match against the old one.

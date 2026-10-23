@@ -4,7 +4,7 @@
  * thousands of moves doesn't. Here a move is played onto a board that's reused: copied into from
  * the position, then played in place. A bot keeps one board per depth it looks to.
  */
-import { turn } from "../../game/engine.ts";
+import { turn, type TurnInfo } from "../../game/engine.ts";
 import type { GameState } from "../../game/types.ts";
 
 /** A board to play moves on, shaped like `like` (its rules and whose turn it is). */
@@ -18,14 +18,15 @@ export const newBoard = (like: GameState): GameState => ({
 /**
  * Copies `from` onto `board` and plays `pit` there. Returns the engine's flags (FREE_TURN,
  * GAME_OVER), or INVALID. `board` then holds the position after the move, until it's reused. The
- * board must be one made for `from`'s rules (Boards sees to that).
+ * board must be one made for `from`'s rules (Boards sees to that). `info`, if given, gets what the
+ * move captured.
  */
-export function playOn(board: GameState, from: GameState, pit: number): number {
+export function playOn(board: GameState, from: GameState, pit: number, info: TurnInfo | null = null): number {
   const p = board.pits, q = from.pits;
   for (let i = 0; i < 16; i++) p[i] = q[i];
   board.current = from.current;
   board.gameOver = from.gameOver;
-  return turn(board, pit);
+  return turn(board, pit, null, info);
 }
 
 /** One board per depth, made the first time it's needed and reused after (new ones if the rules change). */

@@ -13,6 +13,9 @@ release has a section here; work since the last one sits under _Unreleased_.
   [docs/images/solver.svg](docs/images/solver.svg) shows how the solver works. It uses MTD(f) over alpha-beta, bounds
   from the stores, and a fixed 8-byte-an-entry memo that replaces its cheapest entries and is shared by several workers.
   It is tested against the engine and plain minimax.
+- **Bots measured against perfect play** (`tools/solve/accuracy.ts`): how often each bot's move keeps a solved
+  position's value. Quiescence search, tried for #13, is there as a search option (off): on the standard board it adds
+  almost nothing past depth 1, so no bot was kept.
 - **Two dormant bots, waiting for a rating:** Intuition, a policy network that names a pit with no search (about 1200),
   and Rule list, that network decompiled into eight if/then rules (about 1680, between Planner and Lookahead).
   [The bots by family](docs/images/bot-families.svg) shows where they fit, and the gaps left.

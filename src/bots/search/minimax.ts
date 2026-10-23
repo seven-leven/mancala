@@ -35,6 +35,13 @@ export interface SearchOptions {
   aim?: "win" | "lose";
   /** How a position is scored for the side searching (default `evaluate`); it must score a finished game as `evaluate` does. */
   score?: (s: GameState, me: Player) => number;
+  /**
+   * Quiescence: at the depth limit, keep searching the noisy moves (captures, free turns, moves
+   * that end the game) up to this many plies further, so the search doesn't stop just before a
+   * capture. The side to move may also stand pat: keep the position's score instead. 0 (the
+   * default) scores the position at the limit as it stands.
+   */
+  quiescence?: number;
 }
 
 export interface SearchResult {
@@ -159,6 +166,8 @@ interface Level {
   boards: GameState[];
   moves: Int8Array;
   free: Uint8Array;
+  /** The move captured seeds, a free turn, or the game's end: what quiescence follows. */
+  noisy: Uint8Array;
   score: Float64Array;
   order: Int8Array;
 }
@@ -169,14 +178,22 @@ const newLevel = (like: GameState): Level => ({
   ),
   moves: new Int8Array(7),
   free: new Uint8Array(7),
+  noisy: new Uint8Array(7),
   score: new Float64Array(7),
   order: new Int8Array(7),
 });
 
 export function search(
   root: GameState,
-  { timeMs = 700, depth, scoreAll = false, extensions = FREE_TURN_EXTENSIONS, aim = "win", score = evaluate }:
-    SearchOptions = {},
+  {
+    timeMs = 700,
+    depth,
+    scoreAll = false,
+    extensions = FREE_TURN_EXTENSIONS,
+    aim = "win",
+    score = evaluate,
+    quiescence = 0,
+  }: SearchOptions = {},
 ): SearchResult {
   const me = root.current;
   const sign = aim === "lose" ? -1 : 1;
@@ -202,6 +219,7 @@ export function search(
   // (Killer moves, tried the same way, searched more nodes, not fewer: free turns and store gain
   // already order this game's moves well.)
   const history = new Float64Array(16);
+  const info = { captured: 0, relays: 0 };
 
   /**
    * The children of `s`, into `level(ply)`, best-looking first, which makes alpha-beta prune far
@@ -216,10 +234,11 @@ export function search(
     for (const move of pitsOf(s.current)) {
       if (s.gameOver || s.pits[move] === 0) continue;
       const board = at.boards[n];
-      const flags = playOn(board, s, move);
+      const flags = playOn(board, s, move, info);
       const free = flags !== INVALID && (flags & FREE_TURN) !== 0;
       at.moves[n] = move;
       at.free[n] = free ? 1 : 0;
+      at.noisy[n] = free || info.captured > 0 || board.gameOver ? 1 : 0;
       // Only legal moves get here (the check above), so none needs scoring down.
       at.score[n] = (move === hashMove ? 1e6 : 0) + (free ? 1000 : 0) + board.pits[store] +
         history[move] / (history[move] + 1e4);
@@ -239,7 +258,8 @@ export function search(
   // chains of free turns, which decide this game, up to FREE_TURN_EXTENSIONS extra plies.
   const alphabeta = (s: GameState, d: number, ext: number, alpha: number, beta: number, ply: number): number => {
     if (++nodes % 2048 === 0 && performance.now() > deadline) throw new OutOfTime();
-    if (d === 0 || s.gameOver) return value(s);
+    if (s.gameOver) return value(s);
+    if (d === 0) return quiescence ? quiet(s, quiescence, alpha, beta, ply) : value(s);
 
     hash(s);
     const lo = keyLo, hi = keyHi;
@@ -278,6 +298,32 @@ export function search(
     // Values are always from `me`'s side, so the bounds read the same at every node.
     const flag = best <= alpha0 ? UPPER : best >= beta0 ? LOWER : EXACT;
     remember(lo, hi, d, best, flag, bestMove);
+    return best;
+  };
+
+  /**
+   * Quiescence at the depth limit: the side to move takes the position's score (stands pat) or a
+   * noisy move, whichever is better for them, for up to `q` more plies. Not remembered in the table.
+   */
+  const quiet = (s: GameState, q: number, alpha: number, beta: number, ply: number): number => {
+    if (++nodes % 2048 === 0 && performance.now() > deadline) throw new OutOfTime();
+    let best = value(s);
+    if (s.gameOver || q === 0) return best;
+    const maximising = aim === "lose" || s.current === me;
+    if (maximising ? best >= beta : best <= alpha) return best;
+    if (maximising) alpha = Math.max(alpha, best);
+    else beta = Math.min(beta, best);
+    const at = level(ply);
+    const count = children(s, ply);
+    for (let c = 0; c < count; c++) {
+      const k = at.order[c];
+      if (!at.noisy[k]) continue;
+      const v = quiet(at.boards[k], q - 1, alpha, beta, ply + 1);
+      if (maximising ? v > best : v < best) best = v;
+      if (maximising) alpha = Math.max(alpha, v);
+      else beta = Math.min(beta, v);
+      if (alpha >= beta) break;
+    }
     return best;
   };
 
