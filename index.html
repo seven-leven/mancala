@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mancala · ohvalhugondi</title>
+    <meta
+      name="description"
+      content="Ohvalhugondi, the Maldivian mancala: seven pits, seven seeds, relay sowing. Play a friend or one of eighteen bots, from Pushover to an alpha-beta Minimax."
+    >
+    <meta property="og:title" content="Mancala · ohvalhugondi">
+    <meta
+      property="og:description"
+      content="The Maldivian mancala in the browser: play a friend or one of eighteen bots."
+    >
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://seven-leven.github.io/mancala/">
+    <meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#161514" media="(prefers-color-scheme: dark)">
+    <link rel="icon" href="svg/favicon.svg?v=ac8466ef" type="image/svg+xml">
+    <link rel="icon" href="png/favicon-32.png?v=ac8466ef" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="png/apple-touch-icon.png?v=ac8466ef">
+    <script>
+    // Apply a saved theme before the first paint
+    try {
+      const t = JSON.parse(localStorage.getItem("mancala.settings.v2") || "{}").theme;
+      if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+    } catch { /* storage unavailable */ }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    >
+    <link rel="stylesheet" href="style.css?v=ac8466ef">
+  </head>
+  <body>
+    <main class="app">
+      <header class="masthead">
+        <div>
+          <p class="label eyebrow">Ohvalhugondi · the Maldivian mancala</p>
+          <h1 class="serif">Mancala</h1>
+        </div>
+        <div class="controls">
+          <!-- Three groups: start a game, help during it, and the site (DESIGN.md, Layout) -->
+          <div class="controls__group" role="group" aria-label="Game">
+            <button class="btn btn--primary" id="newGame" type="button" aria-keyshortcuts="N">New game</button>
+            <div id="opponent"></div>
+          </div>
+          <div class="controls__group" role="group" aria-label="This game">
+            <button
+              class="btn btn--ghost btn--icon"
+              id="undo"
+              type="button"
+              aria-label="Undo"
+              aria-keyshortcuts="U"
+              title="Undo (U)"
+            >
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v=ac8466ef#undo" />
+              </svg>
+            </button>
+            <button
+              class="btn btn--ghost btn--icon"
+              id="hint"
+              type="button"
+              aria-label="Hint"
+              aria-keyshortcuts="H"
+              title="Hint (H)"
+            >
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v=ac8466ef#tip" />
+              </svg>
+            </button>
+            <button
+              class="btn btn--ghost btn--icon"
+              id="skip"
+              type="button"
+              aria-label="Skip the animation"
+              aria-keyshortcuts="S"
+              title="Skip the animation (S)"
+            >
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v=ac8466ef#skip" />
+              </svg>
+            </button>
+            <button
+              class="btn btn--ghost btn--icon"
+              id="replay"
+              type="button"
+              aria-label="Replay the game"
+              title="Replay the game"
+              hidden
+            >
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v=ac8466ef#replay" />
+              </svg>
+            </button>
+          </div>
+          <div class="controls__group" role="group" aria-label="Site">
+            <button
+              class="btn btn--ghost btn--icon"
+              id="toggleSound"
+              type="button"
+              aria-label="Sound"
+              aria-pressed="false"
+              title="Sound: off"
+            >
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v=ac8466ef#sound-off" />
+              </svg>
+            </button>
+            <button
+              class="btn btn--ghost btn--icon"
+              id="openStats"
+              type="button"
+              aria-label="Your games and rating"
+              title="Your games and rating"
+            >
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v=ac8466ef#stats" />
+              </svg>
+            </button>
+            <button
+              class="btn btn--ghost btn--icon"
+              id="openSettings"
+              type="button"
+              aria-label="Settings"
+              title="Settings"
+            >
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v=ac8466ef#settings" />
+              </svg>
+            </button>
+            <button
+              class="btn btn--ghost btn--icon"
+              id="openRules"
+              type="button"
+              aria-label="How to play"
+              aria-keyshortcuts="?"
+              title="How to play (?)"
+            >
+              <svg class="icon" aria-hidden="true">
+                <use href="svg/icons.svg?v=ac8466ef#help" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <p class="turn" id="turn" aria-live="polite">
+        <span class="turn__dot"></span><span class="turn__text" id="turnText">Setting up</span><span
+          class="turn__note"
+          id="turnNote"
+        ></span>
+      </p>
+
+      <div class="board" id="board" role="group" aria-label="The board"></div>
+
+      <div class="status">
+        <p class="score" data-player="1">
+          <span class="score__num" id="score1">0</span><span class="score__who label" id="name1">Player 1</span>
+        </p>
+        <p class="hand">In hand <b id="hand">0</b></p>
+        <p class="score" data-player="2">
+          <span class="score__who label" id="name2">Player 2</span><span class="score__num" id="score2">0</span>
+        </p>
+      </div>
+      <p class="toast" id="toast" role="status" aria-live="polite"></p>
+
+      <details class="log">
+        <summary class="label">Moves <span id="moveCount"></span></summary>
+        <ol id="log" reversed></ol>
+      </details>
+
+      <footer class="footer">
+        <span id="rulesSummary"></span>
+        <span>Keys <kbd>1</kbd>–<kbd>7</kbd> <kbd>N</kbd> <kbd>U</kbd> <kbd>H</kbd> <kbd>?</kbd></span>
+        <span class="footer__end">
+          <a class="link-arrow" href="https://github.com/seven-leven/mancala">Source on GitHub <svg
+              class="icon"
+              aria-hidden="true"
+            >
+              <use href="svg/icons.svg?v=ac8466ef#arrow-right" />
+            </svg></a>
+          <!-- The build writes the version from package.json here -->
+          <a
+            class="footer__version"
+            href="https://github.com/seven-leven/mancala/blob/main/CHANGELOG.md"
+            title="What changed in each version"
+          >v2.7.0</a>
+        </span>
+      </footer>
+    </main>
+
+    <dialog id="rules" class="intro" aria-labelledby="rulesTitle">
+      <form method="dialog" class="intro__close">
+        <button class="icon-btn" aria-label="Close">
+          <svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v=ac8466ef#close" /></svg>
+        </button>
+      </form>
+      <p class="label eyebrow">How to play</p>
+      <h2 id="rulesTitle">Think ahead.<br><span class="intro__accent">Bank more.</span></h2>
+      <p class="intro__lead">
+        Move seeds around the board, chain extra turns, and capture your opponent's seeds. Finish with the fullest
+        store.
+      </p>
+
+      <div class="intro__players">
+        <p><span class="dot" data-player="1"></span><strong>Player 1</strong><span>Bottom row · right store</span></p>
+        <p><span class="dot" data-player="2"></span><strong>Player 2</strong><span>Top row · left store</span></p>
+      </div>
+
+      <h3>Your turn, in 3 steps</h3>
+      <ol class="intro__steps">
+        <li><strong>Pick a pit</strong><span>Choose any pit on your side and pick up all its seeds.</span></li>
+        <li>
+          <strong>Sow counter-clockwise</strong><span>Drop one seed into each pit after it, and into your store. Skip
+            your opponent's store.</span>
+        </li>
+        <li>
+          <strong>Follow your last seed</strong><span>Where it lands decides whether you relay, play again, or
+            capture.</span>
+        </li>
+      </ol>
+
+      <hr>
+      <h3>Three rules to remember</h3>
+      <div class="intro__rules">
+        <div class="intro__card">
+          <p class="intro__card-title">
+            <svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v=ac8466ef#relay" /></svg>Relay
+          </p>
+          <p>Last seed lands in a pit that already had seeds? Pick them all up and keep sowing.</p>
+        </div>
+        <div class="intro__card">
+          <p class="intro__card-title">
+            <svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v=ac8466ef#free-turn" /></svg>Free turn
+          </p>
+          <p>Last seed lands in your own store? Play again.</p>
+        </div>
+        <div class="intro__card">
+          <p class="intro__card-title">
+            <svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v=ac8466ef#capture" /></svg>Capture
+          </p>
+          <p id="captureRule">
+            Last seed lands in an empty pit on your side? Bank the seeds in the pit opposite. Your last seed stays where
+            it landed.
+          </p>
+        </div>
+      </div>
+
+      <div class="intro__tip">
+        <p class="intro__card-title">
+          <svg class="icon" aria-hidden="true"><use href="svg/icons.svg?v=ac8466ef#tip" /></svg>A word of strategy
+        </p>
+        <p id="firstRule">
+          Going first matters. Opening with pit 1 starts a chain of free turns that wins before the other side ever
+          moves. Choose who goes first in Settings.
+        </p>
+      </div>
+
+      <h3>How to win</h3>
+      <p id="endRule">
+        The game ends when a side runs out of seeds, or as soon as a store holds more than half of all 98. Each player
+        banks what's left on their side, and the fuller store wins.
+      </p>
+
+      <form method="dialog" class="intro__go"><button class="btn btn--primary">Let's play →</button></form>
+      <p class="intro__keys">
+        <span><kbd>1</kbd>–<kbd>7</kbd> pits</span> · <span><kbd>N</kbd> new game</span> ·
+        <span><kbd>U</kbd> undo</span> · <span><kbd>H</kbd> hint</span> · <span><kbd>S</kbd> skip</span> ·
+        <span><kbd>?</kbd> help</span>
+      </p>
+    </dialog>
+
+    <dialog id="stats" aria-labelledby="statsTitle">
+      <p class="label eyebrow">Your games</p>
+      <h2 id="statsTitle">Rating <span id="statsRating">1000</span></h2>
+      <p class="turn__note" id="statsSummary"></p>
+      <svg class="trend" id="statsTrend" viewBox="0 0 300 60" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <table class="stats-table" id="statsVs"></table>
+      <ol class="stats-games" id="statsGames"></ol>
+      <p class="turn__note">
+        Saved in this browser (use Save a copy to keep a backup; Safari can clear sites you haven't visited for a week).
+        A game is rated when it's you against one bot, played to the end under the standard rules, without Undo or Hint.
+        Each game keeps the bot's rating from the day you played it.
+      </p>
+      <form method="dialog" class="dialog__actions">
+        <button class="btn btn--ghost" type="button" id="exportHistory">Save a copy</button>
+        <button class="btn btn--ghost" type="button" id="loadCopy">Load a copy</button>
+        <button
+          class="btn btn--ghost"
+          type="button"
+          id="exportMgn"
+          title="Your games in MGN, a text notation (like chess's PGN)"
+        >
+          Save as MGN
+        </button>
+        <input type="file" id="importHistory" accept="application/json, .json" hidden>
+        <button class="btn btn--ghost" type="button" id="clearHistory">Clear history</button>
+        <button class="btn btn--primary">Done</button>
+      </form>
+    </dialog>
+
+    <dialog id="settings" aria-labelledby="settingsTitle">
+      <p class="label eyebrow">Settings</p>
+      <h2 id="settingsTitle">Who's playing</h2>
+      <form method="dialog" id="settingsForm">
+        <div class="field-row">
+          <label class="field"><span class="label">Player 1 · bottom</span><span class="select"><select name="p1">
+              </select><svg class="icon select__chevron" aria-hidden="true">
+                <use href="svg/icons.svg?v=ac8466ef#chevron-down" />
+              </svg></span></label>
+          <label class="field"><span class="label">Player 2 · top</span><span class="select"><select name="p2">
+              </select><svg class="icon select__chevron" aria-hidden="true">
+                <use href="svg/icons.svg?v=ac8466ef#chevron-down" />
+              </svg></span></label>
+        </div>
+        <fieldset class="field">
+          <legend class="label">Who goes first</legend>
+          <div class="segmented">
+            <label><input type="radio" name="first" value="random"><span>Random</span></label>
+            <label><input type="radio" name="first" value="1"><span>Player 1</span></label>
+            <label><input type="radio" name="first" value="2"><span>Player 2</span></label>
+          </div>
+        </fieldset>
+        <fieldset class="field">
+          <legend class="label">Animation</legend>
+          <div class="segmented">
+            <label><input type="radio" name="speed" value="slow"><span>Slow</span></label>
+            <label><input type="radio" name="speed" value="normal"><span>Normal</span></label>
+            <label><input type="radio" name="speed" value="fast"><span>Fast</span></label>
+          </div>
+        </fieldset>
+        <fieldset class="field">
+          <legend class="label">Theme</legend>
+          <div class="segmented">
+            <label><input type="radio" name="theme" value="system"><span>System</span></label>
+            <label><input type="radio" name="theme" value="light"><span>Paper</span></label>
+            <label><input type="radio" name="theme" value="dark"><span>Ink</span></label>
+          </div>
+        </fieldset>
+
+        <h2 style="margin-top: var(--space-5)">House rules</h2>
+        <p class="turn__note">Changing these starts a new game.</p>
+        <fieldset class="field">
+          <legend class="label">Seeds per pit</legend>
+          <div class="range">
+            <input type="range" name="seeds" min="3" max="15" step="1" value="7" aria-label="Seeds per pit">
+            <output id="seedValue" class="range__value">7</output>
+          </div>
+          <div class="range__ends" aria-hidden="true"><span>3</span><span>15</span></div>
+        </fieldset>
+        <fieldset class="field">
+          <legend class="label">Capture</legend>
+          <div class="segmented">
+            <label><input type="radio" name="capture" value="own"><span>Empty pit on your side</span></label>
+            <label><input type="radio" name="capture" value="any"><span>Any empty pit</span></label>
+          </div>
+        </fieldset>
+        <label class="check"><input type="checkbox" name="clinch"> End early once a store holds more than half the
+          seeds</label>
+        <div class="dialog__actions">
+          <button class="btn btn--primary" value="done">Done</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module" src="app.js?v=ac8466ef"></script>
+  </body>
+</html>
