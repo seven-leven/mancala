@@ -23,17 +23,25 @@ export interface Weights {
   b3: number;
 }
 
-/** The 16 inputs for `s`, from the mover's side, into `out`. */
-export function encode(s: GameState, out: Float64Array = new Float64Array(INPUTS)): Float64Array {
+/**
+ * The 16 inputs for `s` as `side` sees it, into `out`. Called at every leaf of a search, so it
+ * makes nothing: no copy of the position, no array per call.
+ */
+function encodeAs(s: GameState, side: Player, out: Float64Array): Float64Array {
   const p = s.pits;
-  const [mine, theirs] = s.current === 1 ? [0, 7] : [7, 0];
+  const mine = side === 1 ? 0 : 7, theirs = 7 - mine;
   for (let i = 0; i < 7; i++) {
     out[i] = p[mine + i] / 8;
     out[7 + i] = p[theirs + i] / 8;
   }
-  out[14] = p[s.current === 1 ? 14 : 15] / 49;
-  out[15] = p[s.current === 1 ? 15 : 14] / 49;
+  out[14] = p[side === 1 ? 14 : 15] / 49;
+  out[15] = p[side === 1 ? 15 : 14] / 49;
   return out;
+}
+
+/** The 16 inputs for `s`, from the mover's side, into `out`. */
+export function encode(s: GameState, out: Float64Array = new Float64Array(INPUTS)): Float64Array {
+  return encodeAs(s, s.current, out);
 }
 
 /**
@@ -42,7 +50,7 @@ export function encode(s: GameState, out: Float64Array = new Float64Array(INPUTS
  * this, since it judges one side's prospects at every ply of a search.
  */
 export function encodeFor(s: GameState, side: Player, out: Float64Array = new Float64Array(INPUTS + 1)): Float64Array {
-  encode({ ...s, current: side }, out);
+  encodeAs(s, side, out);
   out[INPUTS] = s.current === side ? 1 : 0;
   return out;
 }

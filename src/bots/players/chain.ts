@@ -65,13 +65,26 @@ export class DfsReplyBot implements Bot {
 
   choose(state: GameState): number | null {
     const me = state.current;
-    let best: number | null = null;
+    const moves = validMoves(state);
+    // Search the likeliest best move first (by the store it leaves `me`, free turns ahead): a good
+    // score to beat early cuts every later move's search short sooner. The choice stays exactly as
+    // in pit order: the highest score wins, and of equal scores the lower pit, as before.
+    const after = this.boards.at(0, state), store = me === 1 ? 14 : 15;
+    const guess = moves.map((m) => {
+      const free = (playOn(after, state, m) & FREE_TURN) !== 0;
+      return (free ? 1000 : 0) + after.pits[store];
+    });
+    const order = moves.map((_, k) => k).sort((a, b) => guess[b] - guess[a] || a - b);
+    let best = -1;
     let alpha = -Infinity;
-    for (const move of validMoves(state)) {
-      const s = this.chain(state, move, 0, 0, me, alpha, Infinity);
-      if (s > alpha) [best, alpha] = [move, s];
+    for (const k of order) {
+      // A move earlier in pit order than the best so far wins a tie, so it's searched with the
+      // bound lowered a hair: an equal score then comes back exact, not as a bound.
+      const floor = best >= 0 && k < best ? alpha - 1e-9 : alpha;
+      const s = this.chain(state, moves[k], 0, 0, me, floor, Infinity);
+      if (s > alpha || (s === alpha && k < best)) [best, alpha] = [k, s];
     }
-    return best;
+    return best >= 0 ? moves[best] : null;
   }
 
   /**

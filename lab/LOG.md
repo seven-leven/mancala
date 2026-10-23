@@ -6,6 +6,20 @@ are when the work was done (or, for older entries, the release that carried it).
 
 A new bot's numbers come from `npm run eval -- <bot>`, whose report card goes in [results/](results/).
 
+## 2026-10-23 · Every bot, looked at for speed
+
+- **Question:** where can each bot that costs anything be made faster, still without changing a move? Is pruning the
+  nets after training worth it?
+- **Setup:** every bot's time a move (`npm run speed`), CPU profiles of the costly ones, counts of positions scored and
+  of repeats, the nets' hidden units' activity over 400,000 positions the bots score.
+- **Result:** the nets' inputs copied a position per leaf: fixed, Wise about 12% and Learned pushover about 10% faster.
+  DFS v2 and Wise searched their root in pit order; searching the likeliest move first (ties still to the lower pit)
+  scores 9.5% fewer positions. Repeats are only 1–2%, so no score cache; reply ordering saved 0.3%; aspiration windows
+  in Minimax changed 36 of 600 decisions and searched more. Wise's net has no dead units; the loser's has one unused,
+  about 3% of it.
+- **Decision:** kept the nets' inputs and the root ordering, every move the same. Pruning the nets isn't worth it; a
+  smaller net retrained and re-rated could be, as a learned-bot experiment.
+
 ## 2026-10-23 · Byte-array boards everywhere, and vectorised sowing
 
 - **Question:** would a custom board type (bytes, not a plain array) or vectorised sowing make the engine faster?

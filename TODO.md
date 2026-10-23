@@ -325,6 +325,20 @@ more), the engine about 5%, Minimax and Grandmaster about 8%. Tried and dropped:
 - [x] **Monte Carlo's tree**: profiled, the tree is 1.6% of its time and the garbage collector 2.1%, so flat arrays
       weren't built. What it does spend time on, random playouts and the engine, got a tidier loop instead (the clock
       read only when there's a time limit, no function made per playout): about 9% faster, the same moves.
+- [x] **The nets' inputs** (Wise, Learned pushover): `encodeFor` copied the whole position to flip whose turn it was,
+      and `encode` made an array a call. Both gone: about 10–12% faster, the same moves.
+- [x] **DFS v2 and Wise: the likeliest move first.** Their root searched pits in order, so the first move's lines were
+      never cut short. Now the move that leaves the fullest store (free turns first) goes first, and ties are still
+      decided by pit order (a move earlier than the best is searched with its bound lowered a hair, so a tie comes back
+      exact). 9.5% fewer positions scored, the same moves. Ordering the opponent's replies (free turns first) saved
+      0.3%, and the bot's own scorer as the guess 1% more: neither kept.
+- [x] **Aspiration windows** in Minimax: tried, and dropped. 36 of 600 decisions changed and it searched more, not less:
+      the table doesn't record how many free-turn extensions were left, so another order of passes reuses its entries
+      differently.
+- [x] **Pruning the nets**: measured over 400,000 positions the bots score. Wise's net has no dead units (the least used
+      is on 3% of the time); the loser's net has one never seen on, worth about 3% of that net and not provably exact.
+      Not done. A narrower net retrained from scratch could be faster, but it plays differently: that's an experiment
+      for "A learned bot", with a rating.
 - [ ] **The pushovers** (1.2–4.4 ms a move): a search that wants to lose can't prune. A time or node cap, as Pushover's
       depth 3 did, if they ever matter.
 - [x] **One kind of board everywhere**: tried as a trial (every board a `Uint8Array`, the game's too, so `turn()` sees

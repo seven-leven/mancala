@@ -11,6 +11,9 @@ release has a section here; work since the last one sits under _Unreleased_.
   and Monte Carlo's playout loop tidied (about 9% faster). Measured and not kept, since none paid: keys updated move by
   move in Minimax (hashing is under 5% of its time), checking children's remembered bounds first (0.1% fewer positions,
   slower overall), and a flat tree for Monte Carlo (its tree is under 2% of its time). lab/LOG.md has the numbers.
+- **The learned bots and DFS v2 faster, every move the same.** The nets' inputs are read without copying the position
+  (Wise about 12% faster, Learned pushover about 10%), and DFS v2 and Wise search their likeliest move first, which
+  scores 9.5% fewer positions (DFS v2 about 6% faster); ties still go to the lower pit, as before.
 
 ## v2.7.0 · 2026-10-23
 
