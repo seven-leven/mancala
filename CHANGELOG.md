@@ -3,7 +3,7 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `package.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
-## Unreleased
+## v2.7.0 · 2026-10-23
 
 - **The game solved on small boards** (`lab/solve/`): exact best play for 1–10 pits a side and 1–10 seeds a pit, with
   the game's own rules. 75 of the 100 boards are solved exactly and 89 have the winner proved. **The standard game is a
@@ -19,6 +19,14 @@ release has a section here; work since the last one sits under _Unreleased_.
 - **Two dormant bots, waiting for a rating:** Intuition, a policy network that names a pit with no search (about 1200),
   and Rule list, that network decompiled into eight if/then rules (about 1680, between Planner and Lookahead).
   [The bots by family](docs/images/bot-families.svg) shows where they fit, and the gaps left.
+- **A report card for any bot**: `npm run eval -- <bot>` measures its speed, its perfect moves against the solver and a
+  placement against bots across the ladder, and writes them to `lab/results/<bot>.md`.
+- **An experiment log**, [lab/LOG.md](lab/LOG.md): every experiment so far, as question, setup, result and decision.
+- **The repository by purpose**: `tools/` builds and releases the game, `harness/` measures the bots (the rating harness
+  is now `harness/rate/`), and `lab/` holds experiments and small results. Bots are split into `players/`, `judges/`
+  (what they judge positions by) and `search/`, and each says how it decides and what it judges by (`decides`, `judges`)
+  in place of one family; a dormant bot says whether it's a candidate or shelved, and why. Every diagram is redrawn by
+  `npm run diagrams`, and the bots by family comes straight from the registry.
 
 ## v2.6.0 · 2026-10-20
 
