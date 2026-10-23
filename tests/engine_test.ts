@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import { assert, assertEquals } from "./assert.ts";
-import { newGame, playTurn, SOW_ORDER, validMoves } from "../src/game/engine.ts";
+import { moveCount, newGame, nthMove, playTurn, SOW_ORDER, validMoves } from "../src/game/engine.ts";
 import { DEFAULT_RULES, type GameState, M1, M2, P1, P2, type Rules } from "../src/game/types.ts";
 
 /** A position from a list of 16 numbers (pits 0–13, then M1, M2). */
@@ -161,4 +161,17 @@ test("a big hand sows whole laps at once, and lands exactly as seed by seed", ()
   const fast = playTurn(s, 0, { record: false });
   assertEquals(fast.state, slow.state);
   assert(!slow.invalid && slow.events.filter((e) => e.type === "drop").length >= 40, "the log saw every seed");
+});
+
+test("moveCount and nthMove list the legal pits as validMoves does, without making the list", () => {
+  let s = newGame(DEFAULT_RULES, P1);
+  for (let ply = 0; ply < 300 && !s.gameOver; ply++) {
+    const moves = validMoves(s);
+    assertEquals(moveCount(s), moves.length);
+    assertEquals(moves.map((_, k) => nthMove(s, k)), moves);
+    assertEquals(nthMove(s, moves.length), -1, "past the last legal pit");
+    s = playTurn(s, moves[(ply * 5) % moves.length]).state;
+  }
+  assert(s.gameOver);
+  assertEquals(moveCount(s), 0, "no moves once the game is over");
 });

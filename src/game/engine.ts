@@ -20,9 +20,19 @@ import {
 
 /** One lap of the board, in the order seeds travel. */
 export const SOW_ORDER = [0, 1, 2, 3, 4, 5, 6, M1, 13, 12, 11, 10, 9, 8, 7, M2] as const;
-/** The slot after each slot on that lap (an array, not a Map: it's looked up for every seed). */
-const NEXT = new Int8Array(16);
-SOW_ORDER.forEach((slot, i) => (NEXT[slot] = SOW_ORDER[(i + 1) % SOW_ORDER.length]));
+/**
+ * The slot after each slot for each sower, skipping the opponent's store (arrays, not Maps: they're
+ * looked up for every seed): NEXT_FOR[0] for Player 1, NEXT_FOR[1] for Player 2.
+ */
+const NEXT_FOR = [M2, M1].map((skip) => {
+  const next = new Int8Array(16);
+  SOW_ORDER.forEach((slot, i) => {
+    let j = (i + 1) % SOW_ORDER.length;
+    if (SOW_ORDER[j] === skip) j = (j + 1) % SOW_ORDER.length;
+    next[slot] = SOW_ORDER[j];
+  });
+  return next;
+});
 
 /** A relay can't really go on forever (every lap banks a seed), but never trust a loop. */
 const MAX_DROPS = 100_000;
@@ -62,6 +72,22 @@ export function validMoves(s: GameState, player: Player = s.current): number[] {
   return pitsOf(player).filter((i) => s.pits[i] > 0);
 }
 
+/** How many pits the player to move may play: validMoves' length, with no array made. */
+export function moveCount(s: GameState): number {
+  if (s.gameOver) return 0;
+  const pits = pitsOf(s.current);
+  let n = 0;
+  for (let j = 0; j < 7; j++) if (s.pits[pits[j]] > 0) n++;
+  return n;
+}
+
+/** The `k`th pit (0-based) validMoves would list, or -1 past the end, with no array made. */
+export function nthMove(s: GameState, k: number): number {
+  const pits = pitsOf(s.current);
+  for (let j = 0; j < 7; j++) if (s.pits[pits[j]] > 0 && k-- === 0) return pits[j];
+  return -1;
+}
+
 export const score = (s: GameState, p: Player): number => s.pits[storeOf(p)];
 
 export function winnerOf(s: GameState): Player | null {
@@ -89,11 +115,11 @@ const sideEmpty = (pits: readonly number[], p: Player) => {
 let drops = 0;
 
 /**
- * Picks up the pit `from` and drops one seed in each slot after it, skipping `skip` (the
- * opponent's store). Returns where the last seed landed. Outside turn(), so no function is made
- * per turn: the bots call turn() millions of times.
+ * Picks up the pit `from` and drops one seed in each slot after it, along `next` (which skips the
+ * opponent's store, `skip`). Returns where the last seed landed. Outside turn(), so no function is
+ * made per turn: the bots call turn() millions of times.
  */
-function sow(pits: number[], from: number, skip: number, log: Log): number {
+function sow(pits: number[], from: number, next: Int8Array, skip: number, log: Log): number {
   let hand = pits[from];
   pits[from] = 0;
   let pos = from;
@@ -106,18 +132,19 @@ function sow(pits: number[], from: number, skip: number, log: Log): number {
       hand -= 15 * laps;
       drops += 15 * laps;
     }
-    while (hand > 0 && drops++ < MAX_DROPS) {
-      pos = NEXT[pos];
-      if (pos === skip) continue;
+    // Then under a lap, seed by seed, counted against the limit all at once.
+    /* c8 ignore next: the limit is a safety net; no real relay comes near it */
+    if (drops + hand > MAX_DROPS) hand = Math.max(0, MAX_DROPS - drops);
+    drops += hand;
+    for (; hand > 0; hand--) {
+      pos = next[pos];
       pits[pos]++;
-      hand--;
     }
     return pos;
   }
   log({ type: "pickup", pit: from, count: hand });
   while (hand > 0 && drops++ < MAX_DROPS) {
-    pos = NEXT[pos];
-    if (pos === skip) continue;
+    pos = next[pos];
     pits[pos]++;
     hand--;
     log({ type: "drop", pit: pos, count: pits[pos], inHand: hand });
@@ -135,15 +162,15 @@ export function turn(state: GameState, start: number, log: Log = null, info: Tur
   const player = state.current;
   if (state.gameOver || !isPit(start) || ownerOf(start) !== player || pits[start] === 0) return INVALID;
 
-  const skip = storeOf(other(player));
+  const skip = storeOf(other(player)), next = NEXT_FOR[player === P1 ? 0 : 1];
   drops = 0;
 
   // Relay sowing: while the last seed lands in a pit that already had seeds, pick them all up
   // and keep going.
-  let landing = sow(pits, start, skip, log);
+  let landing = sow(pits, start, next, skip, log);
   let relays = 0;
   while (isPit(landing) && pits[landing] > 1 && drops < MAX_DROPS) {
-    landing = sow(pits, landing, skip, log);
+    landing = sow(pits, landing, next, skip, log);
     relays++;
   }
 

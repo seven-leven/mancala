@@ -4,7 +4,7 @@
  * which line to try next by UCB1 (good results so far, plus a bonus for lines tried less), finish
  * each try with a random game to the end, and play the move tried most.
  */
-import { turn, validMoves, winnerOf } from "../../game/engine.ts";
+import { moveCount, nthMove, turn, validMoves, winnerOf } from "../../game/engine.ts";
 import type { GameState, Player } from "../../game/types.ts";
 import type { Bot, Rng } from "../contracts.ts";
 import { Boards, playOn } from "../search/moves.ts";
@@ -131,8 +131,8 @@ export class MonteCarloBot implements Bot {
     // Simulation: random moves to the end of the game. (The root always has a move, so by now at
     // least one has been played onto the board.)
     for (let i = 0; i < MAX_PLAYOUT_MOVES && !board.gameOver; i++) {
-      const legal = validMoves(board);
-      turn(board, legal[Math.floor(this.rng() * legal.length)]);
+      // A random legal pit, chosen as validMoves(board)[k] would be, without making the list.
+      turn(board, nthMove(board, Math.floor(this.rng() * moveCount(board))));
     }
 
     // Backpropagation: every node on the way gets the result, for whoever made its move.

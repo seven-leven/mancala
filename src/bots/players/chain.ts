@@ -1,5 +1,5 @@
 /** Players that follow their own free turns as far as they go (and, for DFS v2, the opponent's in answer). */
-import { FREE_TURN, score, validMoves } from "../../game/engine.ts";
+import { FREE_TURN, pitsOf, score, validMoves } from "../../game/engine.ts";
 import type { GameState, Player } from "../../game/types.ts";
 import type { Bot } from "../contracts.ts";
 import { evaluate } from "../judges/evaluate.ts";
@@ -35,7 +35,10 @@ export class DfsBot implements Bot {
     const flags = playOn(after, state, move);
     if (!(flags & FREE_TURN) || depth + 1 >= this.maxDepth) return score(after, me);
     let best = score(after, me);
-    for (const next of validMoves(after)) best = Math.max(best, this.chain(after, next, depth + 1, me));
+    // The mover's pits with seeds, in validMoves' order, without making the list.
+    for (const next of pitsOf(after.current)) {
+      if (after.pits[next] > 0) best = Math.max(best, this.chain(after, next, depth + 1, me));
+    }
     return best;
   }
 }
@@ -89,10 +92,14 @@ export class DfsReplyBot implements Bot {
     if (after.current === me) {
       // `me`'s own chain comes before any answer, where nothing bounds it from above (beta is
       // Infinity), so only the opponent's moves can be cut short.
-      for (const m of validMoves(after)) alpha = Math.max(alpha, this.chain(after, m, ply + 1, next, me, alpha, beta));
+      for (const m of pitsOf(me)) {
+        if (after.pits[m] > 0) alpha = Math.max(alpha, this.chain(after, m, ply + 1, next, me, alpha, beta));
+      }
       return alpha;
     }
-    for (const m of validMoves(after)) {
+    // The opponent's pits with seeds, in validMoves' order, without making the list.
+    for (const m of pitsOf(after.current)) {
+      if (after.pits[m] === 0) continue;
       beta = Math.min(beta, this.chain(after, m, ply + 1, next, me, alpha, beta));
       if (alpha >= beta) break;
     }

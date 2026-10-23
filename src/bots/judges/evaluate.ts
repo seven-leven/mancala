@@ -13,14 +13,20 @@ export const WIN = 10_000;
 export const banked: Evaluator = (s, me) => score(s, me);
 
 /** Seeds on `me`'s side of the board, which are theirs if the game ends now. */
-export const onSide: Evaluator = (s, me) => pitsOf(me).reduce((n, i) => n + s.pits[i], 0);
+export const onSide: Evaluator = (s, me) => {
+  const o = me === 1 ? 0 : 7, p = s.pits;
+  return p[o] + p[o + 1] + p[o + 2] + p[o + 3] + p[o + 4] + p[o + 5] + p[o + 6];
+};
 
 /**
  * Seeds `me` leaves open to capture: in their pits that face an empty pit, where the opponent's
  * last seed could land and take them. (Whether the opponent can actually reach it isn't checked.)
  */
-export const exposed: Evaluator = (s, me) =>
-  pitsOf(me).reduce((n, i) => n + (s.pits[oppositeOf(i)] === 0 ? s.pits[i] : 0), 0);
+export const exposed: Evaluator = (s, me) => {
+  let n = 0;
+  for (const i of pitsOf(me)) if (s.pits[oppositeOf(i)] === 0) n += s.pits[i];
+  return n;
+};
 
 /** Moves from a pit to its owner's store: Player 1's pit 0 is 7 away; Player 2's pit 7 is 1 away. */
 const toStore = (pit: number): number => (pit <= 6 ? 7 - pit : pit - 6);
@@ -29,15 +35,25 @@ const toStore = (pit: number): number => (pit <= 6 ? 7 - pit : pit - 6);
  * Free turns `me` has set up: pits whose seeds would end exactly in their store. A lap that skips
  * the opponent's store is 15 drops, so 15 more seeds land in the same place.
  */
-export const freeTurnsReady: Evaluator = (s, me) =>
-  pitsOf(me).filter((i) => s.pits[i] > 0 && s.pits[i] % 15 === toStore(i) % 15).length;
+export const freeTurnsReady: Evaluator = (s, me) => {
+  let n = 0;
+  for (const i of pitsOf(me)) if (s.pits[i] > 0 && s.pits[i] % 15 === toStore(i) % 15) n++;
+  return n;
+};
 
 /** Seeds `me` could capture: in the opponent's pits that face one of `me`'s empty pits. */
-export const threats: Evaluator = (s, me) =>
-  pitsOf(me).reduce((n, i) => n + (s.pits[i] === 0 ? s.pits[oppositeOf(i)] : 0), 0);
+export const threats: Evaluator = (s, me) => {
+  let n = 0;
+  for (const i of pitsOf(me)) if (s.pits[i] === 0) n += s.pits[oppositeOf(i)];
+  return n;
+};
 
 /** How many pits `me` could play: few left means little choice and a side about to run dry. */
-export const mobility: Evaluator = (s, me) => pitsOf(me).filter((i) => s.pits[i] > 0).length;
+export const mobility: Evaluator = (s, me) => {
+  let n = 0;
+  for (const i of pitsOf(me)) if (s.pits[i] > 0) n++;
+  return n;
+};
 
 /** How good `s` looks for `me`, as Minimax sees it. */
 export function evaluate(s: GameState, me: Player): number {

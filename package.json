@@ -22,6 +22,7 @@
     "icon-sheet": "node tools/icon-sheet.ts",
     "release": "node tools/release.ts",
     "bench": "node harness/bench.ts",
+    "speed": "node harness/speed.ts",
     "accuracy": "node harness/accuracy.ts",
     "eval": "node harness/eval.ts",
     "solve": "node lab/solve/grid.ts",

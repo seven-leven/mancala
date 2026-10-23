@@ -6,6 +6,18 @@ are when the work was done (or, for older entries, the release that carried it).
 
 A new bot's numbers come from `npm run eval -- <bot>`, whose report card goes in [results/](results/).
 
+## 2026-10-23 · Engine and bot speed-ups
+
+- **Question:** where does the time go, and what can be made faster without changing a single move?
+- **Setup:** `npm run speed` (new): the engine's turns a second, and every bot's time and moves on 300 fixed positions,
+  checked against a recorded baseline; `npm run bench` for Minimax; CPU profiles.
+- **Result:** the engine was already lean (about 110 ns a turn); Minimax's time is a third the engine, a third its own
+  search and hashing, a fifth generating moves. Kept, every bot playing the same moves: no move lists made in hot loops,
+  and a next-slot table per player (Planner about 40% faster, DFS and DFS v2 about 15%, Monte Carlo about 10%, the
+  engine about 5%). Dropped: byte arrays for the bots' boards (10–25% slower, as `turn()` then sees two kinds of board)
+  and the remembered move searched on its own first (no gain).
+- **Decision:** kept what helped; the rest is in TODO.md, Speed.
+
 ## 2026-10-23 · Quiescence search (#13)
 
 - **Question:** does searching past the depth limit, through captures and free turns until the board is quiet, fix the
