@@ -6,6 +6,19 @@ are when the work was done (or, for older entries, the release that carried it).
 
 A new bot's numbers come from `npm run eval -- <bot>`, whose report card goes in [results/](results/).
 
+## 2026-10-23 · The rest of the speed list
+
+- **Question:** do the open items in TODO's Speed list pay, still without changing a move?
+- **Setup:** CPU profiles of Minimax (600 decisions) and Monte Carlo (200), each item built and checked move for move,
+  then `npm run speed` against a baseline recorded first.
+- **Result:** Minimax's time is the engine 40%, generating moves 24%, the search 22%, hashing 4.8%, the table 4.6%. Keys
+  updated move by move could save at most that 4.8%, and a relay move changes most slots anyway: not built. Checking
+  children's remembered bounds first found 0.1% fewer positions and was slower overall: dropped. Bounds from forced
+  results would change Minimax's moves (it scores the depth limit by evaluation, not outcome): moved to v2.4. Monte
+  Carlo's tree is 1.6% of its time, so no flat tree; its playout loop, tidied, is about 9% faster.
+- **Decision:** kept the Monte Carlo loop; every bot plays the same moves. The engine itself is already lean: what's
+  left in it is the work of sowing.
+
 ## 2026-10-23 · Engine and bot speed-ups
 
 - **Question:** where does the time go, and what can be made faster without changing a single move?

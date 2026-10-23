@@ -310,17 +310,21 @@ The code is split by purpose: `src/` ships the game, `tools/` builds and release
 `npm run speed` times the engine and every bot on 300 fixed positions and checks every bot still plays the same moves
 (`-- --record` first). Keep a speed-up only if it's faster and the moves are the same. Done so far (2026-10-23): no move
 lists made in hot loops (Monte Carlo's playouts, the chain bots, the scoring pieces), and a next-slot table per player
-that skips the opponent's store. Planner about 40% faster, DFS and DFS v2 about 15%, Monte Carlo about 10%, the engine
-about 5%, Minimax and Grandmaster about 8%. Tried and dropped: byte arrays for the bots' boards (10–25% slower: `turn()`
-then sees two kinds of board) and the remembered move searched before the rest (no gain).
+that skips the opponent's store. Planner about 40% faster, DFS and DFS v2 about 15%, Monte Carlo about 10% (then 9%
+more), the engine about 5%, Minimax and Grandmaster about 8%. Tried and dropped: byte arrays for the bots' boards
+(10–25% slower: `turn()` then sees two kinds of board) and the remembered move searched before the rest (no gain).
 
-- [ ] **Keys updated as moves are played** in Minimax, instead of hashing all 16 slots at every position (the solver
-      does this; `alphabeta` and its hashing are a third of Minimax's time).
-- [ ] **Children's remembered bounds before searching them** (enhanced transposition cutoffs), as the solver does.
-- [ ] **Store bounds for forced results** in Minimax: stores never lose seeds, so near the end a position's win or loss
-      can be known before it's searched.
-- [ ] **Monte Carlo's tree**: a node is an object with arrays; flat typed arrays would spare the garbage collector.
-      Profile first.
+- [x] **Keys updated as moves are played** in Minimax: not built. Profiled, hashing is 4.8% of Minimax's time, and a
+      move with relays changes most of the 16 slots, so updating a key from its parent's costs about as much as hashing.
+      (The solver can, because it has its own move code that updates the key seed by seed.)
+- [x] **Children's remembered bounds before searching them** (enhanced transposition cutoffs): tried, the same moves,
+      but only 0.1% fewer positions, and hashing every child made Minimax slower overall. Dropped.
+- [ ] **Store bounds for forced results** in Minimax: moved to v2.4's strength work. Minimax scores positions at its
+      depth limit with the evaluation, not the true outcome, so pruning by "this game is certainly lost" would change
+      its moves; it belongs with a change to the evaluation, measured by rating, not in a same-moves speed-up.
+- [x] **Monte Carlo's tree**: profiled, the tree is 1.6% of its time and the garbage collector 2.1%, so flat arrays
+      weren't built. What it does spend time on, random playouts and the engine, got a tidier loop instead (the clock
+      read only when there's a time limit, no function made per playout): about 9% faster, the same moves.
 - [ ] **The pushovers** (1.2–4.4 ms a move): a search that wants to lose can't prune. A time or node cap, as Pushover's
       depth 3 did, if they ever matter.
 - [ ] **One kind of board everywhere** (all byte arrays, the game's too), the only way byte arrays could pay: it touches

@@ -3,6 +3,15 @@
 Versions are `MAJOR.MINOR.PATCH`, set by hand in `package.json`, and the live game shows the version in its footer. Each
 release has a section here; work since the last one sits under _Unreleased_.
 
+## Unreleased
+
+- **Faster bots, every move the same.** `npm run speed` times the engine and every bot on 300 fixed positions and checks
+  each still plays the same moves. With it: no move lists made in hot loops and a next-slot table per player in the
+  engine (Planner about 40% faster, DFS and DFS v2 about 15%, Minimax and Grandmaster about 8%, the engine about 5%),
+  and Monte Carlo's playout loop tidied (about 9% faster). Measured and not kept, since none paid: keys updated move by
+  move in Minimax (hashing is under 5% of its time), checking children's remembered bounds first (0.1% fewer positions,
+  slower overall), and a flat tree for Monte Carlo (its tree is under 2% of its time). lab/LOG.md has the numbers.
+
 ## v2.7.0 · 2026-10-23
 
 - **The game solved on small boards** (`lab/solve/`): exact best play for 1–10 pits a side and 1–10 seeds a pit, with

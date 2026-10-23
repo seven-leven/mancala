@@ -77,8 +77,10 @@ export class MonteCarloBot implements Bot {
     const board = this.boards.at(0, state);
     const { playouts = Infinity, timeMs = Infinity } = this.opts;
     const stop = performance.now() + timeMs;
+    // The clock is read only when there's a time limit: a rated bot plays a fixed number of tries.
+    const timed = timeMs !== Infinity;
     let done = 0;
-    while (done < playouts && (done === 0 || performance.now() < stop)) {
+    while (done < playouts && (done === 0 || !timed || performance.now() < stop)) {
       this.playout(root, state, board);
       done++;
     }
@@ -94,14 +96,6 @@ export class MonteCarloBot implements Bot {
     // Start each try from the position itself: playOn copies it onto the board, then moves play in place.
     let n = root;
     let started = false;
-    const play = (pit: number) => {
-      if (started) {
-        turn(board, pit);
-      } else {
-        playOn(board, state, pit);
-        started = true;
-      }
-    };
 
     // Selection: while every move here has been tried, follow the best by UCB1.
     while (n.untried.length === 0 && n.children.length > 0) {
@@ -109,9 +103,14 @@ export class MonteCarloBot implements Bot {
       let pick = n.children[0], pickValue = -Infinity;
       for (const c of n.children) {
         const value = c.wins / c.visits + EXPLORE * Math.sqrt(log / c.visits);
-        if (value > pickValue) [pick, pickValue] = [c, value];
+        if (value > pickValue) {
+          pick = c;
+          pickValue = value;
+        }
       }
-      play(pick.move);
+      if (started) turn(board, pick.move);
+      else playOn(board, state, pick.move);
+      started = true;
       n = pick;
     }
 
@@ -122,7 +121,8 @@ export class MonteCarloBot implements Bot {
       n.untried[i] = n.untried[n.untried.length - 1];
       n.untried.pop();
       const mover = started ? board.current : state.current;
-      play(move);
+      if (started) turn(board, move);
+      else playOn(board, state, move);
       const child = node(move, mover, n, validMoves(board));
       n.children.push(child);
       n = child;
