@@ -83,8 +83,9 @@ esbuild bundles the game for the browser, with no runtime dependencies.
 src/game/    the rules: one pure engine, playTurn(), that returns the new state and an event log;
              and MGN, the game notation (notation.ts, see docs/NOTATION.md)
 src/bots/    the bot list the game uses (bots.ts), the ratings, and the Web Worker they run in
-  players/   the bots, by family: basic, one-move, chain, search and mixed (see docs/BOTS.md)
-  search/    the Minimax search, and the scoring pieces bots share (evaluate.ts)
+  players/   the bots' classes, by how they decide (see docs/BOTS.md)
+  judges/    what they judge positions by: the scoring pieces (evaluate.ts), the nets, the decompiled rules
+  search/    the Minimax search, and the move helpers
 src/ui/      the board, the stats dialog, sound
 src/app/     the turn loop (game.ts), settings, saved games and your rating
 public/      the page and its styles

@@ -5,7 +5,7 @@
  */
 import { FREE_TURN, other, pitsOf, storeOf, validMoves, winnerOf } from "../../game/engine.ts";
 import type { GameState } from "../../game/types.ts";
-import { Boards, playOn } from "./moves.ts";
+import { Boards, playOn } from "../search/moves.ts";
 
 /** What a person can see about a move: one move ahead, and the opponent's best answer. */
 export interface MoveFacts {

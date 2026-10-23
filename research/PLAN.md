@@ -66,7 +66,7 @@ extension, #13) and for spending more time on a move.
 
 ## 3. One evaluation for every bot
 
-Today each bot blends a few pieces from `src/bots/search/evaluate.ts` (lead, free turns ready, threats, exposure,
+Today each bot blends a few pieces from `src/bots/judges/evaluate.ts` (lead, free turns ready, threats, exposure,
 mobility) by hand. The idea:
 
 - **One evaluation**: a weighted sum of features. The features are the five pieces plus progress, entropy (overall and

@@ -15,7 +15,7 @@
  */
 import { FREE_TURN, INVALID, pitsOf, playTurn, storeOf, validMoves } from "../../game/engine.ts";
 import type { GameState, Player } from "../../game/types.ts";
-import { evaluate, WIN } from "./evaluate.ts";
+import { evaluate, WIN } from "../judges/evaluate.ts";
 import { playOn } from "./moves.ts";
 
 export interface SearchOptions {

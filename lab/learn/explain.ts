@@ -15,9 +15,9 @@
  * The net's opinion is read before its final squash (atanh of its value), where effects add up.
  */
 import { readFileSync } from "node:fs";
-import { exposed, freeTurnsReady, threats } from "../../src/bots/search/evaluate.ts";
-import { ValueNet } from "../../src/bots/search/net.ts";
-import { WEIGHTS } from "../../src/bots/search/weights.ts";
+import { exposed, freeTurnsReady, threats } from "../../src/bots/judges/evaluate.ts";
+import { ValueNet } from "../../src/bots/judges/net.ts";
+import { WEIGHTS } from "../../src/bots/judges/weights.ts";
 import { other } from "../../src/game/engine.ts";
 import { DEFAULT_RULES, type GameState, type Player } from "../../src/game/types.ts";
 

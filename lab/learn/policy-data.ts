@@ -1,5 +1,5 @@
 /**
- * Training data for Intuition, the policy net (src/bots/search/policy.ts): the positions data.ts
+ * Training data for Intuition, the policy net (src/bots/judges/policy.ts): the positions data.ts
  * made, each with the move Minimax plays there, so the net can learn which move to play.
  *
  *   node lab/learn/policy-data.ts data/learn/positions.jsonl [positions, default 40000] [depth, default 5] [workers, default 4] > data/learn/policy.jsonl

@@ -15,8 +15,14 @@ interface BotSpec {
   label: string; // the algorithm: "Minimax"
   level: string; // the everyday name: "Expert"
   blurb: string; // one plain sentence on how it plays
-  family: "basic" | "one-move" | "chain" | "search" | "mixed";
+  decides: "nothing" | "one-move" | "chain" | "search" | "lose" | "sampling" | "mix"; // how it chooses
+  judges: "nothing" | "rules" | "net" | "formula" | "playouts"; // what it judges positions by
   create(ctx: BotContext): Bot;
+}
+
+interface DormantSpec extends BotSpec { // DORMANT's entries
+  status: "candidate" | "shelved"; // waiting for a rating, or works but earns no place yet
+  why: string;
 }
 
 interface BotContext {
@@ -47,20 +53,34 @@ The menus, the Web Worker, saved games and the tournament all read it.
 7. **Cheap enough for a phone.** Bots run in a Web Worker, but a move should still take well under a second on a slow
    phone. (Dormant Grandmaster takes twice Minimax's time, one reason it's dormant.)
 
-## Families and files
+## How a bot decides, and what it judges by
 
-| Family       | How it decides                                                    | File                             | Bots                                                                           |
-| ------------ | ----------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------ |
-| `basic`      | Doesn't look at what a move does                                  | `src/bots/players/basic.ts`      | Random, First                                                                  |
-| `one-move`   | Plays each pit once and scores the position after                 | `src/bots/players/one-move.ts`   | Greedy, Generous, Turtle, Hoarder, Striker                                     |
-| `chain`      | Follows its own free turns (DFS v2: and the opponent's in answer) | `src/bots/players/chain.ts`      | DFS, Chainer (mixed with Greedy), DFS v2, Learned DFS (with a value net)       |
-| `search`     | Looks at the opponent's replies                                   | `src/bots/players/search.ts`     | Minimax, Lookahead, Shrewd, Pushover and the two below it; Planner and Spoiler |
-| `mixed`      | Another bot's move some of the time, else a random one            | `src/bots/players/mixed.ts`      | Sometimes greedy, Sometimes generous                                           |
-| `montecarlo` | Plays random games from each move, keeps the move that wins most  | `src/bots/players/montecarlo.ts` | Monte Carlo                                                                    |
+Every bot sits on two axes, `decides` and `judges`, and [the bots by family](images/bot-families.svg) draws them as a
+grid from the registry (`npm run diagrams`), with the gaps worth trying.
 
-Scoring pieces (store lead, seeds on your side, exposure, threats, free turns set up, mobility) live in
-[src/bots/search/evaluate.ts](../src/bots/search/evaluate.ts) as `Evaluator`s, so one-move bots and the search share
-them. A new idea is a new function there, not a copy inside a bot.
+| `decides`  | How it chooses                                                    | Bots                                                            |
+| ---------- | ----------------------------------------------------------------- | --------------------------------------------------------------- |
+| `nothing`  | From the board as it is, without looking at what a move does      | Random; First, Intuition (dormant)                              |
+| `one-move` | Plays each pit once and scores the position after                 | Greedy, Generous, Turtle, Hoarder, Striker; Rule list           |
+| `chain`    | Follows its own free turns (DFS v2: and the opponent's in answer) | DFS, DFS v2, Learned DFS, Chainer                               |
+| `search`   | Looks at the opponent's replies, to a set depth                   | Minimax, Shrewd, Lookahead, Planner, Spoiler; Grandmaster       |
+| `lose`     | The same search, aiming for the worst result                      | Pushover, Learned pushover, Decompiled pushover                 |
+| `sampling` | Plays random games from each move, keeps the move that wins most  | Monte Carlo                                                     |
+| `mix`      | Another bot's move some of the time, else a random or other one   | Sometimes greedy, Sometimes generous, Sometimes planner, Fickle |
+
+| `judges`   | What it judges positions by                                                                                 |
+| ---------- | ----------------------------------------------------------------------------------------------------------- |
+| `nothing`  | No judgement: Random and First                                                                              |
+| `rules`    | Hand-written scoring: [src/bots/judges/evaluate.ts](../src/bots/judges/evaluate.ts) and the bots' own rules |
+| `net`      | A trained network (value or policy) and its weights, in `src/bots/judges/`                                  |
+| `formula`  | A network's logic decompiled into a readable formula or rules, in `src/bots/judges/`                        |
+| `playouts` | Random games played to the end                                                                              |
+
+**Files.** The bots' classes are in `src/bots/players/`, grouped by how they decide (`basic.ts`, `one-move.ts`,
+`chain.ts`, `search.ts`, `mixed.ts`, `montecarlo.ts`). What they judge by is in `src/bots/judges/`: the scoring pieces
+(store lead, seeds on your side, exposure, threats, free turns set up, mobility) as `Evaluator`s in `evaluate.ts`, the
+networks and their generated weights, and the decompiled formulas and rules. A new idea is a new function there, not a
+copy inside a bot. `src/bots/search/` holds only the Minimax search and the move helpers every looking-ahead bot uses.
 
 ## Names
 
@@ -81,7 +101,8 @@ a depth, a weight), so it can be placed where the ladder needs it. Note the knob
 
 ## Adding a bot
 
-1. Write it in its family's file (or a new family, added to `Family` and to the table above).
+1. Write it in `src/bots/players/` and give it its `decides` and `judges` (a new value goes in `contracts.ts` and the
+   tables above).
 2. Add it to `BOTS` with a label, a provisional level and a blurb. The order of `BOTS` is the menus' order: weakest
    first.
 3. Give it a test of its character: a position where it must make (or refuse) its typical move.
@@ -91,13 +112,16 @@ A bot that lands on top of another adds nothing to the menu. Keep it out of `BOT
 
 ## Dormant bots
 
-A bot that works but doesn't earn its place yet (it rates on top of another, or costs far more than it adds) can go
-dormant: it moves from `BOTS` to `DORMANT` in `src/bots/bots.ts`. It's out of the menus and the default tournament, its
-id stays reserved, and `npm run rate -- --bots random,minimax,grandmaster` still rates it, so it can come back when
-something changes. Say why next to it.
+A bot that works but doesn't earn its place yet goes in `DORMANT` in `src/bots/bots.ts` instead of `BOTS`, with a
+`status` and the reason in `why`:
 
-Dormant now: Grandmaster (Minimax searching to depth 10; level with Minimax for five times the time), and First (always
-its leftmost pit; level with Random, 999 against 1000 over 240 games, so it added no step to the ladder).
+- `candidate`: new, waiting for a full rating to place it. Now: Intuition and Rule list.
+- `shelved`: rated, but it lands on top of another bot or costs far more than it adds. Now: Grandmaster (Minimax
+  searching to depth 10; level with Minimax for five times the time) and First (always its leftmost pit; level with
+  Random, 999 against 1000 over 240 games).
+
+Either way it's out of the menus and the default tournament, its id stays reserved, and `npm run rate -- --bots
+random,minimax,grandmaster` still rates it, so it can come back when something changes.
 
 ## Retiring a bot
 

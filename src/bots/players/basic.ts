@@ -1,8 +1,8 @@
-/** Family "basic": bots that don't look at what a move does. */
+/** Players that decide from the board as it is: bots that don't look at what a move does. */
 import { validMoves } from "../../game/engine.ts";
 import type { GameState } from "../../game/types.ts";
 import type { Bot, Rng } from "../contracts.ts";
-import type { PolicyNet } from "../search/policy.ts";
+import type { PolicyNet } from "../judges/policy.ts";
 
 /** Plays any legal pit. */
 export class RandomBot implements Bot {
@@ -31,7 +31,7 @@ export class FirstBot implements Bot {
 }
 
 /**
- * Intuition: a policy network (search/policy.ts) that reads the board and names a pit, with no
+ * Intuition: a policy network (judges/policy.ts) that reads the board and names a pit, with no
  * search and no look at what any move does. It learned from Minimax's scores for every move, so
  * this is how much of Minimax's play is pattern rather than calculation.
  */

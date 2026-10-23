@@ -1,10 +1,10 @@
-/** The learned bot's value net (src/bots/search/net.ts) and the bot built on it. */
+/** The learned bot's value net (src/bots/judges/net.ts) and the bot built on it. */
 import { test } from "node:test";
 import { assert, assertEquals } from "./assert.ts";
 import { createBot, DfsReplyBot } from "../src/bots/bots.ts";
-import { evaluate, WIN } from "../src/bots/search/evaluate.ts";
-import { encode, netScore, ValueNet } from "../src/bots/search/net.ts";
-import { WEIGHTS } from "../src/bots/search/weights.ts";
+import { evaluate, WIN } from "../src/bots/judges/evaluate.ts";
+import { encode, netScore, ValueNet } from "../src/bots/judges/net.ts";
+import { WEIGHTS } from "../src/bots/judges/weights.ts";
 import { newGame, playTurn, validMoves } from "../src/game/engine.ts";
 import { DEFAULT_RULES, type GameState, P1, P2 } from "../src/game/types.ts";
 

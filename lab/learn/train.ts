@@ -1,8 +1,8 @@
 /**
- * Trains the learned bot's value net (src/bots/search/net.ts) on positions from data.ts, and writes
- * its weights to src/bots/search/weights.ts. Given a loser's positions (loser-data.ts), it trains the
+ * Trains the learned bot's value net (src/bots/judges/net.ts) on positions from data.ts, and writes
+ * its weights to src/bots/judges/weights.ts. Given a loser's positions (loser-data.ts), it trains the
  * loser's net instead (17 inputs, from the loser's side; target tanh(final lead / 10)) and writes
- * src/bots/search/loser-weights.ts.
+ * src/bots/judges/loser-weights.ts.
  *
  *   node lab/learn/train.ts data/learn/positions.jsonl [epochs, default 20] [hidden sizes, default 64,64]
  *
@@ -11,8 +11,8 @@
  * held out to check it. Seeded throughout, so the same data gives the same weights.
  */
 import { readFileSync, writeFileSync } from "node:fs";
-import { evaluate, WIN } from "../../src/bots/search/evaluate.ts";
-import { encode, encodeFor, INPUTS, ValueNet, type Weights } from "../../src/bots/search/net.ts";
+import { evaluate, WIN } from "../../src/bots/judges/evaluate.ts";
+import { encode, encodeFor, INPUTS, ValueNet, type Weights } from "../../src/bots/judges/net.ts";
 import { DEFAULT_RULES, type GameState, type Player } from "../../src/game/types.ts";
 import { seeded } from "../../harness/match.ts";
 
@@ -195,10 +195,10 @@ const [out, name, what] = LOSER
   ? ["loser-weights.ts", "LOSER_WEIGHTS", "The loser's value net"]
   : ["weights.ts", "WEIGHTS", "The learned bot's value net"];
 writeFileSync(
-  new URL(`../../src/bots/search/${out}`, import.meta.url),
+  new URL(`../../src/bots/judges/${out}`, import.meta.url),
   `/** ${what} (${NIN}-${H1}-${H2}-1), as lab/learn/train.ts wrote it from ${n} positions. Generated: don't edit. */\n` +
     `import type { Weights } from "./net.ts";\n\n// dprint-ignore\nexport const ${name}: Weights = ${
       JSON.stringify(weights)
     };\n`,
 );
-console.log(`wrote src/bots/search/${out}`);
+console.log(`wrote src/bots/judges/${out}`);

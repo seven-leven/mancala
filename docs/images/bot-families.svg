@@ -67,12 +67,12 @@
   <text x="204" y="189">Random</text>
   <text class="mono" x="352" y="189" text-anchor="end">1000</text>
   <text x="204" y="207">First</text>
-  <text class="mono" x="352" y="207" text-anchor="end">dormant</text>
+  <text class="mono" x="352" y="207" text-anchor="end">shelved</text>
   <rect class="cell" x="366" y="166" width="168" height="85" rx="6" />
   <text class="muted" x="450" y="212.5" text-anchor="middle">—</text>
   <rect class="cell" x="538" y="166" width="168" height="85" rx="6" />
   <text x="548" y="189">Intuition</text>
-  <text class="mono" x="696" y="189" text-anchor="end">~1200</text>
+  <text class="mono" x="696" y="189" text-anchor="end">candidate</text>
   <rect class="cell" x="710" y="166" width="168" height="85" rx="6" />
   <rect class="gap" x="716" y="178" width="156" height="59" rx="5" />
   <text class="gaptext b" x="724" y="194">Rule tree</text>
@@ -102,7 +102,7 @@
   <text class="gaptext" x="552" y="315">the value net</text>
   <rect class="cell" x="710" y="257" width="168" height="110" rx="6" />
   <text x="720" y="280">Rule list</text>
-  <text class="mono" x="868" y="280" text-anchor="end">~1680</text>
+  <text class="mono" x="868" y="280" text-anchor="end">candidate</text>
   <rect class="cell" x="882" y="257" width="168" height="110" rx="6" />
   <text class="muted" x="966" y="316" text-anchor="middle">—</text>
   <text class="h" x="36" y="396">Chains of free turns</text>
@@ -142,7 +142,7 @@
   <text x="376" y="559">Spoiler</text>
   <text class="mono" x="524" y="559" text-anchor="end">1468</text>
   <text x="376" y="577">Grandmaster</text>
-  <text class="mono" x="524" y="577" text-anchor="end">dormant</text>
+  <text class="mono" x="524" y="577" text-anchor="end">shelved</text>
   <text x="376" y="595">+ quiescence</text>
   <text class="mono" x="524" y="595" text-anchor="end">tried</text>
   <rect class="cell" x="538" y="464" width="168" height="146" rx="6" />

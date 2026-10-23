@@ -1,10 +1,10 @@
-/** Family "one-move": play each pit once, score the position after it, and stop there. */
+/** Players one move ahead: play each pit once, score the position after it, and stop there. */
 import { validMoves } from "../../game/engine.ts";
 import type { GameState } from "../../game/types.ts";
 import type { Bot, Evaluator, Rng } from "../contracts.ts";
-import { banked, exposed, onSide, threats } from "../search/evaluate.ts";
+import { banked, exposed, onSide, threats } from "../judges/evaluate.ts";
 import { Boards, playOn } from "../search/moves.ts";
-import { factsOf, followRules, type Rule } from "../search/rules.ts";
+import { factsOf, followRules, type Rule } from "../judges/rules.ts";
 
 export interface OneMoveOptions {
   /** Play the move that scores best (the default), or the worst. */
@@ -89,7 +89,7 @@ export class StrikerBot extends OneMoveBot {
 
 /**
  * Rule list: Intuition's policy net decompiled into if/then rules a person could follow at the
- * board (search/rules.ts). Each move is judged by what it does and the opponent's best answer to
+ * board (judges/rules.ts). Each move is judged by what it does and the opponent's best answer to
  * it; the first rule that some move passes picks among those that pass.
  */
 export class RuleListBot implements Bot {

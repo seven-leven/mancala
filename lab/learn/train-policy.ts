@@ -1,6 +1,6 @@
 /**
- * Trains Intuition's policy net (src/bots/search/policy.ts) on positions from policy-data.ts, and
- * writes its weights to src/bots/search/policy-weights.ts.
+ * Trains Intuition's policy net (src/bots/judges/policy.ts) on positions from policy-data.ts, and
+ * writes its weights to src/bots/judges/policy-weights.ts.
  *
  *   node lab/learn/train-policy.ts data/learn/policy.jsonl [epochs, default 40] [hidden sizes, default 64,64]
  *
@@ -10,8 +10,8 @@
  * weights.
  */
 import { readFileSync, writeFileSync } from "node:fs";
-import { encode, INPUTS } from "../../src/bots/search/net.ts";
-import { PolicyNet, type PolicyWeights } from "../../src/bots/search/policy.ts";
+import { encode, INPUTS } from "../../src/bots/judges/net.ts";
+import { PolicyNet, type PolicyWeights } from "../../src/bots/judges/policy.ts";
 import { DEFAULT_RULES, type GameState, type Player } from "../../src/game/types.ts";
 import { seeded } from "../../harness/match.ts";
 
@@ -197,10 +197,10 @@ console.log(`rounded, as the bot runs it: ${
   })
 }`);
 writeFileSync(
-  new URL("../../src/bots/search/policy-weights.ts", import.meta.url),
+  new URL("../../src/bots/judges/policy-weights.ts", import.meta.url),
   `/** Intuition's policy net (${INPUTS}-${H1}-${H2}-7), as lab/learn/train-policy.ts wrote it from ${n} positions. Generated: don't edit. */\n` +
     `import type { PolicyWeights } from "./policy.ts";\n\n// dprint-ignore\nexport const POLICY_WEIGHTS: PolicyWeights = ${
       JSON.stringify(weights)
     };\n`,
 );
-console.log("wrote src/bots/search/policy-weights.ts");
+console.log("wrote src/bots/judges/policy-weights.ts");

@@ -1,10 +1,10 @@
-/** Intuition's policy net (src/bots/search/policy.ts), the Rule list's rules (search/rules.ts), and both bots. */
+/** Intuition's policy net (src/bots/judges/policy.ts), the Rule list's rules (judges/rules.ts), and both bots. */
 import { test } from "node:test";
 import { assert, assertEquals } from "./assert.ts";
 import { createBot, IntuitionBot, RuleListBot } from "../src/bots/bots.ts";
-import { PolicyNet } from "../src/bots/search/policy.ts";
-import { POLICY_WEIGHTS } from "../src/bots/search/policy-weights.ts";
-import { factsOf, followRules, type MoveFacts, passes, pickBy, RULES } from "../src/bots/search/rules.ts";
+import { PolicyNet } from "../src/bots/judges/policy.ts";
+import { POLICY_WEIGHTS } from "../src/bots/judges/policy-weights.ts";
+import { factsOf, followRules, type MoveFacts, passes, pickBy, RULES } from "../src/bots/judges/rules.ts";
 import { newGame, other, playTurn, storeOf, validMoves } from "../src/game/engine.ts";
 import { DEFAULT_RULES, type GameState, P1, P2 } from "../src/game/types.ts";
 

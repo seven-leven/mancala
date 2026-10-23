@@ -8,10 +8,10 @@
  *   node lab/learn/ranking.ts data/learn/loser.jsonl     (the loser's net, from the loser's moves)
  */
 import { readFileSync, writeFileSync } from "node:fs";
-import { exposed, freeTurnsReady } from "../../src/bots/search/evaluate.ts";
-import { LOSER_WEIGHTS } from "../../src/bots/search/loser-weights.ts";
-import { ValueNet } from "../../src/bots/search/net.ts";
-import { WEIGHTS } from "../../src/bots/search/weights.ts";
+import { exposed, freeTurnsReady } from "../../src/bots/judges/evaluate.ts";
+import { LOSER_WEIGHTS } from "../../src/bots/judges/loser-weights.ts";
+import { ValueNet } from "../../src/bots/judges/net.ts";
+import { WEIGHTS } from "../../src/bots/judges/weights.ts";
 import { other, playTurn, validMoves } from "../../src/game/engine.ts";
 import { DEFAULT_RULES, type GameState, type Player } from "../../src/game/types.ts";
 

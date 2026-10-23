@@ -1,4 +1,4 @@
-/** Family "mixed": one bot's move some of the time, another's (or a random one) the rest. */
+/** Players that mix: one bot's move some of the time, another's (or a random one) the rest. */
 import { validMoves } from "../../game/engine.ts";
 import type { GameState } from "../../game/types.ts";
 import type { Bot, Rng } from "../contracts.ts";

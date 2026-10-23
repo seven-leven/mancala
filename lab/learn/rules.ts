@@ -1,5 +1,5 @@
 /**
- * Decompiles Intuition's policy net into the Rule list bot's rules (src/bots/search/rules.ts): an
+ * Decompiles Intuition's policy net into the Rule list bot's rules (src/bots/judges/rules.ts): an
  * ordered list of if/then rules, mined one at a time to copy the net's choices.
  *
  *   node lab/learn/rules.ts data/learn/positions.jsonl [data/learn/policy.jsonl]
@@ -11,9 +11,9 @@
  * how often the rules, the net and Greedy play Minimax's move.
  */
 import { readFileSync, writeFileSync } from "node:fs";
-import { POLICY_WEIGHTS } from "../../src/bots/search/policy-weights.ts";
-import { PolicyNet } from "../../src/bots/search/policy.ts";
-import { factsOf, followRules, type MoveFacts, pickBy, type Rule } from "../../src/bots/search/rules.ts";
+import { POLICY_WEIGHTS } from "../../src/bots/judges/policy-weights.ts";
+import { PolicyNet } from "../../src/bots/judges/policy.ts";
+import { factsOf, followRules, type MoveFacts, pickBy, type Rule } from "../../src/bots/judges/rules.ts";
 import { Boards } from "../../src/bots/search/moves.ts";
 import { pitsOf } from "../../src/game/engine.ts";
 import { DEFAULT_RULES, type GameState, type Player } from "../../src/game/types.ts";

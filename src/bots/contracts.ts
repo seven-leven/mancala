@@ -27,8 +27,14 @@ export interface BotContext {
   timeMs: number;
 }
 
-/** How a bot decides, which is also where its file lives (src/bots/players/<family>.ts). */
-export type Family = "basic" | "one-move" | "chain" | "search" | "mixed" | "montecarlo";
+/**
+ * How a bot chooses its move, one axis of docs/images/bot-families (the rows): from the board as it
+ * is, one move ahead, following free-turn chains, searching a set depth (to win, or to lose),
+ * sampling a game tree, or mixing another bot's moves.
+ */
+export type Decides = "nothing" | "one-move" | "chain" | "search" | "lose" | "sampling" | "mix";
+/** What it judges positions by, the other axis (the columns). */
+export type Judges = "nothing" | "rules" | "net" | "formula" | "playouts";
 
 /** A bot as the game lists it: one entry in BOTS. */
 export interface BotSpec {
@@ -38,8 +44,15 @@ export interface BotSpec {
   level: string;
   /** One plain sentence on how it plays. */
   blurb: string;
-  family: Family;
+  decides: Decides;
+  judges: Judges;
   create(ctx: BotContext): Bot;
+}
+
+/** A bot kept out of the menus (DORMANT): a candidate waiting for a rating, or shelved; and why. */
+export interface DormantSpec extends BotSpec {
+  status: "candidate" | "shelved";
+  why: string;
 }
 
 /** How good the position after a move looks for `me`; one-move bots play the best (or worst) of these. */

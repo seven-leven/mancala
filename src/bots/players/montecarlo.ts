@@ -1,5 +1,5 @@
 /**
- * Family "montecarlo": bots that judge a move by playing many random games from it, instead of
+ * Players that sample a game tree: bots that judge a move by playing many random games from it, instead of
  * scoring positions. Monte Carlo tree search (UCT): grow a tree of moves from the position, choosing
  * which line to try next by UCB1 (good results so far, plus a bonus for lines tried less), finish
  * each try with a random game to the end, and play the move tried most.

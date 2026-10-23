@@ -56,7 +56,7 @@ in `src/bots/players/`.
 - [x] **A bot standard.** BOTS.md, TypeScript contracts (`Bot`, `BotSpec`, `BotContext`, `Evaluator`), and the eight
       existing bots rewritten against them (they play exactly as before: the tournament repeats game for game). The
       tournament now rates whatever is in `BOTS`.
-- [x] [#9](https://github.com/seven-leven/mancala/issues/9) **Evaluation pieces** in `src/bots/search/evaluate.ts`, each
+- [x] [#9](https://github.com/seven-leven/mancala/issues/9) **Evaluation pieces** in `src/bots/judges/evaluate.ts`, each
       a small function so bots can weigh them differently:
   - [x] store lead and seeds on your side (`banked`, `onSide`);
   - [x] exposure: loaded pits opposite an empty pit (`exposed`; Turtle uses it);
@@ -235,7 +235,7 @@ Steps, cheapest first:
 - [ ] **Training data where the search looks.** The net is only asked about the ends of DFS v2's lines (after a chain
       and an answer), so label those positions, not just positions from games.
 - [x] **The small net**, distilled from Minimax, trained in TypeScript (`lab/learn/`), weights in
-      `src/bots/search/weights.ts`. 16-16-16-1, 561 weights: winner right 90.8% on held-out positions (Minimax's
+      `src/bots/judges/weights.ts`. 16-16-16-1, 561 weights: winner right 90.8% on held-out positions (Minimax's
       evaluation: 71.1%). 32 and 64 wide were no stronger, and slower.
 - [x] **The hybrid bot:** DFS v2's search with the net at the leaves, in the menus as Wise (Learned DFS). Rated level
       with Minimax at 2074, at 6.5 ms a move against Minimax's 23.3 (about 28%), and 49.5% head to head over 800 games;
@@ -296,11 +296,10 @@ follow. Both are written, tested and registered in DORMANT.
 The code is split by purpose: `src/` ships the game, `tools/` builds and releases it, `harness/` measures the bots, and
 `lab/` holds experiments, with small results in `lab/results/` and every diagram redrawn by `npm run diagrams`.
 
-- [ ] **`src/bots/` by role:** `players/` (how a bot decides), `judges/` (what it judges by: `evaluate`, the nets and
+- [x] **`src/bots/` by role:** `players/` (how a bot decides), `judges/` (what it judges by: `evaluate`, the nets and
       their weights, the decompiled formulas and rules), `search/` (Minimax and the move helpers only).
-- [ ] **Two axes and a status in `BotSpec`:** `decides` and `judges` instead of one `family`, so the family diagram is
-      drawn from the registry; and `status` (`candidate`, `rated`, `retired`) with a reason, in place of comments in
-      DORMANT.
+- [x] **Two axes and a status in `BotSpec`:** `decides` and `judges` instead of one `family`, so the family diagram is
+      drawn from the registry; and, in DORMANT, `status` (`candidate` or `shelved`) with the reason in `why`.
 - [ ] **One command to evaluate a bot:** `npm run eval -- <bot>`: speed, perfect-move accuracy and a placement rating
       against its neighbours, written as a report card to `lab/results/<bot>.md`.
 - [ ] **One experiment log:** `lab/LOG.md`, a short entry per experiment (question, setup, result, decision), so TODO

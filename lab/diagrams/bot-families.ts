@@ -1,98 +1,64 @@
 /**
  * docs/images/bot-families: every bot by how it decides (rows) and what it judges positions by
- * (columns), with the gaps worth trying, and the new directions beyond the grid. Elo from the
- * README's table; update the entries here when the ladder changes.
+ * (columns), from the registry's `decides` and `judges` (src/bots/bots.ts) and the ratings; with
+ * the gaps worth trying, written here, and the new directions beyond the grid.
  */
+import { BOTS, DORMANT } from "../../src/bots/bots.ts";
+import type { BotSpec, Decides, Judges } from "../../src/bots/contracts.ts";
+import { RATINGS } from "../../src/bots/ratings.ts";
 import { BASE_CSS, type Diagram, page, rect, text } from "./svg.ts";
 
 type Entry =
   | { kind: "bot"; name: string; elo: string }
   | { kind: "gap"; lines: string[]; free: boolean }
   | { kind: "none" };
-const bot = (name: string, elo: string): Entry => ({ kind: "bot", name, elo });
 /** A gap worth trying; `free`: the cheapest or most promising. */
 const gap = (...lines: string[]): Entry => ({ kind: "gap", lines, free: false });
 const hot = (...lines: string[]): Entry => ({ kind: "gap", lines, free: true });
-const NONE: Entry = { kind: "none" };
 
-const COLS = [
-  ["NOTHING", "no judgement at all"],
-  ["A HAND-WRITTEN SCORE", "rules and evaluate()"],
-  ["A LEARNED NET", "trained on games"],
-  ["A DECOMPILED FORMULA", "the net's logic, written out"],
-  ["RANDOM PLAYOUTS", "games played to the end"],
+const COLS: [Judges, string, string][] = [
+  ["nothing", "NOTHING", "no judgement at all"],
+  ["rules", "A HAND-WRITTEN SCORE", "rules and evaluate()"],
+  ["net", "A LEARNED NET", "trained on games"],
+  ["formula", "A DECOMPILED FORMULA", "the net's logic, written out"],
+  ["playouts", "RANDOM PLAYOUTS", "games played to the end"],
 ];
-const ROWS: [string, string, Entry[][]][] = [
-  ["No look-ahead", "picks from the board as it is", [
-    [bot("Random", "1000"), bot("First", "dormant")],
-    [NONE],
-    [bot("Intuition", "~1200")],
-    [gap("Rule tree", "Intuition's choices", "as a decision tree")],
-    [NONE],
-  ]],
-  ["One move ahead", "scores each move's result", [
-    [NONE],
-    [
-      bot("Greedy", "1324"),
-      bot("Turtle", "1285"),
-      bot("Striker", "1163"),
-      bot("Hoarder", "909"),
-      bot("Generous", "567"),
-    ],
-    [gap("Net greedy", "one move, judged by", "the value net")],
-    [bot("Rule list", "~1680")],
-    [NONE],
-  ]],
-  ["Chains of free turns", "its chains, then yours", [
-    [NONE],
-    [bot("DFS v2", "2041"), bot("DFS", "2007"), bot("Chainer", "1492")],
-    [bot("Learned DFS", "2058")],
-    [hot("Decompiled DFS", "its weights are written:", "one registry entry")],
-    [NONE],
-  ]],
-  ["Fixed-depth search", "every line, a set depth", [
-    [NONE],
-    [
-      bot("Minimax", "2068"),
-      bot("Shrewd", "1925"),
-      bot("Lookahead", "1742"),
-      bot("Planner", "1670"),
-      bot("Spoiler", "1468"),
-      bot("Grandmaster", "dormant"),
-      bot("+ quiescence", "tried"),
-    ],
-    [gap("Net minimax", "Minimax's search,", "the net at the leaves")],
-    [gap("Formula minimax", "Minimax's search,", "the formula at the leaves")],
-    [NONE],
-  ]],
-  ["Search to lose", "aims for the worst result", [
-    [NONE],
-    [bot("Pushover", "489")],
-    [bot("Learned pushover", "456")],
-    [bot("Decompiled pushover", "480")],
-    [gap("Monte Carlo to lose", "playouts counted", "as losses won")],
-  ]],
-  ["Sampling a game tree", "tries the promising lines more", [
-    [NONE],
-    [gap("Smart playouts", "MCTS with Greedy", "playing the games out")],
-    [hot("Net-guided MCTS", "AlphaZero-lite: the net", "steers and scores the tree")],
-    [NONE],
-    [bot("Monte Carlo", "1857")],
-  ]],
-  ["Mixes", "another bot, some of the time", [
-    [NONE],
-    [
-      bot("Sometimes planner", "1556"),
-      bot("Sometimes greedy", "1185"),
-      bot("Fickle", "804"),
-      bot("Sometimes generous", "731"),
-      hot("Strength dial", "softmax over Minimax: one", "bot, any Elo you set"),
-    ],
-    [NONE],
-    [NONE],
-    [NONE],
-  ]],
+const ROWS: [Decides, string, string][] = [
+  ["nothing", "No look-ahead", "picks from the board as it is"],
+  ["one-move", "One move ahead", "scores each move's result"],
+  ["chain", "Chains of free turns", "its chains, then yours"],
+  ["search", "Fixed-depth search", "every line, a set depth"],
+  ["lose", "Search to lose", "aims for the worst result"],
+  ["sampling", "Sampling a game tree", "tries the promising lines more"],
+  ["mix", "Mixes", "another bot, some of the time"],
 ];
+/** What isn't a bot: ideas tried and dropped, and gaps worth trying, by row and column. */
+const EXTRA: Partial<Record<`${Decides}/${Judges}`, Entry[]>> = {
+  "nothing/formula": [gap("Rule tree", "Intuition's choices", "as a decision tree")],
+  "one-move/net": [gap("Net greedy", "one move, judged by", "the value net")],
+  "chain/formula": [hot("Decompiled DFS", "its weights are written:", "one registry entry")],
+  "search/rules": [{ kind: "bot", name: "+ quiescence", elo: "tried" }],
+  "search/net": [gap("Net minimax", "Minimax's search,", "the net at the leaves")],
+  "search/formula": [gap("Formula minimax", "Minimax's search,", "the formula at the leaves")],
+  "lose/playouts": [gap("Monte Carlo to lose", "playouts counted", "as losses won")],
+  "sampling/rules": [gap("Smart playouts", "MCTS with Greedy", "playing the games out")],
+  "sampling/net": [hot("Net-guided MCTS", "AlphaZero-lite: the net", "steers and scores the tree")],
+  "mix/rules": [hot("Strength dial", "softmax over Minimax: one", "bot, any Elo you set")],
+};
+
+/** A cell's entries: its rated bots strongest first, then its dormant ones, then the extras. */
+function cell(d: Decides, j: Judges): Entry[] {
+  const rated = (Object.entries(BOTS) as [keyof typeof BOTS, BotSpec][])
+    .filter(([, b]) => b.decides === d && b.judges === j)
+    .sort(([a], [b]) => RATINGS[b].elo - RATINGS[a].elo)
+    .map(([id, b]): Entry => ({ kind: "bot", name: b.label, elo: String(RATINGS[id].elo) }));
+  const dormant = Object.values(DORMANT)
+    .filter((b) => b.decides === d && b.judges === j)
+    .map((b): Entry => ({ kind: "bot", name: b.label, elo: b.status }));
+  const all = [...rated, ...dormant, ...(EXTRA[`${d}/${j}`] ?? [])];
+  return all.length ? all : [{ kind: "none" }];
+}
+
 const CARDS: [string, string[]][] = [
   ["Learning without a teacher", [
     "Self-play / TD learning: the only",
@@ -172,11 +138,12 @@ export const botFamilies: Diagram = {
     const x0 = M + LW;
     o.push(rect(M, y, W - 2 * M, 46, "head", 6), text(M + 12, y + 20, "DECIDES BY ↓", "label"));
     o.push(text(M + 12, y + 36, "JUDGED BY →", "label"));
-    COLS.forEach(([head, sub], k) =>
+    COLS.forEach(([, head, sub], k) =>
       o.push(text(x0 + k * CW + 10, y + 20, head, "label"), text(x0 + k * CW + 10, y + 36, sub, "muted small"))
     );
     y += 52;
-    for (const [name, sub, cells] of ROWS) {
+    for (const [d, name, sub] of ROWS) {
+      const cells = COLS.map(([j]) => cell(d, j));
       const h = Math.max(Math.max(...cells.map((c) => c.reduce((a, e) => a + entryHeight(e), 0))) + 2 * PAD, 52);
       o.push(text(M + 12, y + PAD + 13, name, "h"), text(M + 12, y + PAD + 30, sub, "muted small"));
       cells.forEach((cell, k) => {

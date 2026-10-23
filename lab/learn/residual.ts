@@ -7,10 +7,10 @@
  *   node lab/learn/residual.ts data/learn/positions.jsonl
  */
 import { readFileSync, writeFileSync } from "node:fs";
-import { exposed, freeTurnsReady } from "../../src/bots/search/evaluate.ts";
+import { exposed, freeTurnsReady } from "../../src/bots/judges/evaluate.ts";
 import { Boards, playOn } from "../../src/bots/search/moves.ts";
-import { ValueNet } from "../../src/bots/search/net.ts";
-import { WEIGHTS } from "../../src/bots/search/weights.ts";
+import { ValueNet } from "../../src/bots/judges/net.ts";
+import { WEIGHTS } from "../../src/bots/judges/weights.ts";
 import { FREE_TURN, other, validMoves } from "../../src/game/engine.ts";
 import { DEFAULT_RULES, type GameState, type Player } from "../../src/game/types.ts";
 

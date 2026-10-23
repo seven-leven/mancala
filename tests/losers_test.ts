@@ -2,10 +2,10 @@
 import { test } from "node:test";
 import { assert, assertEquals } from "./assert.ts";
 import { createBot, PushoverBot } from "../src/bots/bots.ts";
-import { formulaScore, LOSER_RANKING_WEIGHTS, rankingScore } from "../src/bots/search/decompiled.ts";
-import { evaluate } from "../src/bots/search/evaluate.ts";
-import { LOSER_WEIGHTS } from "../src/bots/search/loser-weights.ts";
-import { encode, encodeFor, loserNetScore, ValueNet } from "../src/bots/search/net.ts";
+import { formulaScore, LOSER_RANKING_WEIGHTS, rankingScore } from "../src/bots/judges/decompiled.ts";
+import { evaluate } from "../src/bots/judges/evaluate.ts";
+import { LOSER_WEIGHTS } from "../src/bots/judges/loser-weights.ts";
+import { encode, encodeFor, loserNetScore, ValueNet } from "../src/bots/judges/net.ts";
 import { newGame, playTurn, validMoves } from "../src/game/engine.ts";
 import { DEFAULT_RULES, type GameState, P1, P2 } from "../src/game/types.ts";
 

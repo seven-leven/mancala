@@ -1,9 +1,9 @@
-/** Family "search": bots built on the Minimax search (search/minimax.ts), each asking it something different. */
+/** Players that search: bots built on the Minimax search (search/minimax.ts), each asking it something different. */
 import { validMoves } from "../../game/engine.ts";
 import type { GameState } from "../../game/types.ts";
 import type { Bot, Evaluator, Rng } from "../contracts.ts";
 import { search, type SearchOptions, type SearchResult } from "../search/minimax.ts";
-import { WIN } from "../search/evaluate.ts";
+import { WIN } from "../judges/evaluate.ts";
 import { Boards, playOn } from "../search/moves.ts";
 
 /** How a search bot describes what it saw. */

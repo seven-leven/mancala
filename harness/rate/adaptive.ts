@@ -34,9 +34,9 @@ export function weight(id: BotId | DormantId): number {
   const spec = isDormantId(id) ? DORMANT[id] : BOTS[id];
   return id === "minimax" || id === "grandmaster"
     ? 100
-    : spec.family === "search"
+    : spec.decides === "search" || spec.decides === "lose"
     ? 10
-    : spec.family === "chain"
+    : spec.decides === "chain"
     ? 2
     : 1;
 }

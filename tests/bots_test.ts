@@ -5,6 +5,7 @@ import {
   createBot,
   DfsBot,
   DfsReplyBot,
+  DORMANT,
   FirstBot,
   GenerousBot,
   GreedyBot,
@@ -18,7 +19,7 @@ import {
   TwoMoveBot,
 } from "../src/bots/bots.ts";
 import { MonteCarloBot } from "../src/bots/players/montecarlo.ts";
-import { exposed, freeTurnsReady, lead, mobility, threats } from "../src/bots/search/evaluate.ts";
+import { exposed, freeTurnsReady, lead, mobility, threats } from "../src/bots/judges/evaluate.ts";
 import { search, shrinkTable } from "../src/bots/search/minimax.ts";
 import { Boards, playOn } from "../src/bots/search/moves.ts";
 import { FREE_TURN, newGame, playTurn, validMoves } from "../src/game/engine.ts";
@@ -145,6 +146,13 @@ test("first plays the leftmost pit from its own side", () => {
   const s = position([0, 0, 4, 1, 0, 0, 0, 2, 0, 3, 0, 0, 5, 0, 0, 0]);
   assertEquals(new FirstBot().choose(s), 2); // Player 1: lowest index
   assertEquals(new FirstBot().choose({ ...s, current: P2 }), 12); // Player 2: their left is pit 13
+});
+
+test("every dormant bot says whether it's a candidate or shelved, and why", () => {
+  for (const [id, spec] of Object.entries(DORMANT)) {
+    assert(["candidate", "shelved"].includes(spec.status), `${id}: ${spec.status}`);
+    assert(spec.why.length > 20, `${id} needs a reason`);
+  }
 });
 
 test("every bot in BOTS plays legal pits, in both modes, from either side", () => {
