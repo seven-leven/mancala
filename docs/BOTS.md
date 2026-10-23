@@ -106,7 +106,9 @@ a depth, a weight), so it can be placed where the ladder needs it. Note the knob
 2. Add it to `BOTS` with a label, a provisional level and a blurb. The order of `BOTS` is the menus' order: weakest
    first.
 3. Give it a test of its character: a position where it must make (or refuse) its typical move.
-4. Place it and rate it: [RATING.md](RATING.md#placing-a-new-bot), then [after `--write`](RATING.md#after---write).
+4. Measure it: `npm run eval -- <id>` writes its report card to `lab/results/<id>.md` (speed, perfect moves against the
+   solver, and a placement), and add an entry to [lab/LOG.md](../lab/LOG.md).
+5. Place it and rate it: [RATING.md](RATING.md#placing-a-new-bot), then [after `--write`](RATING.md#after---write).
 
 A bot that lands on top of another adds nothing to the menu. Keep it out of `BOTS`, or retire it.
 

@@ -300,9 +300,9 @@ The code is split by purpose: `src/` ships the game, `tools/` builds and release
       their weights, the decompiled formulas and rules), `search/` (Minimax and the move helpers only).
 - [x] **Two axes and a status in `BotSpec`:** `decides` and `judges` instead of one `family`, so the family diagram is
       drawn from the registry; and, in DORMANT, `status` (`candidate` or `shelved`) with the reason in `why`.
-- [ ] **One command to evaluate a bot:** `npm run eval -- <bot>`: speed, perfect-move accuracy and a placement rating
+- [x] **One command to evaluate a bot:** `npm run eval -- <bot>`: speed, perfect-move accuracy and a placement rating
       against its neighbours, written as a report card to `lab/results/<bot>.md`.
-- [ ] **One experiment log:** `lab/LOG.md`, a short entry per experiment (question, setup, result, decision), so TODO
+- [x] **One experiment log:** `lab/LOG.md`, a short entry per experiment (question, setup, result, decision), so TODO
       keeps only open work.
 
 ## Interface

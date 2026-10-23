@@ -23,6 +23,7 @@
     "release": "node tools/release.ts",
     "bench": "node harness/bench.ts",
     "accuracy": "node harness/accuracy.ts",
+    "eval": "node harness/eval.ts",
     "solve": "node lab/solve/grid.ts",
     "diagrams": "node lab/diagrams/main.ts"
   },
