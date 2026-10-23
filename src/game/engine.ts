@@ -70,7 +70,7 @@ export function winnerOf(s: GameState): Player | null {
 }
 
 /** What a turn did, besides the new position. */
-interface TurnInfo {
+export interface TurnInfo {
   captured: number;
   relays: number;
 }

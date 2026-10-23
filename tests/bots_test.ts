@@ -5,6 +5,7 @@ import {
   createBot,
   DfsBot,
   DfsReplyBot,
+  DORMANT,
   FirstBot,
   GenerousBot,
   GreedyBot,
@@ -18,12 +19,12 @@ import {
   TwoMoveBot,
 } from "../src/bots/bots.ts";
 import { MonteCarloBot } from "../src/bots/players/montecarlo.ts";
-import { exposed, freeTurnsReady, lead, mobility, threats } from "../src/bots/search/evaluate.ts";
-import { search } from "../src/bots/search/minimax.ts";
+import { exposed, freeTurnsReady, lead, mobility, threats } from "../src/bots/judges/evaluate.ts";
+import { search, shrinkTable } from "../src/bots/search/minimax.ts";
 import { Boards, playOn } from "../src/bots/search/moves.ts";
 import { FREE_TURN, newGame, playTurn, validMoves } from "../src/game/engine.ts";
 import { DEFAULT_RULES, type GameState, P1, P2 } from "../src/game/types.ts";
-import { seeded } from "../tools/match.ts";
+import { seeded } from "../harness/match.ts";
 
 const position = (pits: number[], current = P1): GameState => ({
   rules: { ...DEFAULT_RULES },
@@ -99,6 +100,23 @@ test("minimax searches no deeper than it's told", () => {
   assert(r.nodes > 0);
 });
 
+test("shrinking the search's table gives back memory and changes no answer", () => {
+  shrinkTable(); // already small: nothing to do
+  // Deep enough to store far more positions than the table starts with, so it grows.
+  //                                 0  1  2  3  4  5  6  7  8  9 10 11 12 13  M1  M2
+  const s: GameState = {
+    rules: DEFAULT_RULES,
+    pits: [1, 0, 5, 1, 1, 11, 0, 2, 1, 8, 0, 0, 5, 8, 22, 33],
+    current: P1,
+    gameOver: false,
+  };
+  const big = search(s, { depth: 6 });
+  assert(big.nodes > 1 << 16, `searched ${big.nodes} positions`);
+  shrinkTable();
+  const again = search(s, { depth: 6 });
+  assertEquals([again.move, again.score], [big.move, big.score]);
+});
+
 test("minimax stops on time", () => {
   const started = performance.now();
   const r = search(newGame(DEFAULT_RULES, P2), { timeMs: 150 });
@@ -107,11 +125,34 @@ test("minimax stops on time", () => {
   assert(validMoves(newGame(DEFAULT_RULES, P2)).includes(r.move!));
 });
 
+test("quiescence looks past the depth limit at free turns and captures, and changes nothing when off", () => {
+  //                  0  1  2  3  4  5  6  7  8  9 10 11 12 13  M1  M2
+  const s = position([4, 1, 2, 6, 5, 1, 2, 0, 4, 2, 12, 5, 0, 0, 16, 38]);
+  // One move deep, it plays pit 1; following the noisy moves past that, it finds pit 2, as six deep does.
+  assertEquals(search(s, { depth: 1 }).move, 1);
+  assertEquals(search(s, { depth: 1, quiescence: 4 }).move, 2);
+  assertEquals(search(s, { depth: 6 }).move, 2);
+  assertEquals(search(s, { depth: 3, quiescence: 0 }), search(s, { depth: 3 }));
+  // Playing to lose, both sides want the same thing: quiescence still returns a legal move.
+  assert(validMoves(s).includes(search(s, { depth: 2, quiescence: 4, aim: "lose" }).move!));
+  // And it stops on time in the middle of it.
+  const started = performance.now();
+  const r = search(newGame(DEFAULT_RULES, P2), { timeMs: 30, quiescence: 12 });
+  assert(performance.now() - started < 1500 && validMoves(newGame(DEFAULT_RULES, P2)).includes(r.move!));
+});
+
 test("first plays the leftmost pit from its own side", () => {
   //                  0  1  2  3  4  5  6  7  8  9 10 11 12 13 M1 M2
   const s = position([0, 0, 4, 1, 0, 0, 0, 2, 0, 3, 0, 0, 5, 0, 0, 0]);
   assertEquals(new FirstBot().choose(s), 2); // Player 1: lowest index
   assertEquals(new FirstBot().choose({ ...s, current: P2 }), 12); // Player 2: their left is pit 13
+});
+
+test("every dormant bot says whether it's a candidate or shelved, and why", () => {
+  for (const [id, spec] of Object.entries(DORMANT)) {
+    assert(["candidate", "shelved"].includes(spec.status), `${id}: ${spec.status}`);
+    assert(spec.why.length > 20, `${id} needs a reason`);
+  }
 });
 
 test("every bot in BOTS plays legal pits, in both modes, from either side", () => {

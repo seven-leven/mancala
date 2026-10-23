@@ -1,7 +1,7 @@
 # The rating run's ETA
 
 How the rating harness predicts how long a run has left, how well it does, and the roadmap to doing better (ETA 2.0).
-The code is [tools/tournament/eta.ts](../tools/tournament/eta.ts); its tests are `tests/eta_test.ts`.
+The code is [harness/rate/eta.ts](../harness/rate/eta.ts); its tests are `tests/eta_test.ts`.
 
 ## How it works now
 

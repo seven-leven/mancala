@@ -1,5 +1,5 @@
 /**
- * The rating run's ETA (tools/tournament/eta.ts): reading an earlier run's timeline from its log,
+ * The rating run's ETA (harness/rate/eta.ts): reading an earlier run's timeline from its log,
  * the two ways of estimating what's left, and the 80% range around them.
  */
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
@@ -17,7 +17,7 @@ import {
   runKey,
   timeAt,
   withBand,
-} from "../tools/tournament/eta.ts";
+} from "../harness/rate/eta.ts";
 
 const run = { games: 40, bots: ["random", "greedy"], workers: 4, adaptive: false, opening: "random-moves" };
 const key = runKey(run);

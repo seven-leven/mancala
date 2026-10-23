@@ -1,9 +1,9 @@
-/** Family "search": bots built on the Minimax search (search/minimax.ts), each asking it something different. */
+/** Players that search: bots built on the Minimax search (search/minimax.ts), each asking it something different. */
 import { validMoves } from "../../game/engine.ts";
 import type { GameState } from "../../game/types.ts";
 import type { Bot, Evaluator, Rng } from "../contracts.ts";
 import { search, type SearchOptions, type SearchResult } from "../search/minimax.ts";
-import { WIN } from "../search/evaluate.ts";
+import { WIN } from "../judges/evaluate.ts";
 import { Boards, playOn } from "../search/moves.ts";
 
 /** How a search bot describes what it saw. */
@@ -18,8 +18,8 @@ function describe(r: SearchResult): string | null {
 /** Alpha-beta search that plans for the opponent's replies too. See search/minimax.ts. */
 export class MinimaxBot implements Bot {
   private last: SearchResult | null = null;
-  private opts: { timeMs?: number; depth?: number };
-  constructor(opts: { timeMs?: number; depth?: number } = { timeMs: 700 }) {
+  private opts: { timeMs?: number; depth?: number; quiescence?: number };
+  constructor(opts: { timeMs?: number; depth?: number; quiescence?: number } = { timeMs: 700 }) {
     this.opts = opts;
   }
   choose(state: GameState): number | null {

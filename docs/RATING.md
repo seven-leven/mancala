@@ -4,8 +4,8 @@ How the bots get their Elo, how to run a rating, and how to read what it prints.
 README shows the ratings, [BOTS.md](BOTS.md) says how to build a bot, and this says how to rate one.
 
 Two harnesses, two words. The **test harness** (`npm test`, `tests/`) checks the code is correct and runs on every push.
-The **rating harness** (`npm run rate`, `tools/tournament/`) plays the bots against each other to set their Elo, and
-runs by hand. A test run, a rating run.
+The **rating harness** (`npm run rate`, `harness/rate/`) plays the bots against each other to set their Elo, and runs by
+hand. A test run, a rating run.
 
 ![A rating session in five steps: decide, place, rate, read, publish](images/rating-session.svg)
 
@@ -89,7 +89,7 @@ ratings in the menus.
 
 ### Step by step
 
-What the rating harness does, and when. The code is in `tools/tournament/`: `main.ts` runs it, `play.ts` plays a matched
+What the rating harness does, and when. The code is in `harness/rate/`: `main.ts` runs it, `play.ts` plays a matched
 pair, `pool.ts` hands pairs to the workers.
 
 **Once, at the start of a run:**
@@ -173,9 +173,9 @@ were dropped.
 
 **Rounds.** One round is one matched pair for every pairing. Pairings run in parallel on a pool of workers, slowest
 first (by the last round's times), so a round doesn't end with one long Minimax pairing while the other cores wait. A
-checkpoint (`tools/tournament/checkpoint.json`, git-ignored) is saved after every round. Ctrl+C once stops after the
-games in progress and drops the unfinished round; twice stops at once. `--resume` carries on exactly as a straight run
-would have.
+checkpoint (`harness/rate/checkpoint.json`, git-ignored) is saved after every round. Ctrl+C once stops after the games
+in progress and drops the unfinished round; twice stops at once. `--resume` carries on exactly as a straight run would
+have.
 
 **Repeatable.** Every pairing has its own seed from the round and the two bots, so it plays the same games whichever
 worker runs it and in whatever order. Search bots use a fixed depth here (`mode: "rate"`), not a time limit, so the
@@ -324,7 +324,7 @@ Update this section after each full rating that changes the shape.
 
 ## The maths
 
-The formulas behind the sections above, for checking or changing `tools/tournament/elo.ts` and `src/app/history.ts`.
+The formulas behind the sections above, for checking or changing `harness/rate/elo.ts` and `src/app/history.ts`.
 Everything else on this page says the same things in words.
 
 **The model.** Each bot has a strength γ, and bot i beats bot j with probability γᵢ / (γᵢ + γⱼ) (Bradley–Terry). On the

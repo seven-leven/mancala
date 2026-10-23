@@ -1,86 +1,85 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 760" width="720" height="760" role="img" aria-labelledby="t d">
   <title id="t">The learned bot: how it is trained and how it plays</title>
   <desc id="d">Training, offline: varied games give 200,000 positions, Minimax labels each one at depth 6, and a small value network is trained to match the labels; its 561 weights are committed. Play, every move: from the position, DFS v2's chain search follows the bot's own chains and the opponent's best answer, the value network scores each position at the end of a line, and the best move is played. The network takes 16 numbers (the pits and stores, from the mover's side), has two hidden layers of 16, and gives one value. It ties Minimax at about a third of its time, and could improve by self-play under the pie rule.</desc>
-  <defs>
-    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path class="tip" d="M0 0L10 5L0 10z" />
-    </marker>
-    <marker id="ak" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path class="tip key" d="M0 0L10 5L0 10z" />
-    </marker>
-  </defs>
   <style>svg { --ink: #161514; --muted: #6b6760; --rule: #dfdad0; --strong: #cbc4b6; --accent: #a8483f; --bg: #f6f4ef; --surface: #fffdf9; --tint: #f3e6e1; }
   @media (prefers-color-scheme: dark) {
     svg { --ink: #f6f4ef; --muted: rgba(246,244,239,0.62); --rule: rgba(246,244,239,0.14); --strong: rgba(246,244,239,0.3); --accent: #e39a86; --bg: #161514; --surface: #1f1d1b; --tint: rgba(227,154,134,0.12); }
   }
   text { font: 12px Inter, system-ui, sans-serif; fill: var(--ink); }
-  .title { font: 400 22px "Instrument Serif", Georgia, serif; }
+  .title { font: 400 26px "Instrument Serif", Georgia, serif; }
   .label { font-size: 10.5px; font-weight: 600; letter-spacing: 1.4px; fill: var(--muted); }
   .h { font-size: 13px; font-weight: 600; }
   .muted { fill: var(--muted); }
   .small { font-size: 11px; }
   .mono { font: 11px "IBM Plex Mono", ui-monospace, Consolas, monospace; fill: var(--muted); }
   .accent { fill: var(--accent); }
-  .bg { fill: var(--bg); }
+  .page { fill: var(--bg); }
+  .tint { fill: var(--tint); }
   .box { fill: var(--surface); stroke: var(--strong); stroke-width: 1; }
   .box.key { stroke: var(--accent); stroke-width: 1.5; }
-  .box.later { fill: none; stroke: var(--strong); stroke-dasharray: 5 4; }
-  .tint { fill: var(--tint); }
   .arrow { stroke: var(--muted); stroke-width: 1.5; fill: none; marker-end: url(#a); }
   .arrow.key { stroke: var(--accent); marker-end: url(#ak); }
-  .arrow.later { stroke-dasharray: 5 4; }
+  .tip { fill: var(--muted); }
+  .tip.key { fill: var(--accent); }
+  .title { font-size: 22px; }
   .wire { stroke: var(--rule); stroke-width: 0.8; }
   .node { fill: var(--surface); stroke: var(--muted); stroke-width: 1.2; }
-  .node.out { fill: var(--accent); stroke: var(--accent); }
-  .tip { fill: var(--muted); }
-  .tip.key { fill: var(--accent); }</style>
-  <rect class="bg" width="720" height="760" rx="12" />
+  .node.out { fill: var(--accent); stroke: var(--accent); }</style>
+  <rect class="page" width="720" height="760" rx="12" />
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="tip" d="M 0 0 L 10 5 L 0 10 z" />
+    </marker>
+    <marker id="ak" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="tip key" d="M 0 0 L 10 5 L 0 10 z" />
+    </marker>
+  </defs>
   <text class="title" x="24" y="36">A learned bot</text>
   <text class="muted small" x="696" y="36" text-anchor="end">built October 2026 · in the menus as Wise</text>
   <text class="label" x="24" y="80">TRAINING · OFFLINE, ONCE</text>
   <rect class="box" x="24" y="92" width="156" height="78" rx="8" />
   <text class="h" x="36" y="114">Varied games</text>
-  <text class="muted small" x="36" y="132">DFS v2, with some</text>
-  <text class="muted small" x="36" y="147">random moves mixed in</text>
+  <text class="muted small" x="36" y="133">DFS v2, with some</text>
+  <text class="muted small" x="36" y="148">random moves mixed in</text>
   <line class="arrow" x1="182" y1="131" x2="193" y2="131" />
   <rect class="box" x="196" y="92" width="156" height="78" rx="8" />
   <text class="h" x="208" y="114">Positions</text>
-  <text class="muted small" x="208" y="132">tools/learn/data.ts</text>
-  <text class="muted small" x="208" y="147">200,000 labelled</text>
+  <text class="mono" x="208" y="133">lab/learn/data.ts</text>
+  <text class="muted small" x="208" y="148">200,000 labelled</text>
   <line class="arrow" x1="354" y1="131" x2="365" y2="131" />
   <rect class="box" x="368" y="92" width="156" height="78" rx="8" />
   <text class="h" x="380" y="114">Teacher labels</text>
-  <text class="muted small" x="380" y="132">Minimax, depth 6,</text>
-  <text class="muted small" x="380" y="147">for the side to move</text>
+  <text class="muted small" x="380" y="133">Minimax, depth 6,</text>
+  <text class="muted small" x="380" y="148">for the side to move</text>
   <line class="arrow" x1="526" y1="131" x2="537" y2="131" />
   <rect class="box key" x="540" y="92" width="156" height="78" rx="8" />
   <text class="h" x="552" y="114">Train the net</text>
-  <text class="muted small" x="552" y="132">tools/learn/train.ts</text>
-  <text class="muted small" x="552" y="147">seeded, a minute</text>
+  <text class="mono" x="552" y="133">lab/learn/train.ts</text>
+  <text class="muted small" x="552" y="148">seeded, a minute</text>
   <rect class="box key" x="540" y="196" width="156" height="58" rx="8" />
   <text class="h" x="552" y="218">weights.ts</text>
-  <text class="muted small" x="552" y="236">561 weights</text>
+  <text class="muted small" x="552" y="237">561 weights</text>
   <line class="arrow key" x1="618" y1="172" x2="618" y2="193" />
   <text class="label" x="24" y="292">PLAY · IN THE BOT, EVERY MOVE</text>
   <rect class="box" x="24" y="304" width="156" height="78" rx="8" />
   <text class="h" x="36" y="326">The position</text>
-  <text class="muted small" x="36" y="344">pits, stores and</text>
-  <text class="muted small" x="36" y="359">whose turn it is</text>
+  <text class="muted small" x="36" y="345">pits, stores and</text>
+  <text class="muted small" x="36" y="360">whose turn it is</text>
   <line class="arrow" x1="182" y1="343" x2="193" y2="343" />
   <rect class="box" x="196" y="304" width="156" height="78" rx="8" />
   <text class="h" x="208" y="326">Chain search</text>
-  <text class="muted small" x="208" y="344">DFS v2: its chains,</text>
-  <text class="muted small" x="208" y="359">then your best answer</text>
+  <text class="muted small" x="208" y="345">DFS v2: its chains,</text>
+  <text class="muted small" x="208" y="360">then your best answer</text>
   <line class="arrow" x1="354" y1="343" x2="365" y2="343" />
   <rect class="box key" x="368" y="304" width="156" height="78" rx="8" />
   <text class="h" x="380" y="326">Value net</text>
-  <text class="muted small" x="380" y="344">scores the end of</text>
-  <text class="muted small" x="380" y="359">each line, in µs</text>
+  <text class="muted small" x="380" y="345">scores the end of</text>
+  <text class="muted small" x="380" y="360">each line, in µs</text>
   <line class="arrow" x1="526" y1="343" x2="537" y2="343" />
   <rect class="box" x="540" y="304" width="156" height="78" rx="8" />
   <text class="h" x="552" y="326">The move</text>
-  <text class="muted small" x="552" y="344">the line whose worst</text>
-  <text class="muted small" x="552" y="359">answer scores best</text>
+  <text class="muted small" x="552" y="345">the line whose worst</text>
+  <text class="muted small" x="552" y="360">answer scores best</text>
   <path class="arrow key" d="M618 256 V278 H446 V301" />
   <text class="accent small" x="456" y="274">loaded once</text>
   <text
@@ -238,7 +237,7 @@
   <circle class="node" cx="110" cy="497.5" r="6" />
   <circle class="node" cx="110" cy="513.0" r="6" />
   <circle class="node" cx="110" cy="528.5" r="6" />
-  <text class="muted" x="110" y="548.0" text-anchor="middle">⋮</text>
+  <text class="muted" x="110" y="548" text-anchor="middle">⋮</text>
   <circle class="node" cx="110" cy="559.5" r="6" />
   <circle class="node" cx="110" cy="575.0" r="6" />
   <circle class="node" cx="110" cy="590.5" r="6" />
@@ -247,7 +246,7 @@
   <circle class="node" cx="290" cy="499.7" r="6" />
   <circle class="node" cx="290" cy="517.4" r="6" />
   <circle class="node" cx="290" cy="535.1" r="6" />
-  <text class="muted" x="290" y="556.8571428571429" text-anchor="middle">⋮</text>
+  <text class="muted" x="290" y="556.9" text-anchor="middle">⋮</text>
   <circle class="node" cx="290" cy="570.6" r="6" />
   <circle class="node" cx="290" cy="588.3" r="6" />
   <circle class="node" cx="290" cy="606.0" r="6" />
@@ -255,7 +254,7 @@
   <circle class="node" cx="470" cy="499.7" r="6" />
   <circle class="node" cx="470" cy="517.4" r="6" />
   <circle class="node" cx="470" cy="535.1" r="6" />
-  <text class="muted" x="470" y="556.8571428571429" text-anchor="middle">⋮</text>
+  <text class="muted" x="470" y="556.9" text-anchor="middle">⋮</text>
   <circle class="node" cx="470" cy="570.6" r="6" />
   <circle class="node" cx="470" cy="588.3" r="6" />
   <circle class="node" cx="470" cy="606.0" r="6" />

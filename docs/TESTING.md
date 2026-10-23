@@ -92,7 +92,7 @@ and say in a comment why the position matters ("either move makes 50 of 98, a cl
 
 **Nothing left to chance.**
 
-- Randomness comes from `seeded()` in `tools/match.ts`, so a failure repeats. Never `Math.random`.
+- Randomness comes from `seeded()` in `harness/match.ts`, so a failure repeats. Never `Math.random`.
 - When the code itself reaches for something global (`Math.random`, `localStorage`, `document`), replace it in the test
   and put it back in a `finally`, so one test can't leak into the next.
 - No wall-clock assertions: timings vary from machine to machine. Check a time limit loosely (it stopped), never
@@ -124,7 +124,7 @@ What no test loads, and so isn't counted:
 - **The page.** `src/main.ts`, `src/app/game.ts` (the turn loop: undo, hint, which games are rated), `src/ui/` (the
   board, the picker, the stats dialog, sound) and `src/bots/client.ts` need a browser's DOM, so they're checked by hand
   in `npm run dev`. Testing them would take a DOM for the tests (such as happy-dom).
-- **The rating dashboard's server and page** (`tools/dashboard/server.ts`, `app.ts`): checked by hand with `npm run
+- **The rating dashboard's server and page** (`harness/dashboard/server.ts`, `app.ts`): checked by hand with `npm run
   rate -- 40 --ui`. What they show comes from `snapshot.ts`, which is tested.
 
 ## How they run

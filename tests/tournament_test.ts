@@ -2,10 +2,10 @@ import { test } from "node:test";
 import { assert, assertEquals, assertThrows } from "./assert.ts";
 import { newGame } from "../src/game/engine.ts";
 import { DEFAULT_RULES, M1, M2, P1, P2 } from "../src/game/types.ts";
-import { seeded } from "../tools/match.ts";
-import { aboveShare, fit, gapRange, misfits, ranges } from "../tools/tournament/elo.ts";
-import { isOpening, opening, OPENINGS, symmetricLayout } from "../tools/tournament/openings.ts";
-import { game } from "../tools/tournament/play.ts";
+import { seeded } from "../harness/match.ts";
+import { aboveShare, fit, gapRange, misfits, ranges } from "../harness/rate/elo.ts";
+import { isOpening, opening, OPENINGS, symmetricLayout } from "../harness/rate/openings.ts";
+import { game } from "../harness/rate/play.ts";
 import type { Bot } from "../src/bots/bots.ts";
 
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);

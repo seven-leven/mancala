@@ -1,8 +1,8 @@
-/** Family "chain": follow your own free turns as far as they go, and never look at the replies. */
+/** Players that follow their own free turns as far as they go (and, for DFS v2, the opponent's in answer). */
 import { FREE_TURN, score, validMoves } from "../../game/engine.ts";
 import type { GameState, Player } from "../../game/types.ts";
 import type { Bot } from "../contracts.ts";
-import { evaluate } from "../search/evaluate.ts";
+import { evaluate } from "../judges/evaluate.ts";
 import { Boards, playOn } from "../search/moves.ts";
 
 /**
