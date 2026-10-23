@@ -327,8 +327,13 @@ more), the engine about 5%, Minimax and Grandmaster about 8%. Tried and dropped:
       read only when there's a time limit, no function made per playout): about 9% faster, the same moves.
 - [ ] **The pushovers** (1.2–4.4 ms a move): a search that wants to lose can't prune. A time or node cap, as Pushover's
       depth 3 did, if they ever matter.
-- [ ] **One kind of board everywhere** (all byte arrays, the game's too), the only way byte arrays could pay: it touches
-      saved games, the UI and the notation, so only if a profile says boards are the cost.
+- [x] **One kind of board everywhere**: tried as a trial (every board a `Uint8Array`, the game's too, so `turn()` sees
+      one kind), and it ties plain arrays: the engine, Minimax, Grandmaster and Monte Carlo all within 2%, the noise
+      between runs, every move the same. V8 already keeps a short array of small whole numbers as packed integers, so a
+      board is effectively typed already. Not kept: it would touch saved games, the UI and the notation for nothing.
+- [ ] **Vectorised sowing** (a 16-byte board, one SIMD add a sowing): only inside a WebAssembly search (see Parked). A
+      turn sows about 3 times, 5 seeds a hand (median 4; a full lap 4% of the time), so in plain JS a precomputed add
+      wouldn't beat the short loop, and relays are sequential.
 
 ## Interface
 

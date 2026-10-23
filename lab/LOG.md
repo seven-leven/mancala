@@ -6,6 +6,17 @@ are when the work was done (or, for older entries, the release that carried it).
 
 A new bot's numbers come from `npm run eval -- <bot>`, whose report card goes in [results/](results/).
 
+## 2026-10-23 · Byte-array boards everywhere, and vectorised sowing
+
+- **Question:** would a custom board type (bytes, not a plain array) or vectorised sowing make the engine faster?
+- **Setup:** every board made a `Uint8Array` (the game's, the bots', the speed harness's), timed against plain arrays
+  with `npm run speed`, alternating twice. Sowing measured over 3,000 random games.
+- **Result:** a tie: the engine 6.42–6.46M turns a second against 6.24–6.37M, Minimax 7.5 against 7.7 ms a move, the
+  rest the same within 2%, every move the same. A turn sows 3.1 times and drops 15.8 seeds (hands: median 4, mean 5.1,
+  15 or more 4% of the time).
+- **Decision:** boards stay plain arrays (V8 already packs them as integers). Vectorised sowing only makes sense inside
+  a WebAssembly search, which stays parked.
+
 ## 2026-10-23 · The rest of the speed list
 
 - **Question:** do the open items in TODO's Speed list pay, still without changing a move?
