@@ -1,6 +1,6 @@
 /**
  * The learned net's logic, written out by hand: a weighted sum of readable pieces, fitted to the
- * net's preferences between positions reachable from the same one (tools/learn/ranking.ts). On the
+ * net's preferences between positions reachable from the same one (lab/learn/ranking.ts). On the
  * same search as the net it plays about halfway between Minimax's evaluation and the net.
  *
  * Weights are in seeds of store lead, from the side choosing (`me`). Its strongest pieces: running
@@ -32,7 +32,7 @@ export const RANKING_WEIGHTS = {
 };
 
 /**
- * The loser's net's logic (tools/learn/ranking.ts on its positions): close to the plain store lead,
+ * The loser's net's logic (lab/learn/ranking.ts on its positions): close to the plain store lead,
  * with empty pits of yours, the clinch line and running short of seeds as small extras.
  */
 export const LOSER_RANKING_WEIGHTS: typeof RANKING_WEIGHTS = {

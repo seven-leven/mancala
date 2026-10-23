@@ -1,6 +1,6 @@
 dist/
 .vscode/
-tools/tournament/checkpoint.json*
+harness/rate/checkpoint.json*
 data/
 node_modules/
 coverage/

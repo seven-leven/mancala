@@ -4,7 +4,7 @@
  * loser's net instead (17 inputs, from the loser's side; target tanh(final lead / 10)) and writes
  * src/bots/search/loser-weights.ts.
  *
- *   node tools/learn/train.ts data/learn/positions.jsonl [epochs, default 20] [hidden sizes, default 64,64]
+ *   node lab/learn/train.ts data/learn/positions.jsonl [epochs, default 20] [hidden sizes, default 64,64]
  *
  * The target for each position: +1 or -1 where Minimax sees a forced win or loss, otherwise its
  * score squashed to tanh(score / 10). Mean squared error, Adam, batches of 256, 10% of positions
@@ -14,11 +14,11 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { evaluate, WIN } from "../../src/bots/search/evaluate.ts";
 import { encode, encodeFor, INPUTS, ValueNet, type Weights } from "../../src/bots/search/net.ts";
 import { DEFAULT_RULES, type GameState, type Player } from "../../src/game/types.ts";
-import { seeded } from "../match.ts";
+import { seeded } from "../../harness/match.ts";
 
 const [file, epochsArg, sizesArg] = process.argv.slice(2);
 if (!file) {
-  console.error("Usage: node tools/learn/train.ts <positions.jsonl> [epochs]");
+  console.error("Usage: node lab/learn/train.ts <positions.jsonl> [epochs]");
   process.exit(1);
 }
 const EPOCHS = Number(epochsArg ?? 20), BATCH = 256, RATE = 1e-3;
@@ -196,7 +196,7 @@ const [out, name, what] = LOSER
   : ["weights.ts", "WEIGHTS", "The learned bot's value net"];
 writeFileSync(
   new URL(`../../src/bots/search/${out}`, import.meta.url),
-  `/** ${what} (${NIN}-${H1}-${H2}-1), as tools/learn/train.ts wrote it from ${n} positions. Generated: don't edit. */\n` +
+  `/** ${what} (${NIN}-${H1}-${H2}-1), as lab/learn/train.ts wrote it from ${n} positions. Generated: don't edit. */\n` +
     `import type { Weights } from "./net.ts";\n\n// dprint-ignore\nexport const ${name}: Weights = ${
       JSON.stringify(weights)
     };\n`,

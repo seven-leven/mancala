@@ -2,7 +2,7 @@
  * Trains Intuition's policy net (src/bots/search/policy.ts) on positions from policy-data.ts, and
  * writes its weights to src/bots/search/policy-weights.ts.
  *
- *   node tools/learn/train-policy.ts data/learn/policy.jsonl [epochs, default 40] [hidden sizes, default 64,64]
+ *   node lab/learn/train-policy.ts data/learn/policy.jsonl [epochs, default 40] [hidden sizes, default 64,64]
  *
  * The target for each position is the move Minimax plays there. Cross-entropy over the legal moves
  * (softmax of the outputs for pits with seeds), Adam, batches of 256, 10% of positions held out to
@@ -13,11 +13,11 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { encode, INPUTS } from "../../src/bots/search/net.ts";
 import { PolicyNet, type PolicyWeights } from "../../src/bots/search/policy.ts";
 import { DEFAULT_RULES, type GameState, type Player } from "../../src/game/types.ts";
-import { seeded } from "../match.ts";
+import { seeded } from "../../harness/match.ts";
 
 const [file, epochsArg, sizesArg] = process.argv.slice(2);
 if (!file) {
-  console.error("Usage: node tools/learn/train-policy.ts <policy.jsonl> [epochs] [hidden sizes]");
+  console.error("Usage: node lab/learn/train-policy.ts <policy.jsonl> [epochs] [hidden sizes]");
   process.exit(1);
 }
 const EPOCHS = Number(epochsArg ?? 40), BATCH = 256, RATE = 1e-3;
@@ -198,7 +198,7 @@ console.log(`rounded, as the bot runs it: ${
 }`);
 writeFileSync(
   new URL("../../src/bots/search/policy-weights.ts", import.meta.url),
-  `/** Intuition's policy net (${INPUTS}-${H1}-${H2}-7), as tools/learn/train-policy.ts wrote it from ${n} positions. Generated: don't edit. */\n` +
+  `/** Intuition's policy net (${INPUTS}-${H1}-${H2}-7), as lab/learn/train-policy.ts wrote it from ${n} positions. Generated: don't edit. */\n` +
     `import type { PolicyWeights } from "./policy.ts";\n\n// dprint-ignore\nexport const POLICY_WEIGHTS: PolicyWeights = ${
       JSON.stringify(weights)
     };\n`,

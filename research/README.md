@@ -77,7 +77,7 @@ How the project was made, for readers who code.
 - One file per post, in `research/posts/`, named `YYYY-MM-DD-short-title.md`.
 - Open with the question in a sentence, then the answer, then how it was measured. Include the commands that reproduce
   it (`npm run rate …`, `npm run positions …`) and the bots and games used.
-- Charts go in `research/images/`, drawn by a script in `tools/`, so they can be redrawn.
+- Charts go in `research/images/`, drawn by a script in `lab/diagrams/`, so they can be redrawn.
 - Add the post to the list above, and tick its item in [PLAN.md](PLAN.md).
 - A post is a snapshot: don't rewrite it when things change. Write a new post and link back.
 

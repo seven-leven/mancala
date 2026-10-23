@@ -7,8 +7,8 @@ import { test } from "node:test";
 import { assert, assertEquals } from "./assert.ts";
 import { newGame, playTurn, totalSeeds, validMoves } from "../src/game/engine.ts";
 import { type GameState, M1, M2, P1, P2, type Rules, type TurnEvent } from "../src/game/types.ts";
-import { seeded } from "../tools/match.ts";
-import { symmetricLayout } from "../tools/tournament/openings.ts";
+import { seeded } from "../harness/match.ts";
+import { symmetricLayout } from "../harness/rate/openings.ts";
 
 const GAMES = 3000;
 const sum = (xs: readonly number[]) => xs.reduce((a, b) => a + b, 0);

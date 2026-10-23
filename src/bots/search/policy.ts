@@ -1,6 +1,6 @@
 /**
  * Intuition's policy network: which move to play, straight from the board, with no search. Trained
- * offline on Minimax's score for every move (tools/learn/train-policy.ts); this file only runs it.
+ * offline on Minimax's score for every move (lab/learn/train-policy.ts); this file only runs it.
  *
  * Input: the same 16 numbers as the value net (net.ts, `encode`), from the mover's side. Then two
  * hidden layers with ReLU, and seven outputs, one for each of the mover's pits in sowing order
@@ -10,7 +10,7 @@ import { pitsOf } from "../../game/engine.ts";
 import type { GameState } from "../../game/types.ts";
 import { encode, INPUTS } from "./net.ts";
 
-/** A trained policy net's weights, as tools/learn/train-policy.ts writes them: rows of each layer, then biases. */
+/** A trained policy net's weights, as lab/learn/train-policy.ts writes them: rows of each layer, then biases. */
 export interface PolicyWeights {
   w1: number[][]; // first hidden layer × INPUTS
   b1: number[];

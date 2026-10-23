@@ -88,10 +88,18 @@ src/bots/    the bot list the game uses (bots.ts), the ratings, and the Web Work
 src/ui/      the board, the stats dialog, sound
 src/app/     the turn loop (game.ts), settings, saved games and your rating
 public/      the page and its styles
-tests/       the rules, the bots, the rating maths
-tools/       build, release, bench, design sheet, the ladder chart (ladder.ts), bot-against-bot games (match.ts)
-  tournament/  rates the bots: the games (main.ts), openings, checkpoints and the Elo fit (elo.ts)
-  positions.ts  recorded games to training data for the evaluation
+tests/       the test harness: the rules, the bots, the rating maths, the solver
+tools/       shipping the game: build, release, the design and icon sheets
+harness/     measuring the bots
+  rate/        the rating harness: the games (main.ts), openings, checkpoints and the Elo fit (elo.ts)
+  dashboard/   the live view of a rating run (--ui)
+  accuracy.ts  how often each bot plays a perfect move, against the solver
+  bench.ts, match.ts, ladder.ts   Minimax's speed, bot-against-bot games, the ladder chart
+lab/         experiments: what they found goes in CHANGELOG, TODO or research/
+  learn/       the learned bots: training data, training, and reading the nets back as rules
+  solve/       the game solved on small boards (solver.ts), on several cores, across a grid
+  diagrams/    the charts and diagrams in docs/images/, redrawn by npm run diagrams
+  results/     small results worth keeping, such as the solved boards
 ```
 
 **The screen never re-implements the rules.** `playTurn()` records every pickup, drop, capture and sweep as it plays a

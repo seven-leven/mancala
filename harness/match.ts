@@ -1,7 +1,7 @@
 /**
  * Seeded random numbers, for the tests, the tournament and the tools: the same seed always gives
  * the same sequence, so a run or a failure repeats. (Bot-against-bot games are in
- * tools/tournament/play.ts.)
+ * harness/rate/play.ts.)
  */
 
 /** Deterministic random numbers (mulberry32), so results can be repeated. */

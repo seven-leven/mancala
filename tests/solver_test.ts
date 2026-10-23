@@ -1,4 +1,4 @@
-/** The small-board solver (tools/solve/solver.ts): the engine's rules on any board, and exact answers. */
+/** The small-board solver (lab/solve/solver.ts): the engine's rules on any board, and exact answers. */
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -6,9 +6,9 @@ import { test } from "node:test";
 import { assert, assertEquals } from "./assert.ts";
 import { newGame, playTurn, validMoves } from "../src/game/engine.ts";
 import { DEFAULT_RULES, P1, P2 } from "../src/game/types.ts";
-import { solveParallel } from "../tools/solve/parallel.ts";
-import { AGAIN, type Board, Memo, newBoard, OVER, play, Rules, solve } from "../tools/solve/solver.ts";
-import { seeded } from "../tools/match.ts";
+import { solveParallel } from "../lab/solve/parallel.ts";
+import { AGAIN, type Board, Memo, newBoard, OVER, play, Rules, solve } from "../lab/solve/solver.ts";
+import { seeded } from "../harness/match.ts";
 
 test("on the 7-pit board, the solver's moves are the engine's, seed for seed", () => {
   const rng = seeded(7);

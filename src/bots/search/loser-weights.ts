@@ -1,4 +1,4 @@
-/** The loser's value net (17-16-16-1), as tools/learn/train.ts wrote it from 200000 positions. Generated: don't edit. */
+/** The loser's value net (17-16-16-1), as lab/learn/train.ts wrote it from 200000 positions. Generated: don't edit. */
 import type { Weights } from "./net.ts";
 
 // dprint-ignore

@@ -8,25 +8,11 @@
  * The page is built here with the sprite inlined, so it needs no files and no server.
  * Chrome is found at CHROME_PATH or the usual install locations.
  */
-import { statSync } from "node:fs";
 import { mkdir, readFile } from "node:fs/promises";
 import puppeteer from "puppeteer-core";
+import { findChrome } from "./chrome.ts";
 
-const CANDIDATES = [
-  "C:/Program Files/Google/Chrome/Application/chrome.exe",
-  "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-  "/usr/bin/google-chrome",
-  "/usr/bin/chromium",
-];
-const chrome = process.env.CHROME_PATH ?? CANDIDATES.find((p) => {
-  try {
-    return statSync(p).isFile();
-  } catch {
-    return false;
-  }
-});
-if (!chrome) throw new Error("Chrome not found. Set CHROME_PATH.");
+const chrome = findChrome();
 
 const sprite = await readFile(new URL("../public/svg/icons.svg", import.meta.url), "utf8");
 const names = [...sprite.matchAll(/<symbol id="([^"]+)"/g)].map((m) => m[1]);

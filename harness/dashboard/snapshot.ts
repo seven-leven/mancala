@@ -8,7 +8,7 @@
  * drawn around): a range keeps its width and stays centred on the rating it belongs to. At the end
  * of a run the samples come from the same results, nothing moves, and the ranges match the table.
  */
-import { aboveShare, fit, gapRange, misfits, rangesOf, sum } from "../tournament/elo.ts";
+import { aboveShare, fit, gapRange, misfits, rangesOf, sum } from "../rate/elo.ts";
 
 export interface BotInfo {
   id: string;
@@ -33,7 +33,7 @@ export interface Progress {
   gamesPerSec: number;
   elapsedMs: number;
   etaMs: number | null;
-  /** The ETA's 80% range (tools/tournament/eta.ts). */
+  /** The ETA's 80% range (harness/rate/eta.ts). */
   etaLowMs: number | null;
   etaHighMs: number | null;
 }

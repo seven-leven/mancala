@@ -1,13 +1,13 @@
 /**
- * The rating dashboard's snapshot (tools/dashboard/snapshot.ts): what it shows before any game,
+ * The rating dashboard's snapshot (harness/dashboard/snapshot.ts): what it shows before any game,
  * during a run, and at the end, where it must match the table the run prints.
  */
 import { test } from "node:test";
 import { assert, assertEquals } from "./assert.ts";
-import { buildSnapshot, rangesDue, type SnapshotInput } from "../tools/dashboard/snapshot.ts";
-import { fit, gapRange, rangesOf, resample } from "../tools/tournament/elo.ts";
-import { seeded } from "../tools/match.ts";
-import { playPair } from "../tools/tournament/play.ts";
+import { buildSnapshot, rangesDue, type SnapshotInput } from "../harness/dashboard/snapshot.ts";
+import { fit, gapRange, rangesOf, resample } from "../harness/rate/elo.ts";
+import { seeded } from "../harness/match.ts";
+import { playPair } from "../harness/rate/play.ts";
 import { replay } from "../src/game/notation.ts";
 import { DEFAULT_RULES } from "../src/game/types.ts";
 

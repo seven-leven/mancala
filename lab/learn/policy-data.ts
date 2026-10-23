@@ -2,7 +2,7 @@
  * Training data for Intuition, the policy net (src/bots/search/policy.ts): the positions data.ts
  * made, each with the move Minimax plays there, so the net can learn which move to play.
  *
- *   node tools/learn/policy-data.ts data/learn/positions.jsonl [positions, default 40000] [depth, default 5] [workers, default 4] > data/learn/policy.jsonl
+ *   node lab/learn/policy-data.ts data/learn/positions.jsonl [positions, default 40000] [depth, default 5] [workers, default 4] > data/learn/policy.jsonl
  *
  * A line: {"pits":[...16],"toMove":1,"move":3}: the move as 0–6, the mover's pits in sowing order
  * (their first pit first). Only the best move is searched for, not every move's exact score, so

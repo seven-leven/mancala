@@ -1,16 +1,16 @@
 /**
  * Solves the game for every board from 1 to 10 pits a side and 1 to 10 seeds a pit (the standard
  * game is 7 and 7): the first player's margin with best play by both, or the bounds proved when a
- * board is too big for the budget. Results go to data/solve/grid.json as they come, and a rerun
+ * board is too big for the budget. Results go to lab/results/solved-boards.json as they come, and a rerun
  * skips boards already done at that budget or more. docs/images/solved-boards.svg draws them.
  *
- *   node tools/solve/grid.ts [--budget 25000000] [--workers 4] [--bits 25] [--boards 10x2,8x6] [--save]
+ *   node lab/solve/grid.ts [--budget 25000000] [--workers 4] [--bits 25] [--boards 10x2,8x6] [--save]
  *
  * One board at a time, on all the workers (parallel.ts), at low priority. The memo is 2^bits
  * entries of 8 bytes (25: 256 MB), shared. --save keeps each unsolved board's memo in
  * data/solve/memo/, so the next run carries on from it instead of starting over.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { constants, setPriority } from "node:os";
 import { solveParallel } from "./parallel.ts";
 import { newBoard } from "./solver.ts";
@@ -26,7 +26,7 @@ export interface Cell {
   ms: number;
 }
 
-const OUT = "data/solve/grid.json";
+const OUT = "lab/results/solved-boards.json";
 const args = process.argv.slice(2);
 const flag = (name: string) => {
   const i = args.indexOf(`--${name}`);
@@ -39,7 +39,6 @@ const save = args.includes("--save");
 const only = flag("boards")?.split(",").map((b) => b.split("x").map(Number));
 
 setPriority(constants.priority.PRIORITY_BELOW_NORMAL);
-mkdirSync("data/solve", { recursive: true });
 const cells: Cell[] = existsSync(OUT) ? JSON.parse(readFileSync(OUT, "utf8")) : [];
 const done = (p: number, s: number) =>
   cells.some((c) => c.pits === p && c.seeds === s && (c.lo === c.hi || c.budget >= budget));

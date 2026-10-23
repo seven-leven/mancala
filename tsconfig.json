@@ -15,5 +15,5 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },
-  "include": ["src", "tools", "tests"]
+  "include": ["src", "tools", "harness", "lab", "tests"]
 }

@@ -6,7 +6,7 @@
 import { DEFAULT_RULES, type GameState } from "../../src/game/types.ts";
 import { formatGame, pitName, replay } from "../../src/game/notation.ts";
 import { BoardView } from "../../src/ui/board.ts";
-import type { PlayedGame } from "../tournament/play.ts";
+import type { PlayedGame } from "../rate/play.ts";
 import type { BotRow, Snapshot } from "./snapshot.ts";
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -50,7 +50,7 @@ function renderStatus(): void {
   const unit = p.unit === "rounds"
     ? `round ${Math.min(p.done + 1, p.total)} of ${p.total}`
     : `${p.done} of ${p.total} pairs`;
-  // The ETA, and the range that holds the real finish 80% of the time (tools/tournament/eta.ts).
+  // The ETA, and the range that holds the real finish 80% of the time (harness/rate/eta.ts).
   const range = p.etaLowMs === null || p.etaHighMs === null
     ? ""
     : ` (${clock(p.etaLowMs - since)}–${clock(p.etaHighMs - since)})`;
@@ -96,7 +96,7 @@ function renderLadder(s: Snapshot): void {
   }
   svg.append(el("text", { class: "muted mono", x: W - right + 14, y: 14 }, "Elo"));
   svg.append(el("text", { class: "muted mono", x: W - 8, y: 14, "text-anchor": "end" }, "change"));
-  // Too close to call, as on the docs' ladder chart (tools/ladder.ts): a pair of neighbours whose
+  // Too close to call, as on the docs' ladder chart (harness/ladder.ts): a pair of neighbours whose
   // order holds in under 90% of the resampled fits. Both bots of the pair are marked.
   const unsure = (k: number) => k >= 0 && (s.rows[k]?.above ?? 1) < 0.9;
   s.rows.forEach((r, k) => {

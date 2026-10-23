@@ -4,8 +4,8 @@
  * the readable features and the net's opinion are both taken relative to the root's average leaf,
  * and the formula is fitted to those differences. Then: how often the formula picks the net's move.
  *
- *   node tools/learn/ranking.ts data/learn/positions.jsonl
- *   node tools/learn/ranking.ts data/learn/loser.jsonl     (the loser's net, from the loser's moves)
+ *   node lab/learn/ranking.ts data/learn/positions.jsonl
+ *   node lab/learn/ranking.ts data/learn/loser.jsonl     (the loser's net, from the loser's moves)
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { exposed, freeTurnsReady } from "../../src/bots/search/evaluate.ts";

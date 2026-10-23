@@ -1,4 +1,4 @@
-/** The learned bot's value net, as tools/learn/train.ts wrote it from 200000 positions. Generated: don't edit. */
+/** The learned bot's value net, as lab/learn/train.ts wrote it from 200000 positions. Generated: don't edit. */
 import type { Weights } from "./net.ts";
 
 // dprint-ignore

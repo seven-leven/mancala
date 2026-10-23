@@ -3,18 +3,18 @@
  * seeds (where the solver is quick), every legal move's exact value from solver.ts, and each bot's
  * choice checked against them. Ratings say who wins; this says who errs, and by how much.
  *
- *   node tools/solve/accuracy.ts [seeds a pit, default 4] [positions, default 300]
+ *   node harness/accuracy.ts [seeds a pit, default 4] [positions, default 300]
  *
  * Perfect: the bot's move keeps the position's value. Gives up: the seeds of final margin its move
  * loses against perfect play, on average. Positions where a solve takes too long are skipped.
  */
-import { createBot } from "../../src/bots/bots.ts";
-import { MinimaxBot } from "../../src/bots/players/search.ts";
-import type { Bot } from "../../src/bots/contracts.ts";
-import { newGame, playTurn, validMoves } from "../../src/game/engine.ts";
-import { DEFAULT_RULES, type GameState, P1, P2 } from "../../src/game/types.ts";
-import { seeded } from "../match.ts";
-import { type Board, Memo, mtd, OutOfBudget, play, rulesFor, Solver } from "./solver.ts";
+import { createBot } from "../src/bots/bots.ts";
+import { MinimaxBot } from "../src/bots/players/search.ts";
+import type { Bot } from "../src/bots/contracts.ts";
+import { newGame, playTurn, validMoves } from "../src/game/engine.ts";
+import { DEFAULT_RULES, type GameState, P1, P2 } from "../src/game/types.ts";
+import { seeded } from "./match.ts";
+import { type Board, Memo, mtd, OutOfBudget, play, rulesFor, Solver } from "../lab/solve/solver.ts";
 
 const seeds = Number(process.argv[2] ?? 4), wanted = Number(process.argv[3] ?? 300);
 const rules = { ...DEFAULT_RULES, seeds };

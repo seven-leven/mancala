@@ -7,7 +7,7 @@
 import { test } from "node:test";
 import { assert } from "./assert.ts";
 import type { BotId, DormantId } from "../src/bots/bots.ts";
-import { playPair } from "../tools/tournament/play.ts";
+import { playPair } from "../harness/rate/play.ts";
 
 /** How many of `pairs` matched pairs' games `a` wins against `b` (draws count half). */
 function score(a: BotId | DormantId, b: BotId | DormantId, pairs: number): number {

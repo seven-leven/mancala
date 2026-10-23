@@ -2,7 +2,7 @@
  * Training data for the learned bot (TODO.md, "A learned bot"): positions from varied games, each
  * labelled with Minimax's score for the player to move. The net learns to predict that score.
  *
- *   node tools/learn/data.ts [positions, default 200000] > data/learn/positions.jsonl
+ *   node lab/learn/data.ts [positions, default 200000] > data/learn/positions.jsonl
  *
  * Games: DFS v2 on both sides, playing a random legal move some of the time (a different share
  * each game, 10–50%), from the rating harness's openings, so the positions cover strong and
@@ -16,8 +16,8 @@ import { DfsReplyBot } from "../../src/bots/players/chain.ts";
 import { search } from "../../src/bots/search/minimax.ts";
 import { playTurn, validMoves } from "../../src/game/engine.ts";
 import { P1, P2 } from "../../src/game/types.ts";
-import { seeded } from "../match.ts";
-import { opening } from "../tournament/openings.ts";
+import { seeded } from "../../harness/match.ts";
+import { opening } from "../../harness/rate/openings.ts";
 
 const DEPTH = 6;
 

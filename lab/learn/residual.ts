@@ -4,7 +4,7 @@
  * value) with a few nested sets of features, and fits a small regression tree to what the first
  * formula leaves over, printing the situations where it goes most wrong.
  *
- *   node tools/learn/residual.ts data/learn/positions.jsonl
+ *   node lab/learn/residual.ts data/learn/positions.jsonl
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { exposed, freeTurnsReady } from "../../src/bots/search/evaluate.ts";

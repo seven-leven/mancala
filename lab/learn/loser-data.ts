@@ -4,7 +4,7 @@
  * line with the loser's side and the final store lead from that side, which is what its net learns
  * to predict, at either side's move.
  *
- *   node tools/learn/loser-data.ts [positions, default 200000] > data/learn/loser.jsonl
+ *   node lab/learn/loser-data.ts [positions, default 200000] > data/learn/loser.jsonl
  *
  * Each line: {"pits":[...16],"toMove":1,"q":2,"lead":-31}. Seeded: the same count gives the same file.
  */
@@ -13,8 +13,8 @@ import { isMainThread, parentPort, Worker, workerData } from "node:worker_thread
 import { createBot } from "../../src/bots/bots.ts";
 import { playTurn, validMoves } from "../../src/game/engine.ts";
 import { P1, P2, type Player } from "../../src/game/types.ts";
-import { seeded } from "../match.ts";
-import { opening } from "../tournament/openings.ts";
+import { seeded } from "../../harness/match.ts";
+import { opening } from "../../harness/rate/openings.ts";
 
 const OPPONENTS = ["random", "sometimesGenerous", "hoarder", "greedy", "spoiler", "planner", "dfs2"] as const;
 

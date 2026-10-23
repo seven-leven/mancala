@@ -25,7 +25,7 @@ opening counted for whoever had it. It now plays matched pairs.
 
 - [x] [#18](https://github.com/seven-leven/mancala/issues/18) **Reorganise, move only.** Bots split into
       `src/bots/players/` and `src/bots/search/` (`bots.ts` stays the one entry point), and the tournament into
-      `tools/tournament/` (`main.ts`, `elo.ts`). The tournament prints exactly what it did before.
+      `harness/rate/` (`main.ts`, `elo.ts`). The tournament prints exactly what it did before.
 - [x] [#2](https://github.com/seven-leven/mancala/issues/2) **Matched pairs.** Play each opening twice, the bots
       swapping sides on the second game; score the pair, not the game. A board that simply favours the first player then
       comes out 1–1.
@@ -101,7 +101,7 @@ until the rules make the start contestable: the **pie rule (#17) comes first**, 
 
 - [x] [#13](https://github.com/seven-leven/mancala/issues/13) Capture extension: tried as quiescence search (the
       `quiescence` option in search/minimax.ts, off by default). Measured against perfect play on positions the solver
-      can check (`node tools/solve/accuracy.ts`): on the standard board it adds almost nothing past depth 1, since the
+      can check (`node harness/accuracy.ts`): on the standard board it adds almost nothing past depth 1, since the
       free-turn extension already follows the noise that matters, and costs 66–130 ms a move in the early game.
       Following captures alone is slightly worse than nothing. It helps clearly with 4 seeds a pit (depth 3: 88% → 93%
       perfect moves). Depth 3 with it tied Minimax in a placement rating, at ten times the time, so no bot was kept.
@@ -151,8 +151,8 @@ profile` and `npm run bench`; keep a change only if the tournament still prints 
       (was ±40), three neighbouring pairs too close to call (was five). `npm run rate -- 4`: 37 s → 10 s (16 cores);
       bench 1220k → 1769k positions/s; rating fit 55 s → 0.7 s. Next: Pushover below.
 - [x] **A truthful ETA.** It counts rounds, not games, and pairings run slowest first, so a round no longer ends with
-      one long Minimax pairing while the other cores wait. Same results. Since replaced by `tools/tournament/eta.ts`,
-      chosen and calibrated on the ETA logs, with an 80% range: the median it used ran 23% short (docs/ETA.md).
+      one long Minimax pairing while the other cores wait. Same results. Since replaced by `harness/rate/eta.ts`, chosen
+      and calibrated on the ETA logs, with an 80% range: the median it used ran 23% short (docs/ETA.md).
 - [ ] **ETA 2.0**, the roadmap in [docs/ETA.md](docs/ETA.md#eta-20-the-roadmap): better than ~34% off when a run has no
       earlier twin to learn from.
 - [x] **Adaptive allocation** (`--adaptive`). Done, with the virtual draw scaled to each pairing's games: from 480, ±27
@@ -234,20 +234,20 @@ Steps, cheapest first:
       beat.
 - [ ] **Training data where the search looks.** The net is only asked about the ends of DFS v2's lines (after a chain
       and an answer), so label those positions, not just positions from games.
-- [x] **The small net**, distilled from Minimax, trained in TypeScript (`tools/learn/`), weights in
+- [x] **The small net**, distilled from Minimax, trained in TypeScript (`lab/learn/`), weights in
       `src/bots/search/weights.ts`. 16-16-16-1, 561 weights: winner right 90.8% on held-out positions (Minimax's
       evaluation: 71.1%). 32 and 64 wide were no stronger, and slower.
 - [x] **The hybrid bot:** DFS v2's search with the net at the leaves, in the menus as Wise (Learned DFS). Rated level
       with Minimax at 2074, at 6.5 ms a move against Minimax's 23.3 (about 28%), and 49.5% head to head over 800 games;
       +17 over DFS v2. Not the 1.5 ms hoped for: the search reaches about a thousand leaves a move.
-- [x] **The net's logic, written out** (`tools/learn/explain.ts`): what a seed in each pit is worth, a fitted formula
-      (66% of the net's opinion, 92.5% of its verdicts) and five if/then rules (95% of its verdicts). Coded as bots on
-      the same search, they play at DFS v2's level (formula −22 against Minimax, seed table −31; the net: −3): the net's
+- [x] **The net's logic, written out** (`lab/learn/explain.ts`): what a seed in each pit is worth, a fitted formula (66%
+      of the net's opinion, 92.5% of its verdicts) and five if/then rules (95% of its verdicts). Coded as bots on the
+      same search, they play at DFS v2's level (formula −22 against Minimax, seed table −31; the net: −3): the net's
       edge is in what the formula leaves out, its thresholds and how pieces combine. Not kept.
-- [x] **Recovering what the formula loses** (`tools/learn/residual.ts`, `tools/learn/ranking.ts`). Where the first
-      formula misjudges the net: near the clinch line (over 45 banked, the net is 4–21 seeds more hopeful), the opponent
-      over 42 late (8 less), and big deficits (3 more: lost is lost). Adding those as terms explains 75% of the net, but
-      plays no better (−27 against Minimax): a fit across unrelated positions spends itself telling games apart, while a
+- [x] **Recovering what the formula loses** (`lab/learn/residual.ts`, `lab/learn/ranking.ts`). Where the first formula
+      misjudges the net: near the clinch line (over 45 banked, the net is 4–21 seeds more hopeful), the opponent over 42
+      late (8 less), and big deficits (3 more: lost is lost). Adding those as terms explains 75% of the net, but plays
+      no better (−27 against Minimax): a fit across unrelated positions spends itself telling games apart, while a
       search compares positions reachable from one. Fitted instead to those comparisons, a formula gets −13 against
       Minimax, about halfway from DFS v2 (−25) to the net (−3). Its strongest pieces: −17.7 a seed for running your side
       below 6, +9.3 for each empty pit of yours (a landing spot for captures), the clinch line at ±8.
@@ -255,9 +255,9 @@ Steps, cheapest first:
       that don't overlap (seeds on board and stores always total 98), until it matches the net; then it could replace
       the net where a readable judgement matters.
 - [x] **Bots that lose harder than Pushover.** A winning net turned upside down lost no harder than Pushover, so a
-      loser's net was trained on how Pushover's games against winning bots really ended (`tools/learn/loser-data.ts`, 17
+      loser's net was trained on how Pushover's games against winning bots really ended (`lab/learn/loser-data.ts`, 17
       inputs). On Pushover's search it's Doomed (Learned pushover, 456), below Pushover's 489; its logic written out
-      (`tools/learn/ranking.ts` on the loser's data) is Helpless (Decompiled pushover, 480), level with Pushover.
+      (`lab/learn/ranking.ts` on the loser's data) is Helpless (Decompiled pushover, 480), level with Pushover.
 - [ ] **One-hot inputs** (as chess's NNUE does), if the small net plateaus: "pit 3 holds exactly 8" as its own input
       (~350, nearly all zero), so the remainder arithmetic of free turns (seeds mod 15 against the distance to the
       store) becomes single weights instead of something to work out. The first layer stays a sum of 16 rows, so it
@@ -279,17 +279,32 @@ Two gaps in [the bots by family](docs/images/bot-families.svg): **Intuition**, a
 search (how much of Minimax is pattern), and **Rule list**, that net decompiled into if/then rules a person could
 follow. Both are written, tested and registered in DORMANT.
 
-- [x] **Label positions:** Minimax's move (depth 5) in 100,000 positions, `tools/learn/policy-data.ts`: 4 minutes on 4
+- [x] **Label positions:** Minimax's move (depth 5) in 100,000 positions, `lab/learn/policy-data.ts`: 4 minutes on 4
       low-priority workers, under 400 MB. (Scoring every move exactly took 50 times longer and swamped the machine.)
-- [x] **Train:** `tools/learn/train-policy.ts`, 16-64-64-7. It plays Minimax's move 42% of the time on positions it
-      never saw; a random legal move does 22%.
-- [x] **Mine the rules:** `tools/learn/rules.ts`. Eight rules, led by "if a move leaves them nothing to bank, play the
-      one furthest from your store". They copy the net only 36% of the time but play Minimax's move 54%: knowing what a
-      move does and the best answer to it beats reading the board.
+- [x] **Train:** `lab/learn/train-policy.ts`, 16-64-64-7. It plays Minimax's move 42% of the time on positions it never
+      saw; a random legal move does 22%.
+- [x] **Mine the rules:** `lab/learn/rules.ts`. Eight rules, led by "if a move leaves them nothing to bank, play the one
+      furthest from your store". They copy the net only 36% of the time but play Minimax's move 54%: knowing what a move
+      does and the best answer to it beats reading the board.
 - [x] **Placement:** 120 games against neighbours put Intuition near 1200 (between Striker and Greedy) and Rule list
       near 1680 (between Planner and Lookahead).
 - [ ] **Rate both** in a full rating, move them from DORMANT into BOTS at their places, and update the README, ladder,
       CHANGELOG and the family diagram.
+
+## Organisation
+
+The code is split by purpose: `src/` ships the game, `tools/` builds and releases it, `harness/` measures the bots, and
+`lab/` holds experiments, with small results in `lab/results/` and every diagram redrawn by `npm run diagrams`.
+
+- [ ] **`src/bots/` by role:** `players/` (how a bot decides), `judges/` (what it judges by: `evaluate`, the nets and
+      their weights, the decompiled formulas and rules), `search/` (Minimax and the move helpers only).
+- [ ] **Two axes and a status in `BotSpec`:** `decides` and `judges` instead of one `family`, so the family diagram is
+      drawn from the registry; and `status` (`candidate`, `rated`, `retired`) with a reason, in place of comments in
+      DORMANT.
+- [ ] **One command to evaluate a bot:** `npm run eval -- <bot>`: speed, perfect-move accuracy and a placement rating
+      against its neighbours, written as a report card to `lab/results/<bot>.md`.
+- [ ] **One experiment log:** `lab/LOG.md`, a short entry per experiment (question, setup, result, decision), so TODO
+      keeps only open work.
 
 ## Interface
 
@@ -310,7 +325,7 @@ follow. Both are written, tested and registered in DORMANT.
 
 ## Dashboard 2.0
 
-Ideas for the rating dashboard (`npm run rate -- --ui`, `tools/dashboard/`), roughly by how much each would help. Each
+Ideas for the rating dashboard (`npm run rate -- --ui`, `harness/dashboard/`), roughly by how much each would help. Each
 one must keep the rule the first version kept: a run plays and prints the same with the page open or closed, at no
 measurable cost.
 

@@ -1,6 +1,6 @@
 /**
  * The Rule list bot's rules: Intuition's policy net (policy.ts) decompiled into an ordered list of
- * if/then rules a person could follow at the board (tools/learn/rules.ts mined them). Each move is
+ * if/then rules a person could follow at the board (lab/learn/rules.ts mined them). Each move is
  * described by a few facts; the first rule that some move passes picks among the moves that pass it.
  */
 import { FREE_TURN, other, pitsOf, storeOf, validMoves, winnerOf } from "../../game/engine.ts";
@@ -42,7 +42,7 @@ export interface Rule {
   pick: "bank" | "net" | "give" | "near" | "far";
 }
 
-/** The rules, in order: mined by tools/learn/rules.ts from Intuition's net. The last takes any move. */
+/** The rules, in order: mined by lab/learn/rules.ts from Intuition's net. The last takes any move. */
 export const RULES: readonly Rule[] = [
   { maxGive: 0, pick: "far" },
   { maxGive: 1, pick: "far" },

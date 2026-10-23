@@ -4,7 +4,7 @@ import { GreedyBot, LookaheadBot, MinimaxBot, RandomBot } from "../src/bots/bots
 import { newGame, playTurn } from "../src/game/engine.ts";
 import { formatGame, type GameRecord, parseGame, parseGames, pitName, replay } from "../src/game/notation.ts";
 import { DEFAULT_RULES, P1, P2, type Player } from "../src/game/types.ts";
-import { seeded } from "../tools/match.ts";
+import { seeded } from "../harness/match.ts";
 
 /** A whole game between two bots, as a record. */
 function played(first: Player, seed: number, layout?: number[]): GameRecord {

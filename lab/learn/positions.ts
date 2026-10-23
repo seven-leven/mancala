@@ -11,7 +11,7 @@
  * from their side. Finished positions are left out, since there's nothing left to predict.
  */
 import { readFile } from "node:fs/promises";
-import { parseGames, replay } from "../src/game/notation.ts";
+import { parseGames, replay } from "../../src/game/notation.ts";
 
 const files = process.argv.slice(2);
 if (!files.length) {

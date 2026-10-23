@@ -5,7 +5,7 @@
  */
 import { parentPort } from "node:worker_threads";
 import { seeded } from "../match.ts";
-import { fit, resample } from "../tournament/elo.ts";
+import { fit, resample } from "../rate/elo.ts";
 
 // The fit goes back with the samples: the dashboard centres each range on the bot's latest rating.
 parentPort!.on(

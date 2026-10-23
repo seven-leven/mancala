@@ -1,20 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 962 884" width="962" height="884" role="img" aria-labelledby="t d">
   <title id="t">Who wins with best play, by board size</title>
   <desc id="d">A 10 by 10 heat map: pits a side across, seeds per pit up. Each square shows the first player's share of the seeds with perfect play by both, red where the first player wins by force and blue where the second does; thick lines mark where the winner changes.</desc>
-  <style>svg { --ink: #161514; --muted: #6b6760; --rule: #dfdad0; --strong: #cbc4b6; --accent: #a8483f; --bg: #f6f4ef; --surface: #fffdf9; }
+  <style>svg { --ink: #161514; --muted: #6b6760; --rule: #dfdad0; --strong: #cbc4b6; --accent: #a8483f; --bg: #f6f4ef; --surface: #fffdf9; --tint: #f3e6e1; }
   @media (prefers-color-scheme: dark) {
-    svg { --ink: #f6f4ef; --muted: rgba(246,244,239,0.62); --rule: rgba(246,244,239,0.14); --strong: rgba(246,244,239,0.3); --accent: #e39a86; --bg: #161514; --surface: #1f1d1b; }
+    svg { --ink: #f6f4ef; --muted: rgba(246,244,239,0.62); --rule: rgba(246,244,239,0.14); --strong: rgba(246,244,239,0.3); --accent: #e39a86; --bg: #161514; --surface: #1f1d1b; --tint: rgba(227,154,134,0.12); }
   }
   text { font: 12px Inter, system-ui, sans-serif; fill: var(--ink); }
   .title { font: 400 26px "Instrument Serif", Georgia, serif; }
   .label { font-size: 10.5px; font-weight: 600; letter-spacing: 1.4px; fill: var(--muted); }
+  .h { font-size: 13px; font-weight: 600; }
   .muted { fill: var(--muted); }
   .small { font-size: 11px; }
+  .mono { font: 11px "IBM Plex Mono", ui-monospace, Consolas, monospace; fill: var(--muted); }
+  .accent { fill: var(--accent); }
+  .page { fill: var(--bg); }
+  .tint { fill: var(--tint); }
+  .box { fill: var(--surface); stroke: var(--strong); stroke-width: 1; }
+  .box.key { stroke: var(--accent); stroke-width: 1.5; }
+  .arrow { stroke: var(--muted); stroke-width: 1.5; fill: none; marker-end: url(#a); }
+  .arrow.key { stroke: var(--accent); marker-end: url(#ak); }
+  .tip { fill: var(--muted); }
+  .tip.key { fill: var(--accent); }
   .tick { font: 12px "IBM Plex Mono", ui-monospace, Consolas, monospace; fill: var(--muted); }
   .pct { font-size: 13px; font-weight: 600; }
   .sub { font: 10px "IBM Plex Mono", ui-monospace, Consolas, monospace; }
   .light { fill: #fffdf9; }
-  .page { fill: var(--bg); }
   .edge { stroke: var(--ink); stroke-width: 2.5; stroke-linecap: round; }
   .std { fill: none; stroke: var(--ink); stroke-width: 2; stroke-dasharray: 4 3; }
   .hatch { stroke: var(--strong); stroke-width: 1; }
@@ -37,319 +47,319 @@
     </pattern>
   </defs>
   <rect x="92" y="700" width="64" height="64" fill="#f6f4ef" />
-  <text class="pct" x="124.0" y="733.0" text-anchor="middle">50%</text>
-  <text class="sub muted" x="124.0" y="748.0" text-anchor="middle">0</text>
+  <text class="pct" x="124" y="733" text-anchor="middle">50%</text>
+  <text class="sub muted" x="124" y="748" text-anchor="middle">0</text>
   <rect x="92" y="636" width="64" height="64" fill="#c68a83" />
-  <text class="pct" x="124.0" y="669.0" text-anchor="middle">75%</text>
-  <text class="sub muted" x="124.0" y="684.0" text-anchor="middle">+2</text>
+  <text class="pct" x="124" y="669" text-anchor="middle">75%</text>
+  <text class="sub muted" x="124" y="684" text-anchor="middle">+2</text>
   <rect x="92" y="572" width="64" height="64" fill="#a8483f" />
-  <text class="pct light" x="124.0" y="605.0" text-anchor="middle">100%</text>
-  <text class="sub light" x="124.0" y="620.0" text-anchor="middle">+6</text>
+  <text class="pct light" x="124" y="605" text-anchor="middle">100%</text>
+  <text class="sub light" x="124" y="620" text-anchor="middle">+6</text>
   <rect x="92" y="508" width="64" height="64" fill="#acbdc9" />
-  <text class="pct" x="124.0" y="541.0" text-anchor="middle">38%</text>
-  <text class="sub muted" x="124.0" y="556.0" text-anchor="middle">-2</text>
+  <text class="pct" x="124" y="541" text-anchor="middle">38%</text>
+  <text class="sub muted" x="124" y="556" text-anchor="middle">-2</text>
   <rect x="92" y="444" width="64" height="64" fill="#cd9992" />
-  <text class="pct" x="124.0" y="477.0" text-anchor="middle">70%</text>
-  <text class="sub muted" x="124.0" y="492.0" text-anchor="middle">+4</text>
+  <text class="pct" x="124" y="477" text-anchor="middle">70%</text>
+  <text class="sub muted" x="124" y="492" text-anchor="middle">+4</text>
   <rect x="92" y="380" width="64" height="64" fill="#b15d54" />
-  <text class="pct light" x="124.0" y="413.0" text-anchor="middle">92%</text>
-  <text class="sub light" x="124.0" y="428.0" text-anchor="middle">+10</text>
+  <text class="pct light" x="124" y="413" text-anchor="middle">92%</text>
+  <text class="sub light" x="124" y="428" text-anchor="middle">+10</text>
   <rect x="92" y="316" width="64" height="64" fill="#cb958e" />
-  <text class="pct" x="124.0" y="349.0" text-anchor="middle">71%</text>
-  <text class="sub muted" x="124.0" y="364.0" text-anchor="middle">+6</text>
+  <text class="pct" x="124" y="349" text-anchor="middle">71%</text>
+  <text class="sub muted" x="124" y="364" text-anchor="middle">+6</text>
   <rect x="92" y="252" width="64" height="64" fill="#a8483f" />
-  <text class="pct light" x="124.0" y="285.0" text-anchor="middle">100%</text>
-  <text class="sub light" x="124.0" y="300.0" text-anchor="middle">+16</text>
+  <text class="pct light" x="124" y="285" text-anchor="middle">100%</text>
+  <text class="sub light" x="124" y="300" text-anchor="middle">+16</text>
   <rect x="92" y="188" width="64" height="64" fill="#a8483f" />
-  <text class="pct light" x="124.0" y="221.0" text-anchor="middle">100%</text>
-  <text class="sub light" x="124.0" y="236.0" text-anchor="middle">+18</text>
+  <text class="pct light" x="124" y="221" text-anchor="middle">100%</text>
+  <text class="sub light" x="124" y="236" text-anchor="middle">+18</text>
   <rect x="92" y="124" width="64" height="64" fill="#a8483f" />
-  <text class="pct light" x="124.0" y="157.0" text-anchor="middle">100%</text>
-  <text class="sub light" x="124.0" y="172.0" text-anchor="middle">+20</text>
+  <text class="pct light" x="124" y="157" text-anchor="middle">100%</text>
+  <text class="sub light" x="124" y="172" text-anchor="middle">+20</text>
   <rect x="156" y="700" width="64" height="64" fill="#a8483f" />
-  <text class="pct light" x="188.0" y="733.0" text-anchor="middle">100%</text>
-  <text class="sub light" x="188.0" y="748.0" text-anchor="middle">+4</text>
+  <text class="pct light" x="188" y="733" text-anchor="middle">100%</text>
+  <text class="sub light" x="188" y="748" text-anchor="middle">+4</text>
   <rect x="156" y="636" width="64" height="64" fill="#a8483f" />
-  <text class="pct light" x="188.0" y="669.0" text-anchor="middle">100%</text>
-  <text class="sub light" x="188.0" y="684.0" text-anchor="middle">+8</text>
+  <text class="pct light" x="188" y="669" text-anchor="middle">100%</text>
+  <text class="sub light" x="188" y="684" text-anchor="middle">+8</text>
   <rect x="156" y="572" width="64" height="64" fill="#a8483f" />
-  <text class="pct light" x="188.0" y="605.0" text-anchor="middle">100%</text>
-  <text class="sub light" x="188.0" y="620.0" text-anchor="middle">+12</text>
+  <text class="pct light" x="188" y="605" text-anchor="middle">100%</text>
+  <text class="sub light" x="188" y="620" text-anchor="middle">+12</text>
   <rect x="156" y="508" width="64" height="64" fill="#b6675f" />
-  <text class="pct light" x="188.0" y="541.0" text-anchor="middle">88%</text>
-  <text class="sub light" x="188.0" y="556.0" text-anchor="middle">+12</text>
+  <text class="pct light" x="188" y="541" text-anchor="middle">88%</text>
+  <text class="sub light" x="188" y="556" text-anchor="middle">+12</text>
   <rect x="156" y="444" width="64" height="64" fill="#bf7c74" />
-  <text class="pct light" x="188.0" y="477.0" text-anchor="middle">80%</text>
-  <text class="sub light" x="188.0" y="492.0" text-anchor="middle">+12</text>
+  <text class="pct light" x="188" y="477" text-anchor="middle">80%</text>
+  <text class="sub light" x="188" y="492" text-anchor="middle">+12</text>
   <rect x="156" y="380" width="64" height="64" fill="#a8483f" />
-  <text class="pct light" x="188.0" y="413.0" text-anchor="middle">100%</text>
-  <text class="sub light" x="188.0" y="428.0" text-anchor="middle">+24</text>
+  <text class="pct light" x="188" y="413" text-anchor="middle">100%</text>
+  <text class="sub light" x="188" y="428" text-anchor="middle">+24</text>
   <rect x="156" y="316" width="64" height="64" fill="#a8483f" />
-  <text class="pct light" x="188.0" y="349.0" text-anchor="middle">100%</text>
-  <text class="sub light" x="188.0" y="364.0" text-anchor="middle">+28</text>
+  <text class="pct light" x="188" y="349" text-anchor="middle">100%</text>
+  <text class="sub light" x="188" y="364" text-anchor="middle">+28</text>
   <rect x="156" y="252" width="64" height="64" fill="#ab5047" />
-  <text class="pct light" x="188.0" y="285.0" text-anchor="middle">97%</text>
-  <text class="sub light" x="188.0" y="300.0" text-anchor="middle">+30</text>
+  <text class="pct light" x="188" y="285" text-anchor="middle">97%</text>
+  <text class="sub light" x="188" y="300" text-anchor="middle">+30</text>
   <rect x="156" y="188" width="64" height="64" fill="#b5645b" />
-  <text class="pct light" x="188.0" y="221.0" text-anchor="middle">89%</text>
-  <text class="sub light" x="188.0" y="236.0" text-anchor="middle">+28</text>
+  <text class="pct light" x="188" y="221" text-anchor="middle">89%</text>
+  <text class="sub light" x="188" y="236" text-anchor="middle">+28</text>
   <rect x="156" y="124" width="64" height="64" fill="#a8483f" />
-  <text class="pct light" x="188.0" y="157.0" text-anchor="middle">100%</text>
-  <text class="sub light" x="188.0" y="172.0" text-anchor="middle">+40</text>
+  <text class="pct light" x="188" y="157" text-anchor="middle">100%</text>
+  <text class="sub light" x="188" y="172" text-anchor="middle">+40</text>
   <rect x="220" y="700" width="64" height="64" fill="#a8483f" />
-  <text class="pct light" x="252.0" y="733.0" text-anchor="middle">100%</text>
-  <text class="sub light" x="252.0" y="748.0" text-anchor="middle">+6</text>
+  <text class="pct light" x="252" y="733" text-anchor="middle">100%</text>
+  <text class="sub light" x="252" y="748" text-anchor="middle">+6</text>
   <rect x="220" y="636" width="64" height="64" fill="#c68a83" />
-  <text class="pct" x="252.0" y="669.0" text-anchor="middle">75%</text>
-  <text class="sub muted" x="252.0" y="684.0" text-anchor="middle">+6</text>
+  <text class="pct" x="252" y="669" text-anchor="middle">75%</text>
+  <text class="sub muted" x="252" y="684" text-anchor="middle">+6</text>
   <rect x="220" y="572" width="64" height="64" fill="#c2827a" />
-  <text class="pct" x="252.0" y="605.0" text-anchor="middle">78%</text>
-  <text class="sub muted" x="252.0" y="620.0" text-anchor="middle">+10</text>
+  <text class="pct" x="252" y="605" text-anchor="middle">78%</text>
+  <text class="sub muted" x="252" y="620" text-anchor="middle">+10</text>
   <rect x="220" y="508" width="64" height="64" fill="#b6675f" />
-  <text class="pct light" x="252.0" y="541.0" text-anchor="middle">88%</text>
-  <text class="sub light" x="252.0" y="556.0" text-anchor="middle">+18</text>
+  <text class="pct light" x="252" y="541" text-anchor="middle">88%</text>
+  <text class="sub light" x="252" y="556" text-anchor="middle">+18</text>
   <rect x="220" y="444" width="64" height="64" fill="#a9bac8" />
-  <text class="pct" x="252.0" y="477.0" text-anchor="middle">37%</text>
-  <text class="sub muted" x="252.0" y="492.0" text-anchor="middle">-8</text>
+  <text class="pct" x="252" y="477" text-anchor="middle">37%</text>
+  <text class="sub muted" x="252" y="492" text-anchor="middle">-8</text>
   <rect x="220" y="380" width="64" height="64" fill="#ccd5da" />
-  <text class="pct" x="252.0" y="413.0" text-anchor="middle">44%</text>
-  <text class="sub muted" x="252.0" y="428.0" text-anchor="middle">-4</text>
+  <text class="pct" x="252" y="413" text-anchor="middle">44%</text>
+  <text class="sub muted" x="252" y="428" text-anchor="middle">-4</text>
   <rect x="220" y="316" width="64" height="64" fill="#f6f4ef" />
-  <text class="pct" x="252.0" y="349.0" text-anchor="middle">50%</text>
-  <text class="sub muted" x="252.0" y="364.0" text-anchor="middle">0</text>
+  <text class="pct" x="252" y="349" text-anchor="middle">50%</text>
+  <text class="sub muted" x="252" y="364" text-anchor="middle">0</text>
   <rect x="220" y="252" width="64" height="64" fill="#aa4d44" />
-  <text class="pct light" x="252.0" y="285.0" text-anchor="middle">98%</text>
-  <text class="sub light" x="252.0" y="300.0" text-anchor="middle">+46</text>
+  <text class="pct light" x="252" y="285" text-anchor="middle">98%</text>
+  <text class="sub light" x="252" y="300" text-anchor="middle">+46</text>
   <rect x="220" y="188" width="64" height="64" fill="#ae564d" />
-  <text class="pct light" x="252.0" y="221.0" text-anchor="middle">94%</text>
-  <text class="sub light" x="252.0" y="236.0" text-anchor="middle">+48</text>
+  <text class="pct light" x="252" y="221" text-anchor="middle">94%</text>
+  <text class="sub light" x="252" y="236" text-anchor="middle">+48</text>
   <rect x="220" y="124" width="64" height="64" fill="#ae544c" />
-  <text class="pct light" x="252.0" y="157.0" text-anchor="middle">95%</text>
-  <text class="sub light" x="252.0" y="172.0" text-anchor="middle">+54</text>
+  <text class="pct light" x="252" y="157" text-anchor="middle">95%</text>
+  <text class="sub light" x="252" y="172" text-anchor="middle">+54</text>
   <rect x="284" y="700" width="64" height="64" fill="#b6675f" />
-  <text class="pct light" x="316.0" y="733.0" text-anchor="middle">88%</text>
-  <text class="sub light" x="316.0" y="748.0" text-anchor="middle">+6</text>
+  <text class="pct light" x="316" y="733" text-anchor="middle">88%</text>
+  <text class="sub light" x="316" y="748" text-anchor="middle">+6</text>
   <rect x="284" y="636" width="64" height="64" fill="#c68a83" />
-  <text class="pct" x="316.0" y="669.0" text-anchor="middle">75%</text>
-  <text class="sub muted" x="316.0" y="684.0" text-anchor="middle">+8</text>
+  <text class="pct" x="316" y="669" text-anchor="middle">75%</text>
+  <text class="sub muted" x="316" y="684" text-anchor="middle">+8</text>
   <rect x="284" y="572" width="64" height="64" fill="#ad5249" />
-  <text class="pct light" x="316.0" y="605.0" text-anchor="middle">96%</text>
-  <text class="sub light" x="316.0" y="620.0" text-anchor="middle">+22</text>
+  <text class="pct light" x="316" y="605" text-anchor="middle">96%</text>
+  <text class="sub light" x="316" y="620" text-anchor="middle">+22</text>
   <rect x="284" y="508" width="64" height="64" fill="#b35f57" />
-  <text class="pct light" x="316.0" y="541.0" text-anchor="middle">91%</text>
-  <text class="sub light" x="316.0" y="556.0" text-anchor="middle">+26</text>
+  <text class="pct light" x="316" y="541" text-anchor="middle">91%</text>
+  <text class="sub light" x="316" y="556" text-anchor="middle">+26</text>
   <rect x="284" y="444" width="64" height="64" fill="#b05a52" />
-  <text class="pct light" x="316.0" y="477.0" text-anchor="middle">92%</text>
-  <text class="sub light" x="316.0" y="492.0" text-anchor="middle">+34</text>
+  <text class="pct light" x="316" y="477" text-anchor="middle">93%</text>
+  <text class="sub light" x="316" y="492" text-anchor="middle">+34</text>
   <rect x="284" y="380" width="64" height="64" fill="#ad5249" />
-  <text class="pct light" x="316.0" y="413.0" text-anchor="middle">96%</text>
-  <text class="sub light" x="316.0" y="428.0" text-anchor="middle">+44</text>
+  <text class="pct light" x="316" y="413" text-anchor="middle">96%</text>
+  <text class="sub light" x="316" y="428" text-anchor="middle">+44</text>
   <rect x="284" y="316" width="64" height="64" fill="#859fb5" />
-  <text class="pct" x="316.0" y="349.0" text-anchor="middle">27%</text>
-  <text class="sub muted" x="316.0" y="364.0" text-anchor="middle">-26</text>
+  <text class="pct" x="316" y="349" text-anchor="middle">27%</text>
+  <text class="sub muted" x="316" y="364" text-anchor="middle">-26</text>
   <rect x="284" y="252" width="64" height="64" fill="#7996af" />
-  <text class="pct" x="316.0" y="285.0" text-anchor="middle">23%</text>
-  <text class="sub muted" x="316.0" y="300.0" text-anchor="middle">-34</text>
+  <text class="pct" x="316" y="285" text-anchor="middle">23%</text>
+  <text class="sub muted" x="316" y="300" text-anchor="middle">-34</text>
   <rect x="284" y="188" width="64" height="64" fill="#6486a4" />
-  <text class="pct light" x="316.0" y="221.0" text-anchor="middle">17%</text>
-  <text class="sub light" x="316.0" y="236.0" text-anchor="middle">-48</text>
+  <text class="pct light" x="316" y="221" text-anchor="middle">17%</text>
+  <text class="sub light" x="316" y="236" text-anchor="middle">-48</text>
   <rect x="284" y="124" width="64" height="64" fill="#a94b42" />
-  <text class="pct light" x="316.0" y="157.0" text-anchor="middle">99%</text>
-  <text class="sub light" x="316.0" y="172.0" text-anchor="middle">+78</text>
+  <text class="pct light" x="316" y="157" text-anchor="middle">99%</text>
+  <text class="sub light" x="316" y="172" text-anchor="middle">+78</text>
   <rect x="348" y="700" width="64" height="64" fill="#bf7c74" />
-  <text class="pct light" x="380.0" y="733.0" text-anchor="middle">80%</text>
-  <text class="sub light" x="380.0" y="748.0" text-anchor="middle">+6</text>
+  <text class="pct light" x="380" y="733" text-anchor="middle">80%</text>
+  <text class="sub light" x="380" y="748" text-anchor="middle">+6</text>
   <rect x="348" y="636" width="64" height="64" fill="#b96e66" />
-  <text class="pct light" x="380.0" y="669.0" text-anchor="middle">85%</text>
-  <text class="sub light" x="380.0" y="684.0" text-anchor="middle">+14</text>
+  <text class="pct light" x="380" y="669" text-anchor="middle">85%</text>
+  <text class="sub light" x="380" y="684" text-anchor="middle">+14</text>
   <rect x="348" y="572" width="64" height="64" fill="#cd9992" />
-  <text class="pct" x="380.0" y="605.0" text-anchor="middle">70%</text>
-  <text class="sub muted" x="380.0" y="620.0" text-anchor="middle">+12</text>
+  <text class="pct" x="380" y="605" text-anchor="middle">70%</text>
+  <text class="sub muted" x="380" y="620" text-anchor="middle">+12</text>
   <rect x="348" y="508" width="64" height="64" fill="#b36158" />
-  <text class="pct light" x="380.0" y="541.0" text-anchor="middle">90%</text>
-  <text class="sub light" x="380.0" y="556.0" text-anchor="middle">+32</text>
+  <text class="pct light" x="380" y="541" text-anchor="middle">90%</text>
+  <text class="sub light" x="380" y="556" text-anchor="middle">+32</text>
   <rect x="348" y="444" width="64" height="64" fill="#ac5249" />
-  <text class="pct light" x="380.0" y="477.0" text-anchor="middle">96%</text>
-  <text class="sub light" x="380.0" y="492.0" text-anchor="middle">+46</text>
+  <text class="pct light" x="380" y="477" text-anchor="middle">96%</text>
+  <text class="sub light" x="380" y="492" text-anchor="middle">+46</text>
   <rect x="348" y="380" width="64" height="64" fill="#ac5047" />
-  <text class="pct light" x="380.0" y="413.0" text-anchor="middle">97%</text>
-  <text class="sub light" x="380.0" y="428.0" text-anchor="middle">+56</text>
+  <text class="pct light" x="380" y="413" text-anchor="middle">97%</text>
+  <text class="sub light" x="380" y="428" text-anchor="middle">+56</text>
   <rect x="348" y="316" width="64" height="64" fill="#ad524a" />
-  <text class="pct light" x="380.0" y="349.0" text-anchor="middle">96%</text>
-  <text class="sub light" x="380.0" y="364.0" text-anchor="middle">+64</text>
+  <text class="pct light" x="380" y="349" text-anchor="middle">96%</text>
+  <text class="sub light" x="380" y="364" text-anchor="middle">+64</text>
   <rect x="348" y="252" width="64" height="64" fill="#ab4e45" />
-  <text class="pct light" x="380.0" y="285.0" text-anchor="middle">98%</text>
-  <text class="sub light" x="380.0" y="300.0" text-anchor="middle">+76</text>
+  <text class="pct light" x="380" y="285" text-anchor="middle">98%</text>
+  <text class="sub light" x="380" y="300" text-anchor="middle">+76</text>
   <rect x="348" y="188" width="64" height="64" fill="#6789a6" />
-  <text class="pct light" x="380.0" y="221.0" text-anchor="middle">18%</text>
-  <text class="sub light" x="380.0" y="236.0" text-anchor="middle">-58</text>
+  <text class="pct light" x="380" y="221" text-anchor="middle">18%</text>
+  <text class="sub light" x="380" y="236" text-anchor="middle">-58</text>
   <rect x="348" y="124" width="64" height="64" fill="#5f82a2" />
-  <text class="pct light" x="380.0" y="157.0" text-anchor="middle">15%</text>
-  <text class="sub light" x="380.0" y="172.0" text-anchor="middle">-70</text>
+  <text class="pct light" x="380" y="157" text-anchor="middle">15%</text>
+  <text class="sub light" x="380" y="172" text-anchor="middle">-70</text>
   <rect x="412" y="700" width="64" height="64" fill="#bb736a" />
-  <text class="pct light" x="444.0" y="733.0" text-anchor="middle">83%</text>
-  <text class="sub light" x="444.0" y="748.0" text-anchor="middle">+8</text>
+  <text class="pct light" x="444" y="733" text-anchor="middle">83%</text>
+  <text class="sub light" x="444" y="748" text-anchor="middle">+8</text>
   <rect x="412" y="636" width="64" height="64" fill="#c68a83" />
-  <text class="pct" x="444.0" y="669.0" text-anchor="middle">75%</text>
-  <text class="sub muted" x="444.0" y="684.0" text-anchor="middle">+12</text>
+  <text class="pct" x="444" y="669" text-anchor="middle">75%</text>
+  <text class="sub muted" x="444" y="684" text-anchor="middle">+12</text>
   <rect x="412" y="572" width="64" height="64" fill="#ce9b94" />
-  <text class="pct" x="444.0" y="605.0" text-anchor="middle">69%</text>
-  <text class="sub muted" x="444.0" y="620.0" text-anchor="middle">+14</text>
+  <text class="pct" x="444" y="605" text-anchor="middle">69%</text>
+  <text class="sub muted" x="444" y="620" text-anchor="middle">+14</text>
   <rect x="412" y="508" width="64" height="64" fill="#af574f" />
-  <text class="pct light" x="444.0" y="541.0" text-anchor="middle">94%</text>
-  <text class="sub light" x="444.0" y="556.0" text-anchor="middle">+42</text>
+  <text class="pct light" x="444" y="541" text-anchor="middle">94%</text>
+  <text class="sub light" x="444" y="556" text-anchor="middle">+42</text>
   <rect x="412" y="444" width="64" height="64" fill="#af5850" />
-  <text class="pct light" x="444.0" y="477.0" text-anchor="middle">93%</text>
-  <text class="sub light" x="444.0" y="492.0" text-anchor="middle">+52</text>
+  <text class="pct light" x="444" y="477" text-anchor="middle">93%</text>
+  <text class="sub light" x="444" y="492" text-anchor="middle">+52</text>
   <rect x="412" y="380" width="64" height="64" fill="#ab4f46" />
-  <text class="pct light" x="444.0" y="413.0" text-anchor="middle">97%</text>
-  <text class="sub light" x="444.0" y="428.0" text-anchor="middle">+68</text>
+  <text class="pct light" x="444" y="413" text-anchor="middle">97%</text>
+  <text class="sub light" x="444" y="428" text-anchor="middle">+68</text>
   <rect x="412" y="316" width="64" height="64" fill="#ab4e45" />
-  <text class="pct light" x="444.0" y="349.0" text-anchor="middle">98%</text>
-  <text class="sub light" x="444.0" y="364.0" text-anchor="middle">+80</text>
+  <text class="pct light" x="444" y="349" text-anchor="middle">98%</text>
+  <text class="sub light" x="444" y="364" text-anchor="middle">+80</text>
   <rect x="412" y="252" width="64" height="64" fill="#aa4d44" />
-  <text class="pct light" x="444.0" y="285.0" text-anchor="middle">98%</text>
-  <text class="sub light" x="444.0" y="300.0" text-anchor="middle">+92</text>
+  <text class="pct light" x="444" y="285" text-anchor="middle">98%</text>
+  <text class="sub light" x="444" y="300" text-anchor="middle">+92</text>
   <rect x="412" y="188" width="64" height="64" fill="#a94a41" />
-  <text class="pct light" x="444.0" y="221.0" text-anchor="middle">99%</text>
-  <text class="sub light" x="444.0" y="236.0" text-anchor="middle">+106</text>
+  <text class="pct light" x="444" y="221" text-anchor="middle">99%</text>
+  <text class="sub light" x="444" y="236" text-anchor="middle">+106</text>
   <rect x="412" y="124" width="64" height="64" fill="#426c93" />
-  <text class="pct light" x="444.0" y="157.0" text-anchor="middle">5%</text>
-  <text class="sub light" x="444.0" y="172.0" text-anchor="middle">-108</text>
+  <text class="pct light" x="444" y="157" text-anchor="middle">5%</text>
+  <text class="sub light" x="444" y="172" text-anchor="middle">-108</text>
   <rect x="476" y="700" width="64" height="64" fill="#c18078" />
-  <text class="pct" x="508.0" y="733.0" text-anchor="middle">79%</text>
-  <text class="sub muted" x="508.0" y="748.0" text-anchor="middle">+8</text>
+  <text class="pct" x="508" y="733" text-anchor="middle">79%</text>
+  <text class="sub muted" x="508" y="748" text-anchor="middle">+8</text>
   <rect x="476" y="636" width="64" height="64" fill="#c68a83" />
-  <text class="pct" x="508.0" y="669.0" text-anchor="middle">75%</text>
-  <text class="sub muted" x="508.0" y="684.0" text-anchor="middle">+14</text>
+  <text class="pct" x="508" y="669" text-anchor="middle">75%</text>
+  <text class="sub muted" x="508" y="684" text-anchor="middle">+14</text>
   <rect x="476" y="572" width="64" height="64" fill="#b05a51" />
-  <text class="pct light" x="508.0" y="605.0" text-anchor="middle">93%</text>
-  <text class="sub light" x="508.0" y="620.0" text-anchor="middle">+36</text>
+  <text class="pct light" x="508" y="605" text-anchor="middle">93%</text>
+  <text class="sub light" x="508" y="620" text-anchor="middle">+36</text>
   <rect x="476" y="508" width="64" height="64" fill="#cd9b93" />
-  <text class="pct" x="508.0" y="541.0" text-anchor="middle">70%</text>
-  <text class="sub muted" x="508.0" y="556.0" text-anchor="middle">+22</text>
+  <text class="pct" x="508" y="541" text-anchor="middle">70%</text>
+  <text class="sub muted" x="508" y="556" text-anchor="middle">+22</text>
   <rect x="476" y="444" width="64" height="64" fill="#ab4f46" />
-  <text class="pct light" x="508.0" y="477.0" text-anchor="middle">97%</text>
-  <text class="sub light" x="508.0" y="492.0" text-anchor="middle">+66</text>
+  <text class="pct light" x="508" y="477" text-anchor="middle">97%</text>
+  <text class="sub light" x="508" y="492" text-anchor="middle">+66</text>
   <rect x="476" y="380" width="64" height="64" fill="#ab4e45" />
-  <text class="pct light" x="508.0" y="413.0" text-anchor="middle">98%</text>
-  <text class="sub light" x="508.0" y="428.0" text-anchor="middle">+80</text>
+  <text class="pct light" x="508" y="413" text-anchor="middle">98%</text>
+  <text class="sub light" x="508" y="428" text-anchor="middle">+80</text>
   <rect x="476" y="316" width="64" height="64" fill="#aa4d44" />
-  <text class="pct light" x="508.0" y="349.0" text-anchor="middle">98%</text>
-  <text class="sub light" x="508.0" y="364.0" text-anchor="middle">+94</text>
+  <text class="pct light" x="508" y="349" text-anchor="middle">98%</text>
+  <text class="sub light" x="508" y="364" text-anchor="middle">+94</text>
   <rect x="476" y="252" width="64" height="64" fill="#a94a41" />
   <rect x="476" y="252" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub light" x="508.0" y="283.0" text-anchor="middle">98–100%</text>
-  <text class="sub light" x="508.0" y="297.0" text-anchor="middle">1st wins</text>
+  <text class="sub light" x="508" y="283" text-anchor="middle">98–100%</text>
+  <text class="sub light" x="508" y="297" text-anchor="middle">1st wins</text>
   <rect x="476" y="188" width="64" height="64" fill="#a94a41" />
   <rect x="476" y="188" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub light" x="508.0" y="219.0" text-anchor="middle">98–100%</text>
-  <text class="sub light" x="508.0" y="233.0" text-anchor="middle">1st wins</text>
+  <text class="sub light" x="508" y="219" text-anchor="middle">98–100%</text>
+  <text class="sub light" x="508" y="233" text-anchor="middle">1st wins</text>
   <rect x="476" y="124" width="64" height="64" fill="#a94a41" />
   <rect x="476" y="124" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub light" x="508.0" y="155.0" text-anchor="middle">99–100%</text>
-  <text class="sub light" x="508.0" y="169.0" text-anchor="middle">1st wins</text>
+  <text class="sub light" x="508" y="155" text-anchor="middle">99–100%</text>
+  <text class="sub light" x="508" y="169" text-anchor="middle">1st wins</text>
   <rect x="540" y="700" width="64" height="64" fill="#be7870" />
-  <text class="pct light" x="572.0" y="733.0" text-anchor="middle">81%</text>
-  <text class="sub light" x="572.0" y="748.0" text-anchor="middle">+10</text>
+  <text class="pct light" x="572" y="733" text-anchor="middle">81%</text>
+  <text class="sub light" x="572" y="748" text-anchor="middle">+10</text>
   <rect x="540" y="636" width="64" height="64" fill="#c68a83" />
-  <text class="pct" x="572.0" y="669.0" text-anchor="middle">75%</text>
-  <text class="sub muted" x="572.0" y="684.0" text-anchor="middle">+16</text>
+  <text class="pct" x="572" y="669" text-anchor="middle">75%</text>
+  <text class="sub muted" x="572" y="684" text-anchor="middle">+16</text>
   <rect x="540" y="572" width="64" height="64" fill="#c17e76" />
-  <text class="pct" x="572.0" y="605.0" text-anchor="middle">79%</text>
-  <text class="sub muted" x="572.0" y="620.0" text-anchor="middle">+28</text>
+  <text class="pct" x="572" y="605" text-anchor="middle">79%</text>
+  <text class="sub muted" x="572" y="620" text-anchor="middle">+28</text>
   <rect x="540" y="508" width="64" height="64" fill="#ad534b" />
-  <text class="pct light" x="572.0" y="541.0" text-anchor="middle">95%</text>
-  <text class="sub light" x="572.0" y="556.0" text-anchor="middle">+58</text>
+  <text class="pct light" x="572" y="541" text-anchor="middle">95%</text>
+  <text class="sub light" x="572" y="556" text-anchor="middle">+58</text>
   <rect x="540" y="444" width="64" height="64" fill="#aa4d44" />
   <rect x="540" y="444" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub light" x="572.0" y="475.0" text-anchor="middle">96–100%</text>
-  <text class="sub light" x="572.0" y="489.0" text-anchor="middle">1st wins</text>
+  <text class="sub light" x="572" y="475" text-anchor="middle">96–100%</text>
+  <text class="sub light" x="572" y="489" text-anchor="middle">1st wins</text>
   <rect x="540" y="380" width="64" height="64" fill="#f6f4ef" />
   <rect x="540" y="380" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub muted" x="572.0" y="416.0" text-anchor="middle">unknown</text>
+  <text class="sub muted" x="572" y="416" text-anchor="middle">unknown</text>
   <rect x="540" y="316" width="64" height="64" fill="#f6f4ef" />
   <rect x="540" y="316" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub muted" x="572.0" y="352.0" text-anchor="middle">unknown</text>
+  <text class="sub muted" x="572" y="352" text-anchor="middle">unknown</text>
   <rect x="540" y="252" width="64" height="64" fill="#a94b42" />
   <rect x="540" y="252" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub light" x="572.0" y="283.0" text-anchor="middle">98–100%</text>
-  <text class="sub light" x="572.0" y="297.0" text-anchor="middle">1st wins</text>
+  <text class="sub light" x="572" y="283" text-anchor="middle">98–100%</text>
+  <text class="sub light" x="572" y="297" text-anchor="middle">1st wins</text>
   <rect x="540" y="188" width="64" height="64" fill="#a94b42" />
   <rect x="540" y="188" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub light" x="572.0" y="219.0" text-anchor="middle">98–100%</text>
-  <text class="sub light" x="572.0" y="233.0" text-anchor="middle">1st wins</text>
+  <text class="sub light" x="572" y="219" text-anchor="middle">98–100%</text>
+  <text class="sub light" x="572" y="233" text-anchor="middle">1st wins</text>
   <rect x="540" y="124" width="64" height="64" fill="#f6f4ef" />
   <rect x="540" y="124" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub muted" x="572.0" y="160.0" text-anchor="middle">unknown</text>
+  <text class="sub muted" x="572" y="160" text-anchor="middle">unknown</text>
   <rect x="604" y="700" width="64" height="64" fill="#c2827a" />
-  <text class="pct" x="636.0" y="733.0" text-anchor="middle">78%</text>
-  <text class="sub muted" x="636.0" y="748.0" text-anchor="middle">+10</text>
+  <text class="pct" x="636" y="733" text-anchor="middle">78%</text>
+  <text class="sub muted" x="636" y="748" text-anchor="middle">+10</text>
   <rect x="604" y="636" width="64" height="64" fill="#ca938b" />
-  <text class="pct" x="636.0" y="669.0" text-anchor="middle">72%</text>
-  <text class="sub muted" x="636.0" y="684.0" text-anchor="middle">+16</text>
+  <text class="pct" x="636" y="669" text-anchor="middle">72%</text>
+  <text class="sub muted" x="636" y="684" text-anchor="middle">+16</text>
   <rect x="604" y="572" width="64" height="64" fill="#c17f78" />
   <rect x="604" y="572" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub" x="636.0" y="603.0" text-anchor="middle">57–100%</text>
-  <text class="sub muted" x="636.0" y="617.0" text-anchor="middle">1st wins</text>
+  <text class="sub" x="636" y="603" text-anchor="middle">57–100%</text>
+  <text class="sub muted" x="636" y="617" text-anchor="middle">1st wins</text>
   <rect x="604" y="508" width="64" height="64" fill="#bb736a" />
   <rect x="604" y="508" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub light" x="636.0" y="539.0" text-anchor="middle">67–100%</text>
-  <text class="sub light" x="636.0" y="553.0" text-anchor="middle">1st wins</text>
+  <text class="sub light" x="636" y="539" text-anchor="middle">67–100%</text>
+  <text class="sub light" x="636" y="553" text-anchor="middle">1st wins</text>
   <rect x="604" y="444" width="64" height="64" fill="#f6f4ef" />
   <rect x="604" y="444" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub muted" x="636.0" y="480.0" text-anchor="middle">unknown</text>
+  <text class="sub muted" x="636" y="480" text-anchor="middle">unknown</text>
   <rect x="604" y="380" width="64" height="64" fill="#f6f4ef" />
   <rect x="604" y="380" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub muted" x="636.0" y="416.0" text-anchor="middle">unknown</text>
+  <text class="sub muted" x="636" y="416" text-anchor="middle">unknown</text>
   <rect x="604" y="316" width="64" height="64" fill="#a94b42" />
   <rect x="604" y="316" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub light" x="636.0" y="347.0" text-anchor="middle">98–100%</text>
-  <text class="sub light" x="636.0" y="361.0" text-anchor="middle">1st wins</text>
+  <text class="sub light" x="636" y="347" text-anchor="middle">98–100%</text>
+  <text class="sub light" x="636" y="361" text-anchor="middle">1st wins</text>
   <rect x="604" y="252" width="64" height="64" fill="#a94b42" />
   <rect x="604" y="252" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub light" x="636.0" y="283.0" text-anchor="middle">98–100%</text>
-  <text class="sub light" x="636.0" y="297.0" text-anchor="middle">1st wins</text>
+  <text class="sub light" x="636" y="283" text-anchor="middle">98–100%</text>
+  <text class="sub light" x="636" y="297" text-anchor="middle">1st wins</text>
   <rect x="604" y="188" width="64" height="64" fill="#a94a41" />
   <rect x="604" y="188" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub light" x="636.0" y="219.0" text-anchor="middle">98–100%</text>
-  <text class="sub light" x="636.0" y="233.0" text-anchor="middle">1st wins</text>
+  <text class="sub light" x="636" y="219" text-anchor="middle">98–100%</text>
+  <text class="sub light" x="636" y="233" text-anchor="middle">1st wins</text>
   <rect x="604" y="124" width="64" height="64" fill="#a94a41" />
   <rect x="604" y="124" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub light" x="636.0" y="155.0" text-anchor="middle">98–100%</text>
-  <text class="sub light" x="636.0" y="169.0" text-anchor="middle">1st wins</text>
+  <text class="sub light" x="636" y="155" text-anchor="middle">98–100%</text>
+  <text class="sub light" x="636" y="169" text-anchor="middle">1st wins</text>
   <rect x="668" y="700" width="64" height="64" fill="#cd9992" />
-  <text class="pct" x="700.0" y="733.0" text-anchor="middle">70%</text>
-  <text class="sub muted" x="700.0" y="748.0" text-anchor="middle">+8</text>
+  <text class="pct" x="700" y="733" text-anchor="middle">70%</text>
+  <text class="sub muted" x="700" y="748" text-anchor="middle">+8</text>
   <rect x="668" y="636" width="64" height="64" fill="#cd9992" />
-  <text class="pct" x="700.0" y="669.0" text-anchor="middle">70%</text>
-  <text class="sub muted" x="700.0" y="684.0" text-anchor="middle">+16</text>
+  <text class="pct" x="700" y="669" text-anchor="middle">70%</text>
+  <text class="sub muted" x="700" y="684" text-anchor="middle">+16</text>
   <rect x="668" y="572" width="64" height="64" fill="#f6f4ef" />
   <rect x="668" y="572" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub muted" x="700.0" y="608.0" text-anchor="middle">unknown</text>
+  <text class="sub muted" x="700" y="608" text-anchor="middle">unknown</text>
   <rect x="668" y="508" width="64" height="64" fill="#f6f4ef" />
   <rect x="668" y="508" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub muted" x="700.0" y="544.0" text-anchor="middle">unknown</text>
+  <text class="sub muted" x="700" y="544" text-anchor="middle">unknown</text>
   <rect x="668" y="444" width="64" height="64" fill="#f6f4ef" />
   <rect x="668" y="444" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub muted" x="700.0" y="480.0" text-anchor="middle">unknown</text>
+  <text class="sub muted" x="700" y="480" text-anchor="middle">unknown</text>
   <rect x="668" y="380" width="64" height="64" fill="#f6f4ef" />
   <rect x="668" y="380" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub muted" x="700.0" y="416.0" text-anchor="middle">unknown</text>
+  <text class="sub muted" x="700" y="416" text-anchor="middle">unknown</text>
   <rect x="668" y="316" width="64" height="64" fill="#f6f4ef" />
   <rect x="668" y="316" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub muted" x="700.0" y="352.0" text-anchor="middle">unknown</text>
+  <text class="sub muted" x="700" y="352" text-anchor="middle">unknown</text>
   <rect x="668" y="252" width="64" height="64" fill="#a94b42" />
   <rect x="668" y="252" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub light" x="700.0" y="283.0" text-anchor="middle">98–100%</text>
-  <text class="sub light" x="700.0" y="297.0" text-anchor="middle">1st wins</text>
+  <text class="sub light" x="700" y="283" text-anchor="middle">98–100%</text>
+  <text class="sub light" x="700" y="297" text-anchor="middle">1st wins</text>
   <rect x="668" y="188" width="64" height="64" fill="#f6f4ef" />
   <rect x="668" y="188" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub muted" x="700.0" y="224.0" text-anchor="middle">unknown</text>
+  <text class="sub muted" x="700" y="224" text-anchor="middle">unknown</text>
   <rect x="668" y="124" width="64" height="64" fill="#a94b42" />
   <rect x="668" y="124" width="64" height="64" fill="url(#h)" opacity="0.8" />
-  <text class="sub light" x="700.0" y="155.0" text-anchor="middle">98–100%</text>
-  <text class="sub light" x="700.0" y="169.0" text-anchor="middle">1st wins</text>
+  <text class="sub light" x="700" y="155" text-anchor="middle">98–100%</text>
+  <text class="sub light" x="700" y="169" text-anchor="middle">1st wins</text>
   <line class="edge" x1="156" y1="700" x2="156" y2="764" />
   <line class="edge" x1="92" y1="700" x2="156" y2="700" />
   <line class="edge" x1="92" y1="572" x2="156" y2="572" />
@@ -375,28 +385,28 @@
   <line class="edge" x1="412" y1="188" x2="412" y2="252" />
   <line class="edge" x1="412" y1="188" x2="476" y2="188" />
   <line class="edge" x1="476" y1="124" x2="476" y2="188" />
-  <rect class="frame" x="92" y="124" width="640" height="640" />
-  <rect class="std" x="478" y="318" width="60" height="60" />
-  <text class="tick" x="124.0" y="784" text-anchor="middle">1</text>
-  <text class="tick" x="188.0" y="784" text-anchor="middle">2</text>
-  <text class="tick" x="252.0" y="784" text-anchor="middle">3</text>
-  <text class="tick" x="316.0" y="784" text-anchor="middle">4</text>
-  <text class="tick" x="380.0" y="784" text-anchor="middle">5</text>
-  <text class="tick" x="444.0" y="784" text-anchor="middle">6</text>
-  <text class="tick" x="508.0" y="784" text-anchor="middle">7</text>
-  <text class="tick" x="572.0" y="784" text-anchor="middle">8</text>
-  <text class="tick" x="636.0" y="784" text-anchor="middle">9</text>
-  <text class="tick" x="700.0" y="784" text-anchor="middle">10</text>
-  <text class="tick" x="80" y="736.0" text-anchor="end">1</text>
-  <text class="tick" x="80" y="672.0" text-anchor="end">2</text>
-  <text class="tick" x="80" y="608.0" text-anchor="end">3</text>
-  <text class="tick" x="80" y="544.0" text-anchor="end">4</text>
-  <text class="tick" x="80" y="480.0" text-anchor="end">5</text>
-  <text class="tick" x="80" y="416.0" text-anchor="end">6</text>
-  <text class="tick" x="80" y="352.0" text-anchor="end">7</text>
-  <text class="tick" x="80" y="288.0" text-anchor="end">8</text>
-  <text class="tick" x="80" y="224.0" text-anchor="end">9</text>
-  <text class="tick" x="80" y="160.0" text-anchor="end">10</text>
+  <rect class="frame" x="92" y="124" width="640" height="640" rx="0" />
+  <rect class="std" x="478" y="318" width="60" height="60" rx="0" />
+  <text class="tick" x="124" y="784" text-anchor="middle">1</text>
+  <text class="tick" x="188" y="784" text-anchor="middle">2</text>
+  <text class="tick" x="252" y="784" text-anchor="middle">3</text>
+  <text class="tick" x="316" y="784" text-anchor="middle">4</text>
+  <text class="tick" x="380" y="784" text-anchor="middle">5</text>
+  <text class="tick" x="444" y="784" text-anchor="middle">6</text>
+  <text class="tick" x="508" y="784" text-anchor="middle">7</text>
+  <text class="tick" x="572" y="784" text-anchor="middle">8</text>
+  <text class="tick" x="636" y="784" text-anchor="middle">9</text>
+  <text class="tick" x="700" y="784" text-anchor="middle">10</text>
+  <text class="tick" x="80" y="736" text-anchor="end">1</text>
+  <text class="tick" x="80" y="672" text-anchor="end">2</text>
+  <text class="tick" x="80" y="608" text-anchor="end">3</text>
+  <text class="tick" x="80" y="544" text-anchor="end">4</text>
+  <text class="tick" x="80" y="480" text-anchor="end">5</text>
+  <text class="tick" x="80" y="416" text-anchor="end">6</text>
+  <text class="tick" x="80" y="352" text-anchor="end">7</text>
+  <text class="tick" x="80" y="288" text-anchor="end">8</text>
+  <text class="tick" x="80" y="224" text-anchor="end">9</text>
+  <text class="tick" x="80" y="160" text-anchor="end">10</text>
   <text class="label" x="412" y="810" text-anchor="middle">PITS A SIDE (BETWEEN THE TWO STORES)</text>
   <text
     class="label"
@@ -427,14 +437,14 @@
   <text class="small" x="764" y="464">wins by force</text>
   <text class="muted small" x="764" y="486">small number: the winning</text>
   <text class="muted small" x="764" y="502">margin in seeds</text>
-  <rect x="764" y="520" width="28" height="22" fill="url(#h)" />
+  <rect class="" x="764" y="520" width="28" height="22" rx="0" fill="url(#h)" />
   <text class="small" x="802" y="535">too big to solve</text>
   <text class="muted small" x="764" y="558">exactly: the range proved</text>
-  <rect class="std" x="766" y="574" width="24" height="18" />
+  <rect class="std" x="766" y="574" width="24" height="18" rx="0" />
   <text class="small" x="802" y="587">the standard game</text>
   <text
     class="muted small"
     x="28"
     y="860"
-  >75 of 100 boards solved exactly, 89 with the winner proved, by tools/solve/grid.ts (alpha-beta, every position remembered; checked against the game's own engine).</text>
+  >75 of 100 boards solved exactly, 89 with the winner proved, by lab/solve/grid.ts (alpha-beta, every position remembered; checked against the game's own engine).</text>
 </svg>

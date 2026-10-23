@@ -1,4 +1,4 @@
-/** Intuition's policy net (16-64-64-7), as tools/learn/train-policy.ts wrote it from 100000 positions. Generated: don't edit. */
+/** Intuition's policy net (16-64-64-7), as lab/learn/train-policy.ts wrote it from 100000 positions. Generated: don't edit. */
 import type { PolicyWeights } from "./policy.ts";
 
 // dprint-ignore

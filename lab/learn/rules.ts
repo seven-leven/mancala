@@ -2,7 +2,7 @@
  * Decompiles Intuition's policy net into the Rule list bot's rules (src/bots/search/rules.ts): an
  * ordered list of if/then rules, mined one at a time to copy the net's choices.
  *
- *   node tools/learn/rules.ts data/learn/positions.jsonl [data/learn/policy.jsonl]
+ *   node lab/learn/rules.ts data/learn/positions.jsonl [data/learn/policy.jsonl]
  *
  * Each round tries every rule (a condition on a move's facts, and a way to choose among the moves
  * that pass), on the positions no earlier rule decided; keeps the one that most often picks the

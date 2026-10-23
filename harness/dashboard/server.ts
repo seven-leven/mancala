@@ -10,7 +10,7 @@ import { createServer, type ServerResponse } from "node:http";
 import { extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Worker } from "node:worker_threads";
-import type { PlayedGame } from "../tournament/play.ts";
+import type { PlayedGame } from "../rate/play.ts";
 import type { Snapshot } from "./snapshot.ts";
 
 const HERE = new URL("./", import.meta.url);

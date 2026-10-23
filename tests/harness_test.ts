@@ -10,8 +10,8 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { test } from "node:test";
 import { assertEquals } from "./assert.ts";
 import type { BotId } from "../src/bots/bots.ts";
-import { type PairJob, type PairResult, playPair } from "../tools/tournament/play.ts";
-import { Pool } from "../tools/tournament/pool.ts";
+import { type PairJob, type PairResult, playPair } from "../harness/rate/play.ts";
+import { Pool } from "../harness/rate/pool.ts";
 
 // Quick bots only: the test stays well under a second of play.
 const BOTS: BotId[] = ["random", "greedy", "generous", "hoarder", "striker"];

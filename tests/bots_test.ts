@@ -23,7 +23,7 @@ import { search, shrinkTable } from "../src/bots/search/minimax.ts";
 import { Boards, playOn } from "../src/bots/search/moves.ts";
 import { FREE_TURN, newGame, playTurn, validMoves } from "../src/game/engine.ts";
 import { DEFAULT_RULES, type GameState, P1, P2 } from "../src/game/types.ts";
-import { seeded } from "../tools/match.ts";
+import { seeded } from "../harness/match.ts";
 
 const position = (pits: number[], current = P1): GameState => ({
   rules: { ...DEFAULT_RULES },

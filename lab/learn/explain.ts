@@ -10,7 +10,7 @@
  *   3. Rules: a small decision tree that imitates the net's verdict (winning or losing), printed as
  *      if/then rules, with how often it agrees with the net and with Minimax.
  *
- *   node tools/learn/explain.ts data/learn/positions.jsonl
+ *   node lab/learn/explain.ts data/learn/positions.jsonl
  *
  * The net's opinion is read before its final squash (atanh of its value), where effects add up.
  */
@@ -23,7 +23,7 @@ import { DEFAULT_RULES, type GameState, type Player } from "../../src/game/types
 
 const file = process.argv[2];
 if (!file) {
-  console.error("Usage: node tools/learn/explain.ts <positions.jsonl>");
+  console.error("Usage: node lab/learn/explain.ts <positions.jsonl>");
   process.exit(1);
 }
 type Row = { pits: number[]; toMove: Player; score: number };

@@ -6,7 +6,7 @@
  *                        [--bots random,greedy,...] [--time 10m] [--resume] [--record games.mgn] [--write]
  *                        [--workers N, default one per CPU core] [--adaptive] [--ui]
  *
- * --ui serves a live dashboard at http://localhost:8020/ (tools/dashboard/): the ladder with its
+ * --ui serves a live dashboard at http://localhost:8020/ (harness/dashboard/): the ladder with its
  * ranges against the ratings before the run, each bot's results, and the head-to-head table.
  *
  * --write saves the ratings to src/bots/ratings.ts, which the game's menus show.

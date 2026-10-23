@@ -59,7 +59,7 @@ export const BOTS = {
     blurb: "Pushover's search to lose, judged by a small neural network that learned how games are lost.",
     family: "search",
     // A 17-16-16-1 net (src/bots/search/loser-weights.ts) trained on how Pushover's games against
-    // bots that play to win really ended (tools/learn/loser-data.ts).
+    // bots that play to win really ended (lab/learn/loser-data.ts).
     create: () => new PushoverBot(3, loserNetScore(new ValueNet(LOSER_WEIGHTS))),
   },
   decompiledPushover: {
@@ -67,7 +67,7 @@ export const BOTS = {
     level: "Helpless",
     blurb: "Pushover's search to lose, judged by a readable formula taken from the losing network.",
     family: "search",
-    // The loser's net, written out as a weighted sum (search/decompiled.ts, tools/learn/ranking.ts).
+    // The loser's net, written out as a weighted sum (search/decompiled.ts, lab/learn/ranking.ts).
     create: () => new PushoverBot(3, formulaScore(LOSER_RANKING_WEIGHTS)),
   },
   pushover: {
@@ -225,7 +225,7 @@ export const BOTS = {
     blurb: "DFS v2's search, judged by a small neural network that learned from Minimax.",
     family: "chain",
     // A 16-16-16-1 value net (561 weights, src/bots/search/weights.ts) trained on Minimax's scores
-    // (tools/learn/); it ties Minimax at about a third of its time.
+    // (lab/learn/); it ties Minimax at about a third of its time.
     create: () => new DfsReplyBot(8, netScore(new ValueNet(WEIGHTS))),
   },
   minimax: {
@@ -272,7 +272,7 @@ export const DORMANT = {
     level: "Methodical",
     blurb: "Follows a short list of if/then rules, taken from Intuition's network.",
     family: "one-move",
-    // Intuition's policy net decompiled into rules (search/rules.ts, tools/learn/rules.ts).
+    // Intuition's policy net decompiled into rules (search/rules.ts, lab/learn/rules.ts).
     create: () => new RuleListBot(RULES),
   },
   intuition: {
@@ -281,7 +281,7 @@ export const DORMANT = {
     blurb: "Names a pit at a glance: a neural network that learned Minimax's moves, with no search at all.",
     family: "basic",
     // A 16-64-64-7 policy net (src/bots/search/policy-weights.ts) trained on Minimax's move in
-    // 100,000 positions (tools/learn/train-policy.ts); it plays that move 42% of the time.
+    // 100,000 positions (lab/learn/train-policy.ts); it plays that move 42% of the time.
     create: () => new IntuitionBot(new PolicyNet(POLICY_WEIGHTS)),
   },
 } as const satisfies Record<string, BotSpec>;

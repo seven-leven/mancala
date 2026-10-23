@@ -1,7 +1,7 @@
 /**
  * The learned bot's value network (TODO.md, "A learned bot"): how good a position is for the
  * player to move, from -1 (lost) to +1 (won). Trained offline to match Minimax's scores
- * (tools/learn/); this file only reads positions and runs the net, in plain TypeScript.
+ * (lab/learn/); this file only reads positions and runs the net, in plain TypeScript.
  *
  * Input: 16 numbers from the mover's side: their 7 pits in sowing order, the opponent's 7, their
  * store and the opponent's (pits ÷ 8, stores ÷ 49, so all are near 0–2). Seen this way the net
@@ -13,7 +13,7 @@ import { evaluate } from "./evaluate.ts";
 
 export const INPUTS = 16;
 
-/** A trained net's weights, as tools/learn/train.ts writes them: rows of each layer, then biases. */
+/** A trained net's weights, as lab/learn/train.ts writes them: rows of each layer, then biases. */
 export interface Weights {
   w1: number[][]; // first hidden layer × INPUTS
   b1: number[];
@@ -122,7 +122,7 @@ export const netScore = (net: ValueNet) => (s: GameState, me: Player): number =>
   s.gameOver ? evaluate(s, me) : 100 * (s.current === me ? net.value(s) : -net.value(s));
 
 /**
- * The loser's search score from a net trained on how games ended (tools/learn/loser-data.ts): a
+ * The loser's search score from a net trained on how games ended (lab/learn/loser-data.ts): a
  * finished game as `evaluate` scores it, anything else as 100 times the net's value for `me`.
  */
 export const loserNetScore = (net: ValueNet) => (s: GameState, me: Player): number =>

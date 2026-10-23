@@ -5,7 +5,7 @@ release has a section here; work since the last one sits under _Unreleased_.
 
 ## Unreleased
 
-- **The game solved on small boards** (`tools/solve/`): exact best play for 1–10 pits a side and 1–10 seeds a pit, with
+- **The game solved on small boards** (`lab/solve/`): exact best play for 1–10 pits a side and 1–10 seeds a pit, with
   the game's own rules. 75 of the 100 boards are solved exactly and 89 have the winner proved. **The standard game is a
   first-player win, 96–2**, two seeds more than Minimax against itself. The second player wins by force on only a few
   boards: 1×4, 3×5 and 3×6, 4×7 to 4×9, 5×9 and 5×10, and 6×10. 1×1 and 3×7 are draws.
@@ -13,9 +13,9 @@ release has a section here; work since the last one sits under _Unreleased_.
   [docs/images/solver.svg](docs/images/solver.svg) shows how the solver works. It uses MTD(f) over alpha-beta, bounds
   from the stores, and a fixed 8-byte-an-entry memo that replaces its cheapest entries and is shared by several workers.
   It is tested against the engine and plain minimax.
-- **Bots measured against perfect play** (`tools/solve/accuracy.ts`): how often each bot's move keeps a solved
-  position's value. Quiescence search, tried for #13, is there as a search option (off): on the standard board it adds
-  almost nothing past depth 1, so no bot was kept.
+- **Bots measured against perfect play** (`harness/accuracy.ts`): how often each bot's move keeps a solved position's
+  value. Quiescence search, tried for #13, is there as a search option (off): on the standard board it adds almost
+  nothing past depth 1, so no bot was kept.
 - **Two dormant bots, waiting for a rating:** Intuition, a policy network that names a pit with no search (about 1200),
   and Rule list, that network decompiled into eight if/then rules (about 1680, between Planner and Lookahead).
   [The bots by family](docs/images/bot-families.svg) shows where they fit, and the gaps left.
@@ -38,7 +38,7 @@ release has a section here; work since the last one sits under _Unreleased_.
   calls the winner right 91% of the time, against 71% for Minimax's own evaluation, and runs in plain TypeScript in
   about half a microsecond. Re-rated over 240 games a pairing with 21 bots: Learned DFS and Minimax level at 2074, 6.5
   ms a move against 23.3. A tie is the most any bot can get against Minimax under these rules. Training is two tools,
-  `tools/learn/data.ts` and `tools/learn/train.ts`, seeded, a few minutes in all; bigger nets (32 and 64 wide) were no
+  `lab/learn/data.ts` and `lab/learn/train.ts`, seeded, a few minutes in all; bigger nets (32 and 64 wide) were no
   stronger.
 - **Twenty bots: Very hard (DFS v2) and Lucky (Monte Carlo) join the ladder**, in the two gaps under Minimax. Re-rated
   over 240 games a pairing (45,600 games in 3 minutes 44): DFS v2 at 2064, between DFS and Minimax, and Monte Carlo at
@@ -58,7 +58,7 @@ release has a section here; work since the last one sits under _Unreleased_.
 
 ## v2.4.0 · 2026-10-19
 
-- **A better ETA, with an error range.** The rating run's ETA is its own module (`tools/tournament/eta.ts`), chosen and
+- **A better ETA, with an error range.** The rating run's ETA is its own module (`harness/rate/eta.ts`), chosen and
   calibrated on the ETA logs: from the last run with the same settings when there is one (about 9% off), otherwise from
   the mean round leaving out the first (about 34% off; the old median ran 23% short). It now shows the range that held
   the real finish 80% of the time, as `ETA 02:10 (01:50–02:40)`, in the terminal and the dashboard.
@@ -174,8 +174,8 @@ release has a section here; work since the last one sits under _Unreleased_.
 
 - A roadmap: TODO.md now lists the next three releases, each a
   [GitHub milestone](https://github.com/seven-leven/mancala/milestones) with an issue per item.
-- The bots and the tournament are split into folders (`src/bots/players/`, `src/bots/search/`, `tools/tournament/`).
-  Nothing plays differently: the tournament prints exactly what it did before.
+- The bots and the tournament are split into folders (`src/bots/players/`, `src/bots/search/`, `harness/rate/`). Nothing
+  plays differently: the tournament prints exactly what it did before.
 - **Seventeen bots.** Nine new ones, each placed in a gap in the ladder, since games between bots close in strength tell
   you the most: Gentle (Sometimes generous), Thrifty (Hoarder), Bold (Striker), Relaxed (Sometimes greedy), Careful
   (Turtle), Crafty (Spoiler), Keen (Chainer), Thoughtful (Planner) and Sharp (Shrewd). Rated over 60 games a pairing,
